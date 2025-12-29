@@ -87,11 +87,11 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch MATERIALS categories for filter dropdown
+  // Fetch MATERIALS categories for filter dropdown (only active)
   const { data: categoriesData } = useQuery({
-    queryKey: ['pricebook-categories', 'materials'],
+    queryKey: ['pricebook-categories', 'materials', 'active'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/api/pricebook/categories?type=materials'));
+      const res = await fetch(apiUrl('/api/pricebook/categories?type=materials&active=true'));
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : (data.data || []);

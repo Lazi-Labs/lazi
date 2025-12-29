@@ -183,6 +183,19 @@ export async function GET(request: NextRequest) {
       return transformed;
     });
 
+    // Recursively filter out inactive categories if active filter is set
+    const filterActiveCategories = (cats: any[]): any[] => {
+      return cats
+        .filter(cat => active === null || cat.active === (active === 'true'))
+        .map(cat => ({
+          ...cat,
+          children: cat.children ? filterActiveCategories(cat.children) : [],
+          subcategoryCount: cat.children ? filterActiveCategories(cat.children).length : 0,
+        }));
+    };
+
+    const filteredTransformed = active !== null ? filterActiveCategories(transformed) : transformed;
+
     let result;
     if (flat) {
       // Flatten the tree for dropdown use
@@ -195,9 +208,9 @@ export async function GET(request: NextRequest) {
         }
         return arr;
       };
-      result = flattenCategories(transformed);
+      result = flattenCategories(filteredTransformed);
     } else {
-      result = transformed;
+      result = filteredTransformed;
     }
 
     // Cache the result
