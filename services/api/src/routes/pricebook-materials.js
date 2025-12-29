@@ -72,12 +72,23 @@ router.get(
         )`);
       }
 
-      // Category filter (materials use categories JSONB, not category_st_id)
+      // Category filter (materials use categories JSONB array of IDs like [61878437])
+      // Supports comma-separated category IDs for hierarchical filtering
       if (category_id) {
-        params.push(parseInt(category_id, 10));
-        whereConditions.push(`m.categories @> $${params.length}::jsonb`);
-        // Update param to be JSONB array format
-        params[params.length - 1] = JSON.stringify([{ id: parseInt(category_id, 10) }]);
+        const categoryIds = category_id.toString().split(',').map(id => id.trim()).filter(id => id);
+        
+        if (categoryIds.length > 1) {
+          // Build OR condition for multiple categories - check if any category ID is in the array
+          const categoryConditions = categoryIds.map((id) => {
+            params.push(parseInt(id, 10));
+            return `m.categories @> $${params.length}::jsonb`;
+          });
+          whereConditions.push(`(${categoryConditions.join(' OR ')})`);
+        } else {
+          // Single category - check if the ID is in the categories array
+          params.push(parseInt(categoryIds[0], 10));
+          whereConditions.push(`m.categories @> $${params.length}::jsonb`);
+        }
       }
 
       const whereClause = whereConditions.join(' AND ');

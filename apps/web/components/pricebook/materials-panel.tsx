@@ -9,6 +9,7 @@ import { Plus, Search, Download, List, ChevronRight, Filter, ChevronLeft } from 
 import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { MaterialDetailPage } from './material-detail-page';
+import { CategoryTreeFilter, getAllDescendantIds } from './category-tree-filter';
 
 interface Material {
   id: string;
@@ -113,8 +114,8 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
   const categories = flattenCategories(categoriesData || []);
 
   const { data: materialsData, isLoading } = useQuery({
-    queryKey: ['pricebook-materials', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage],
-    queryFn: () => fetchMaterials(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage),
+    queryKey: ['pricebook-materials', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData],
+    queryFn: () => fetchMaterials(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData || []),
   });
 
   const materials = materialsData?.data || [];
@@ -210,16 +211,13 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">Category</label>
-                    <select 
-                      value={filters.category}
-                      onChange={(e) => setFilters({...filters, category: e.target.value})}
-                      className="w-full h-9 border rounded px-2 text-sm bg-background"
-                    >
-                      <option value="">All Categories</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
+                    <div className="border rounded p-2 bg-background">
+                      <CategoryTreeFilter
+                        categories={categoriesData || []}
+                        selectedCategoryId={filters.category}
+                        onSelect={(id) => setFilters({...filters, category: id})}
+                      />
+                    </div>
                   </div>
                   
                   <div>
@@ -502,12 +500,21 @@ async function fetchMaterials(
   search: string,
   filters: FilterState,
   pageSize: number,
-  page: number
+  page: number,
+  categoriesData: any[]
 ): Promise<MaterialsResponse> {
   const params = new URLSearchParams();
   // Use filter category if set, otherwise use selectedCategory from sidebar
   const effectiveCategory = filters.category || categoryId;
-  if (effectiveCategory) params.set('category', effectiveCategory);
+  if (effectiveCategory) {
+    // Get all descendant category IDs for hierarchical filtering
+    const allCategoryIds = getAllDescendantIds(categoriesData, effectiveCategory);
+    if (allCategoryIds.length > 0) {
+      params.set('category', allCategoryIds.join(','));
+    } else {
+      params.set('category', effectiveCategory);
+    }
+  }
   if (search) params.set('search', search);
   params.set('pageSize', pageSize.toString());
   params.set('page', page.toString());

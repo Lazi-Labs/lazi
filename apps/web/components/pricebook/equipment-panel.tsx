@@ -162,5 +162,7 @@ async function fetchEquipment(categoryId: string | null, search: string): Promis
   
   const res = await fetch(apiUrl(`/api/pricebook/equipment?${params}`));
   if (!res.ok) return [];
-  return res.json();
+  const response = await res.json();
+  // API returns { data: [...], totalCount: ... } format
+  return response.data || response || [];
 }

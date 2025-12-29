@@ -73,10 +73,19 @@ router.get(
       )`);
     }
 
-    // Category filter
+    // Category filter - supports multiple category IDs (comma-separated for hierarchical filtering)
     if (category_id) {
-      params.push(parseInt(category_id, 10));
-      whereConditions.push(`s.category_st_id = $${params.length}`);
+      // Support comma-separated category IDs for hierarchical filtering
+      const categoryIds = category_id.toString().split(',').map(id => id.trim()).filter(id => id);
+      
+      if (categoryIds.length > 1) {
+        // Cast to bigint array for comparison with category_st_id column
+        params.push(categoryIds.map(id => parseInt(id, 10)));
+        whereConditions.push(`s.category_st_id = ANY($${params.length}::bigint[])`);
+      } else {
+        params.push(parseInt(categoryIds[0], 10));
+        whereConditions.push(`s.category_st_id = $${params.length}`);
+      }
     }
 
     const whereClause = whereConditions.join(' AND ');

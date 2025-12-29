@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const params = new URLSearchParams({ page, pageSize });
     
     if (search) params.set('search', search);
-    if (category) params.set('categoryId', category);
+    if (category) params.set('category_id', category);
     if (active) params.set('active', active);
     if (priceMin) params.set('priceMin', priceMin);
     if (priceMax) params.set('priceMax', priceMax);

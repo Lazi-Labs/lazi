@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { ServiceDetailPage } from './service-detail-page';
 import { EditColumnsDrawer } from './EditColumnsDrawer';
+import { CategoryTreeFilter, getAllDescendantIds } from './category-tree-filter';
 import {
   ColumnConfig,
   DEFAULT_COLUMNS,
@@ -262,8 +263,8 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
   const categories = flattenCategories(categoriesData || []);
 
   const { data: servicesData, isLoading } = useQuery({
-    queryKey: ['pricebook-services', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage],
-    queryFn: () => fetchServices(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage),
+    queryKey: ['pricebook-services', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData],
+    queryFn: () => fetchServices(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData || []),
   });
 
   const services = servicesData?.data || [];
@@ -530,16 +531,13 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm text-muted-foreground mb-1 block">Category</label>
-                      <select
-                        value={filters.category}
-                        onChange={(e) => setFilters({...filters, category: e.target.value})}
-                        className="w-full h-9 border rounded px-2 text-sm bg-background"
-                      >
-                        <option value="">All Categories</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                      </select>
+                      <div className="border rounded p-2 bg-background">
+                        <CategoryTreeFilter
+                          categories={categoriesData || []}
+                          selectedCategoryId={filters.category}
+                          onSelect={(id) => setFilters({...filters, category: id})}
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -931,11 +929,20 @@ async function fetchServices(
   search: string,
   filters: FilterState,
   pageSize: number,
-  page: number
+  page: number,
+  categoriesData: any[]
 ): Promise<ServicesResponse> {
   const params = new URLSearchParams();
   const effectiveCategory = filters.category || categoryId;
-  if (effectiveCategory) params.set('category', effectiveCategory);
+  if (effectiveCategory) {
+    // Get all descendant category IDs for hierarchical filtering
+    const allCategoryIds = getAllDescendantIds(categoriesData, effectiveCategory);
+    if (allCategoryIds.length > 0) {
+      params.set('category', allCategoryIds.join(','));
+    } else {
+      params.set('category', effectiveCategory);
+    }
+  }
   if (search) params.set('search', search);
   params.set('pageSize', pageSize.toString());
   params.set('page', page.toString());

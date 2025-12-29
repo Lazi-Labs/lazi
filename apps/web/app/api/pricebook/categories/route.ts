@@ -92,9 +92,11 @@ export async function GET(request: NextRequest) {
     const backendParams = new URLSearchParams();
     backendParams.set('limit', '500');
 
-    // Map type parameter: 'service' -> 'Services', 'material' -> 'Materials'
+    // Map type parameter: 'service'/'services' -> 'Services', 'material'/'materials' -> 'Materials'
     if (type && type !== 'all') {
-      const mappedType = type === 'service' ? 'Services' : type === 'material' ? 'Materials' : type;
+      let mappedType = type;
+      if (type === 'service' || type === 'services') mappedType = 'Services';
+      else if (type === 'material' || type === 'materials') mappedType = 'Materials';
       backendParams.set('type', mappedType);
     }
 
