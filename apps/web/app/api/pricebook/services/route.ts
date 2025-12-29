@@ -34,9 +34,15 @@ export async function GET(request: NextRequest) {
     if (hasMaterials) params.set('hasMaterials', hasMaterials);
     if (hasEquipment) params.set('hasEquipment', hasEquipment);
     
-    // Use database-backed endpoint for better filtering
-    const res = await fetch(`${ST_AUTOMATION_URL}/pricebook/db/services?${params}`, {
-      headers: { 'Content-Type': 'application/json' },
+    // Get tenant ID from request headers or use default
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
+    
+    // Use consolidated API endpoint with CRM override support
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/services?${params}`, {
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
       cache: 'no-store', // Disable caching to ensure fresh data with filters
     });
     
@@ -48,38 +54,44 @@ export async function GET(request: NextRequest) {
     const result = await res.json();
     const services = result.data || [];
     
-    // Transform to expected format
+    // Transform from snake_case backend to camelCase frontend
     const transformed = services.map((svc: any) => ({
-      id: svc.id?.toString() || svc.stId?.toString(),
-      stId: svc.stId?.toString() || svc.id?.toString(),
+      id: svc.id?.toString() || svc.st_id?.toString(),
+      stId: svc.st_id?.toString() || svc.id?.toString(),
       code: svc.code || '',
-      name: svc.name || svc.displayName || '',
-      displayName: svc.displayName || svc.name || '',
+      name: svc.name || svc.display_name || '',
+      displayName: svc.display_name || svc.name || '',
       description: svc.description || '',
-      price: svc.price || 0,
-      memberPrice: svc.memberPrice || 0,
-      addOnPrice: svc.addOnPrice || 0,
-      memberAddOnPrice: svc.memberAddOnPrice || 0,
-      durationHours: svc.durationHours || 0,
+      price: parseFloat(svc.price) || 0,
+      memberPrice: parseFloat(svc.member_price) || 0,
+      addOnPrice: parseFloat(svc.add_on_price) || 0,
+      memberAddOnPrice: parseFloat(svc.member_add_on_price) || 0,
+      durationHours: parseFloat(svc.hours) || 0,
       active: svc.active ?? true,
       taxable: svc.taxable ?? true,
       warranty: svc.warranty || '',
       categoryIds: svc.categories || [],
-      defaultImageUrl: svc.defaultImageUrl 
-        ? `/api${svc.defaultImageUrl}`
+      categoryStId: svc.category_st_id,
+      defaultImageUrl: svc.image_url 
+        ? (svc.image_url.startsWith('http') ? svc.image_url : `/dashboard/api/images/db/services/${svc.st_id}`)
         : null,
-      laborCost: svc.laborCost || 0,
-      materialCost: svc.materialCost || 0,
-      bonus: svc.bonus || 0,
+      laborCost: parseFloat(svc.cost) || 0,
+      materialCost: 0,
+      bonus: 0,
       account: svc.account || '',
+      isLabor: svc.is_labor || false,
+      overrideId: svc.override_id,
+      hasPendingChanges: svc.has_pending_changes || false,
+      internalNotes: svc.internal_notes,
+      customTags: svc.custom_tags || [],
     }));
     
     return NextResponse.json({
       data: transformed,
-      totalCount: result.totalCount || 0,
+      totalCount: result.total || transformed.length,
       page: result.page || parseInt(page),
-      pageSize: result.pageSize || parseInt(pageSize),
-      hasMore: result.hasMore || false,
+      pageSize: result.limit || parseInt(pageSize),
+      hasMore: (result.page || 1) < (result.totalPages || 1),
     });
   } catch (error) {
     console.error('Failed to fetch services:', error);

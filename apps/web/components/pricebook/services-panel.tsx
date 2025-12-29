@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { apiUrl } from '@/lib/api';
 import { ServiceDetailPage } from './service-detail-page';
 import { EditColumnsDrawer } from './EditColumnsDrawer';
 import {
@@ -108,7 +109,7 @@ const defaultFilters: FilterState = {
   incomeAccount: '',
   expenseAccount: '',
   businessUnit: '',
-  status: 'active',
+  status: 'all',
   images: 'any',
   video: 'any',
   upgrades: 'any',
@@ -153,11 +154,10 @@ const columnLabels: Record<string, string> = {
 
 export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPanelProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const currentSection = searchParams.get('section');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [showDetailPage, setShowDetailPage] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
@@ -223,13 +223,6 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  // Close detail page when navigating to a different section
-  useEffect(() => {
-    if (currentSection && currentSection !== 'services') {
-      setShowDetailPage(false);
-      setSelectedServiceId(null);
-    }
-  }, [currentSection]);
 
   // Close filter dropdown when clicking outside
   useEffect(() => {
@@ -246,7 +239,7 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
   const { data: categoriesData } = useQuery({
     queryKey: ['pricebook-categories', 'services'],
     queryFn: async () => {
-      const res = await fetch('https://api.lazilabs.com/api/pricebook/categories?type=services');
+      const res = await fetch(apiUrl('/api/pricebook/categories?type=services'));
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : (data.data || []);
@@ -285,13 +278,9 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
     }).format(amount);
   };
 
-  const handleNavigate = (direction: 'prev' | 'next') => {
-    if (!services || !selectedServiceId) return;
-    const currentIndex = services.findIndex((s: Service) => s.id === selectedServiceId);
-    if (direction === 'prev' && currentIndex > 0) {
-      setSelectedServiceId(services[currentIndex - 1].id);
-    } else if (direction === 'next' && currentIndex < services.length - 1) {
-      setSelectedServiceId(services[currentIndex + 1].id);
+  const handleServiceClick = (serviceId: string) => {
+    if (!editMode) {
+      router.push(`/pricebook/services/${serviceId}`);
     }
   };
 
@@ -313,7 +302,7 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
 
     setSavingServices(prev => new Set(prev).add(serviceId));
     try {
-      const res = await fetch(`https://api.lazilabs.com/api/pricebook/services/${serviceId}`, {
+      const res = await fetch(apiUrl(`/api/pricebook/services/${serviceId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(edits),
@@ -475,17 +464,6 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
     }
   };
 
-  // Show full detail page when a service is selected
-  if (showDetailPage && selectedServiceId) {
-    return (
-      <ServiceDetailPage
-        serviceId={selectedServiceId}
-        onClose={() => { setShowDetailPage(false); setSelectedServiceId(null); }}
-        onNavigate={handleNavigate}
-      />
-    );
-  }
-
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalCount);
 
@@ -495,7 +473,7 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
       <div className="p-3 border-b flex items-center justify-between bg-muted/30">
         {/* Left side: Search and filters */}
         <div className="flex items-center gap-2 flex-1 max-w-xl">
-          <Button size="sm" onClick={() => { setSelectedServiceId(null); setShowDetailPage(true); }}>
+          <Button size="sm" onClick={() => router.push('/pricebook/services/new')}>
             <Plus className="h-4 w-4 mr-1" />
             NEW
           </Button>
@@ -519,7 +497,7 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
                 appliedFilters.priceMin,
                 appliedFilters.priceMax,
                 appliedFilters.description,
-                appliedFilters.status !== 'active' ? appliedFilters.status : '',
+                appliedFilters.status !== 'all' ? appliedFilters.status : '',
                 appliedFilters.images !== 'any' ? appliedFilters.images : '',
                 appliedFilters.linkedMaterials !== 'any' ? appliedFilters.linkedMaterials : '',
                 appliedFilters.linkedEquipment !== 'any' ? appliedFilters.linkedEquipment : '',
@@ -762,12 +740,7 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
                     !editMode && "cursor-pointer",
                     editedServices[service.id] && "bg-yellow-50 dark:bg-yellow-900/10"
                   )}
-                  onClick={() => {
-                    if (!editMode) {
-                      setSelectedServiceId(service.stId || service.id);
-                      setShowDetailPage(true);
-                    }
-                  }}
+                  onClick={() => handleServiceClick(service.stId || service.id)}
                 >
                   {visibleColumns.map((columnId) => (
                     <TableCell 
@@ -979,7 +952,7 @@ async function fetchServices(
   if (filters.linkedMaterials !== 'any') params.set('hasMaterials', filters.linkedMaterials === 'has' ? 'true' : 'false');
   if (filters.linkedEquipment !== 'any') params.set('hasEquipment', filters.linkedEquipment === 'has' ? 'true' : 'false');
 
-  const url = `https://api.lazilabs.com/api/pricebook/services?${params}`;
+  const url = apiUrl(`/api/pricebook/services?${params}`);
 
   const res = await fetch(url, {
     headers: {
@@ -996,9 +969,9 @@ async function fetchServices(
   // Map API response to expected format
   return {
     data: response.data || [],
-    totalCount: response.total || 0,
+    totalCount: response.totalCount || 0,
     page: response.page || 1,
-    pageSize: response.limit || pageSize,
-    hasMore: (response.page || 1) < (response.totalPages || 1),
+    pageSize: response.pageSize || pageSize,
+    hasMore: response.hasMore || false,
   };
 }

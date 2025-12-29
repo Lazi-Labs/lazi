@@ -28,6 +28,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { apiUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface ServiceDetailPageProps {
@@ -146,7 +147,7 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
     
     try {
       const response = await fetch(
-        `https://api.lazilabs.com/api/pricebook/services/${serviceId}`,
+        apiUrl(`/api/pricebook/services/${serviceId}`),
         {
           method: 'PATCH',
           headers: { 
@@ -203,7 +204,7 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
     
     try {
       const response = await fetch(
-        `https://api.lazilabs.com/pricebook/db/services/${serviceId}/push`,
+        apiUrl(`/api/pricebook/db/services/${serviceId}/push`),
         {
           method: 'POST',
           headers: { 
@@ -257,7 +258,7 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
     
     try {
       const response = await fetch(
-        `https://api.lazilabs.com/pricebook/db/services/${serviceId}/pull`,
+        apiUrl(`/api/pricebook/db/services/${serviceId}/pull`),
         {
           method: 'POST',
           headers: { 
@@ -872,8 +873,8 @@ function MaterialRow({ material }: { material: MaterialLineItem }) {
 }
 
 async function fetchService(id: string): Promise<Service> {
-  // Use /db/services endpoint to get full data including linked materials, equipment, categories, and images
-  const res = await fetch(`https://api.lazilabs.com/pricebook/db/services/${id}`, {
+  // Use consolidated /api/pricebook/services endpoint for full service details
+  const res = await fetch(apiUrl(`/api/pricebook/services/${id}`), {
     headers: {
       'x-tenant-id': '3222348440',
     },

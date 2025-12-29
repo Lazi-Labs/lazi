@@ -24,7 +24,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 // ============================================================================
 // GET /api/pricebook/services
-// List services with filtering and pagination
+// List services with filtering, pagination, and CRM override support
 // ============================================================================
 
 router.get(
@@ -51,22 +51,26 @@ router.get(
       }
     }
 
-    // Build query
+    // Build query with CRM override support
     const params = [tenantId];
     let whereConditions = ['s.tenant_id = $1'];
 
-    // Active filter (default: show only active)
+    // Active filter with CRM override (default: show only active)
     if (active === 'true') {
-      whereConditions.push('s.active = true');
+      whereConditions.push('COALESCE(o.override_active, s.active) = true');
     } else if (active === 'false') {
-      whereConditions.push('s.active = false');
+      whereConditions.push('COALESCE(o.override_active, s.active) = false');
     }
     // If active === 'all', don't filter by active status
 
-    // Search filter
+    // Search filter with CRM override
     if (search) {
       params.push(`%${search}%`);
-      whereConditions.push(`(s.name ILIKE $${params.length} OR s.code ILIKE $${params.length} OR s.display_name ILIKE $${params.length})`);
+      whereConditions.push(`(
+        COALESCE(o.override_name, s.name) ILIKE $${params.length} OR 
+        s.code ILIKE $${params.length} OR 
+        COALESCE(o.override_display_name, s.display_name) ILIKE $${params.length}
+      )`);
     }
 
     // Category filter
@@ -82,14 +86,20 @@ router.get(
     const safeSort = allowedSorts.includes(sort_by) ? sort_by : 'name';
     const safeOrder = sort_order.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
 
-    // Get total count
+    // Get total count with CRM override join
     const countResult = await pool.query(
-      `SELECT COUNT(*) FROM master.pricebook_services s WHERE ${whereClause}`,
+      `SELECT COUNT(*) 
+       FROM master.pricebook_services s
+       LEFT JOIN crm.pricebook_overrides o 
+         ON o.st_pricebook_id = s.st_id 
+         AND o.tenant_id = s.tenant_id
+         AND o.item_type = 'service'
+       WHERE ${whereClause}`,
       params
     );
     const total = parseInt(countResult.rows[0].count, 10);
 
-    // Get services with pagination
+    // Get services with pagination and CRM overrides
     const pageNum = Math.max(1, parseInt(page, 10));
     const limitNum = Math.min(500, Math.max(1, parseInt(limit, 10)));
     const offset = (pageNum - 1) * limitNum;
@@ -101,46 +111,44 @@ router.get(
         s.id,
         s.st_id,
         s.code,
-        s.name,
-        s.display_name,
-        s.description,
-        s.price,
+        COALESCE(o.override_name, s.name) as name,
+        COALESCE(o.override_display_name, s.display_name) as display_name,
+        COALESCE(o.override_description, s.description) as description,
+        COALESCE(o.override_price, s.price) as price,
         s.member_price,
         s.add_on_price,
-        s.cost,
-        s.active,
+        COALESCE(o.override_cost, s.cost) as cost,
+        COALESCE(o.override_active, s.active) as active,
         s.taxable,
         s.hours,
         s.is_labor,
         s.account,
-        s.image_url,
+        COALESCE(o.override_image_url, s.s3_image_url, s.image_url) as image_url,
         s.category_st_id,
         s.categories,
         s.warranty,
         s.st_created_on,
         s.st_modified_on,
         s.created_at,
-        s.updated_at
+        s.updated_at,
+        o.id as override_id,
+        o.pending_sync as has_pending_changes,
+        o.internal_notes,
+        o.custom_tags
       FROM master.pricebook_services s
+      LEFT JOIN crm.pricebook_overrides o 
+        ON o.st_pricebook_id = s.st_id 
+        AND o.tenant_id = s.tenant_id
+        AND o.item_type = 'service'
       WHERE ${whereClause}
-      ORDER BY s.${safeSort} ${safeOrder}
+      ORDER BY COALESCE(o.override_name, s.name) ${safeOrder}
       LIMIT $${params.length - 1} OFFSET $${params.length}
     `;
 
     const result = await pool.query(query, params);
 
-    // Batch resolve images for all services
-    const stIds = result.rows.map(s => s.st_id);
-    const imageMap = await resolveImageUrls('services', stIds, tenantId);
-    
-    // Add resolved image URLs to each service
-    const servicesWithImages = result.rows.map(s => ({
-      ...s,
-      image_url: imageMap[s.st_id] || null,
-    }));
-
     const response = {
-      data: servicesWithImages,
+      data: result.rows,
       total,
       page: pageNum,
       limit: limitNum,

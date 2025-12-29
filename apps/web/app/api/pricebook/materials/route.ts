@@ -29,9 +29,15 @@ export async function GET(request: NextRequest) {
     if (hasImages) params.set('hasImages', hasImages);
     if (vendor) params.set('vendor', vendor);
     
-    // Use database-backed endpoint for better filtering
-    const res = await fetch(`${ST_AUTOMATION_URL}/pricebook/db/materials?${params}`, {
-      headers: { 'Content-Type': 'application/json' },
+    // Get tenant ID from request headers or use default
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
+    
+    // Use consolidated API endpoint with CRM override support
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/materials?${params}`, {
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
       cache: 'no-store', // Disable caching to ensure filters work correctly
     });
     
@@ -40,41 +46,49 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: [], totalCount: 0, page: 1, pageSize: 25, hasMore: false });
     }
     
-    const data = await res.json();
-    const materials = data.data || data || [];
+    const result = await res.json();
+    const materials = result.data || [];
     
-    // Transform to expected format
+    // Transform from snake_case backend to camelCase frontend
     const transformed = materials.map((mat: any) => {
-      const stId = mat.stId || mat.st_id || mat.id;
-      const hasImage = mat.defaultAssetUrl || mat.default_asset_url || (mat.assets && mat.assets.length > 0);
+      const stId = mat.st_id || mat.id;
       return {
         id: mat.id?.toString() || stId?.toString(),
         stId: stId?.toString(),
         code: mat.code || '',
-        name: mat.name || mat.displayName || mat.display_name || '',
-        displayName: mat.displayName || mat.display_name || mat.name || '',
+        name: mat.name || mat.display_name || '',
+        displayName: mat.display_name || mat.name || '',
         description: mat.description || '',
-        cost: mat.cost || 0,
-        price: mat.price || 0,
-        memberPrice: mat.memberPrice || mat.member_price || 0,
-        margin: mat.margin || 0,
+        cost: parseFloat(mat.cost) || 0,
+        price: parseFloat(mat.price) || 0,
+        memberPrice: parseFloat(mat.member_price) || 0,
+        addOnPrice: parseFloat(mat.add_on_price) || 0,
+        margin: 0,
         active: mat.active ?? true,
         taxable: mat.taxable ?? true,
-        categoryIds: mat.categories || mat.category_ids || [],
-        defaultImageUrl: hasImage ? `/api/images/db/materials/${stId}` : null,
-        primaryVendor: mat.primaryVendor || mat.primary_vendor || null,
-        vendors: mat.vendors || mat.otherVendors || mat.other_vendors || [],
-        trackStock: mat.trackStock || mat.track_stock || false,
-        chargeableByDefault: mat.chargeableByDefault || mat.chargeable_by_default || true,
+        unitOfMeasure: mat.unit_of_measure || '',
+        categoryIds: mat.categories || [],
+        defaultImageUrl: mat.image_url 
+          ? (mat.image_url.startsWith('http') ? mat.image_url : `/dashboard/api/images/db/materials/${stId}`)
+          : null,
+        primaryVendor: mat.primary_vendor || null,
+        vendors: mat.other_vendors || [],
+        account: mat.account || '',
+        overrideId: mat.override_id,
+        hasPendingChanges: mat.has_pending_changes || false,
+        internalNotes: mat.internal_notes,
+        preferredVendor: mat.preferred_vendor,
+        reorderThreshold: mat.reorder_threshold,
+        customTags: mat.custom_tags || [],
       };
     });
     
     return NextResponse.json({
       data: transformed,
-      totalCount: data.totalCount || transformed.length,
-      page: data.page || parseInt(page),
-      pageSize: data.pageSize || parseInt(pageSize),
-      hasMore: data.hasMore || false,
+      totalCount: result.total || transformed.length,
+      page: result.page || parseInt(page),
+      pageSize: result.limit || parseInt(pageSize),
+      hasMore: (result.page || 1) < (result.totalPages || 1),
     });
   } catch (error) {
     console.error('Failed to fetch materials:', error);

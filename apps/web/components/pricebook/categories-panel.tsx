@@ -64,6 +64,8 @@ export function CategoriesPanel() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<CategoryTab>('services');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [showFilters, setShowFilters] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [draggedCategory, setDraggedCategory] = useState<Category | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
@@ -88,8 +90,8 @@ export function CategoriesPanel() {
   const [isSavingImage, setIsSavingImage] = useState(false);
 
   const { data: fetchedCategories, isLoading, refetch } = useQuery({
-    queryKey: ['pricebook-categories-tree', activeTab, searchQuery],
-    queryFn: () => fetchCategoriesTree(activeTab, searchQuery),
+    queryKey: ['pricebook-categories-tree', activeTab, searchQuery, statusFilter],
+    queryFn: () => fetchCategoriesTree(activeTab, searchQuery, statusFilter),
   });
 
   // Visibility toggle mutation
@@ -634,10 +636,57 @@ export function CategoriesPanel() {
             className="pl-8 h-9"
           />
         </div>
-        <Button variant="outline" size="sm" className="h-9">
-          <Filter className="h-4 w-4 mr-1" />
-          Filters
-        </Button>
+        <div className="relative">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4 mr-1" />
+            Filters
+            {statusFilter !== 'all' && (
+              <span className="ml-1 bg-primary text-primary-foreground text-xs rounded-full px-1.5">1</span>
+            )}
+          </Button>
+          {showFilters && (
+            <div className="absolute top-full left-0 mt-1 w-[300px] bg-background border rounded-lg shadow-xl z-[100] p-4">
+              <h3 className="font-semibold mb-4">Filters</h3>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1 block">Status</label>
+                <div className="flex border rounded overflow-hidden">
+                  <button
+                    onClick={() => setStatusFilter('all')}
+                    className={cn("flex-1 py-1.5 text-sm", statusFilter === 'all' ? "bg-primary text-primary-foreground" : "bg-background")}
+                  >All</button>
+                  <button
+                    onClick={() => setStatusFilter('active')}
+                    className={cn("flex-1 py-1.5 text-sm border-l", statusFilter === 'active' ? "bg-primary text-primary-foreground" : "bg-background")}
+                  >Active</button>
+                  <button
+                    onClick={() => setStatusFilter('inactive')}
+                    className={cn("flex-1 py-1.5 text-sm border-l", statusFilter === 'inactive' ? "bg-primary text-primary-foreground" : "bg-background")}
+                  >Inactive</button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                >
+                  Reset
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setShowFilters(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
@@ -1100,7 +1149,7 @@ function flattenCategories(categories: Category[]): Category[] {
   return result;
 }
 
-async function fetchCategoriesTree(tab: CategoryTab, search: string): Promise<Category[]> {
+async function fetchCategoriesTree(tab: CategoryTab, search: string, statusFilter: 'all' | 'active' | 'inactive' = 'all'): Promise<Category[]> {
   const type = tab === 'services' ? 'Services' : 'Materials';
   const params = new URLSearchParams();
   params.set('type', type);
@@ -1110,7 +1159,12 @@ async function fetchCategoriesTree(tab: CategoryTab, search: string): Promise<Ca
   const response = await res.json();
   
   // Extract data array from response object
-  const data = Array.isArray(response) ? response : (response.data || []);
+  let data = Array.isArray(response) ? response : (response.data || []);
+  
+  // Apply status filter
+  if (statusFilter !== 'all') {
+    data = filterCategoriesByStatus(data, statusFilter === 'active');
+  }
   
   // Backend already returns data sorted by sort_order, no need to re-sort
   if (search) {
@@ -1118,6 +1172,17 @@ async function fetchCategoriesTree(tab: CategoryTab, search: string): Promise<Ca
   }
   
   return data;
+}
+
+function filterCategoriesByStatus(categories: Category[], active: boolean): Category[] {
+  return categories.filter(cat => {
+    const matches = cat.active === active;
+    if (cat.children) {
+      cat.children = filterCategoriesByStatus(cat.children, active);
+      return matches || cat.children.length > 0;
+    }
+    return matches;
+  }).map(cat => ({...cat}));
 }
 
 function filterCategoriesTree(categories: Category[], search: string): Category[] {

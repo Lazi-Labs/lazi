@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { apiUrl } from '@/lib/api';
 import { Package, ChevronRight } from 'lucide-react';
 
 interface Service {
@@ -120,7 +121,7 @@ async function fetchServices(categoryId: string | null, search: string): Promise
   if (categoryId) params.set('category', categoryId);
   if (search) params.set('search', search);
   
-  const res = await fetch(`https://api.lazilabs.com/pricebook/db/services?${params}`);
+  const res = await fetch(apiUrl(`/api/pricebook/db/services?${params}`));
   if (!res.ok) return [];
   return res.json();
 }

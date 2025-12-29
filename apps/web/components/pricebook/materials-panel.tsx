@@ -46,7 +46,7 @@ const defaultFilters: FilterState = {
   costMax: '',
   priceMin: '',
   priceMax: '',
-  status: 'active',
+  status: 'all',
   images: 'any',
   vendor: '',
 };
@@ -177,7 +177,7 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
               appliedFilters.priceMin,
               appliedFilters.priceMax,
               appliedFilters.vendor,
-              appliedFilters.status !== 'active' ? appliedFilters.status : '',
+              appliedFilters.status !== 'all' ? appliedFilters.status : '',
               appliedFilters.images !== 'any' ? appliedFilters.images : '',
             ].filter(Boolean).length;
             

@@ -29,12 +29,12 @@ const ENTITY_CONFIG = {
   materials: {
     masterTable: 'master.pricebook_materials',
     crmTable: 'crm.pricebook_material_edits',
-    stImageField: "image_url",
+    stImageField: "assets->0->>'url'",
   },
   equipment: {
     masterTable: 'master.pricebook_equipment',
     crmTable: 'crm.pricebook_equipment_edits',
-    stImageField: "image_url",
+    stImageField: "assets->0->>'url'",
   },
   categories: {
     masterTable: 'master.pricebook_categories',

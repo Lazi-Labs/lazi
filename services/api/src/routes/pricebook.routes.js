@@ -121,9 +121,11 @@ function createPricebookGetHandler(endpointFn) {
 router.get('/services', createPricebookListHandler(stEndpoints.services.list));
 router.get('/services/export', createExportHandler(stEndpoints.services.export));
 
-// Database-backed services list with filtering (uses raw schema)
+// Database-backed services list with filtering (queries master with CRM overrides)
 router.get('/db/services', async (req, res) => {
   const pool = getPool();
+  const tenantId = req.headers['x-tenant-id'] || process.env.SERVICE_TITAN_TENANT_ID || '3222348440';
+  
   try {
     const { 
       page = 1, 
@@ -136,91 +138,102 @@ router.get('/db/services', async (req, res) => {
       hoursMin,
       hoursMax,
       hasImages,
-      hasMaterials,
-      hasEquipment,
     } = req.query;
     
     const skip = (parseInt(page) - 1) * parseInt(pageSize);
     const take = parseInt(pageSize);
     
     // Build WHERE conditions
-    const conditions = [];
-    const params = [];
-    let paramIndex = 1;
+    const conditions = ['s.tenant_id = $1'];
+    const params = [tenantId];
+    let paramIndex = 2;
     
-    // Status filter
+    // Status filter (with CRM override)
     if (active !== undefined) {
-      conditions.push(`active = $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_active, s.active) = $${paramIndex++}`);
       params.push(active === 'true');
     }
     
-    // Search filter (code, name, description)
+    // Search filter (code, name, description with CRM overrides)
     if (search) {
-      conditions.push(`(code ILIKE $${paramIndex} OR display_name ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`);
+      conditions.push(`(
+        s.code ILIKE $${paramIndex} OR 
+        COALESCE(o.override_name, s.name) ILIKE $${paramIndex} OR 
+        COALESCE(o.override_description, s.description) ILIKE $${paramIndex}
+      )`);
       params.push(`%${search}%`);
       paramIndex++;
     }
     
-    // Price range filter
+    // Price range filter (with CRM override)
     if (priceMin) {
-      conditions.push(`price >= $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_price, s.price) >= $${paramIndex++}`);
       params.push(parseFloat(priceMin));
     }
     if (priceMax) {
-      conditions.push(`price <= $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_price, s.price) <= $${paramIndex++}`);
       params.push(parseFloat(priceMax));
-    }
-    
-    // Hours range filter
-    if (hoursMin) {
-      conditions.push(`hours >= $${paramIndex++}`);
-      params.push(parseFloat(hoursMin));
-    }
-    if (hoursMax) {
-      conditions.push(`hours <= $${paramIndex++}`);
-      params.push(parseFloat(hoursMax));
-    }
-    
-    // Has images filter
-    if (hasImages === 'true') {
-      conditions.push(`jsonb_array_length(COALESCE(assets, '[]'::jsonb)) > 0`);
-    } else if (hasImages === 'false') {
-      conditions.push(`jsonb_array_length(COALESCE(assets, '[]'::jsonb)) = 0`);
-    }
-    
-    // Has materials filter
-    if (hasMaterials === 'true') {
-      conditions.push(`jsonb_array_length(COALESCE(service_materials, '[]'::jsonb)) > 0`);
-    } else if (hasMaterials === 'false') {
-      conditions.push(`jsonb_array_length(COALESCE(service_materials, '[]'::jsonb)) = 0`);
-    }
-    
-    // Has equipment filter
-    if (hasEquipment === 'true') {
-      conditions.push(`jsonb_array_length(COALESCE(service_equipment, '[]'::jsonb)) > 0`);
-    } else if (hasEquipment === 'false') {
-      conditions.push(`jsonb_array_length(COALESCE(service_equipment, '[]'::jsonb)) = 0`);
     }
     
     // Category filter
     if (categoryId) {
-      const allCategoryIds = await getAllDescendantCategoryIds(categoryId);
-      const categoryConditions = allCategoryIds.map(id => `categories @> '[{"id": ${id}}]'::jsonb`).join(' OR ');
-      conditions.push(`(${categoryConditions})`);
+      conditions.push(`s.category_st_id = $${paramIndex++}`);
+      params.push(parseInt(categoryId));
     }
     
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    // Has images filter
+    if (hasImages === 'true') {
+      conditions.push(`(COALESCE(o.override_image_url, s.image_url) IS NOT NULL)`);
+    } else if (hasImages === 'false') {
+      conditions.push(`(COALESCE(o.override_image_url, s.image_url) IS NULL)`);
+    }
+    
+    const whereClause = conditions.join(' AND ');
     
     // Get total count
     const countResult = await pool.query(
-      `SELECT COUNT(*) as count FROM raw.st_pricebook_services ${whereClause}`,
+      `SELECT COUNT(*) as count 
+       FROM master.pricebook_services s
+       LEFT JOIN crm.pricebook_overrides o 
+         ON o.st_pricebook_id = s.st_id 
+         AND o.tenant_id = s.tenant_id
+         AND o.item_type = 'service'
+       WHERE ${whereClause}`,
       params
     );
     const total = parseInt(countResult.rows[0]?.count || 0);
     
-    // Get services
+    // Get services with CRM overrides applied
     const servicesResult = await pool.query(
-      `SELECT * FROM raw.st_pricebook_services ${whereClause} ORDER BY display_name ASC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
+      `SELECT 
+        s.id,
+        s.st_id,
+        s.tenant_id,
+        COALESCE(o.override_name, s.display_name, s.name) AS name,
+        COALESCE(o.override_description, s.description) AS description,
+        s.code,
+        COALESCE(o.override_active, s.active) AS active,
+        COALESCE(o.override_price, s.price) AS price,
+        COALESCE(o.override_cost, s.cost) AS cost,
+        s.taxable,
+        s.hours,
+        s.category_st_id,
+        COALESCE(o.override_image_url, s.s3_image_url) AS image_url,
+        COALESCE(o.override_business_unit_ids, '[]'::jsonb) AS business_unit_ids,
+        o.id AS override_id,
+        o.pending_sync,
+        o.internal_notes,
+        o.custom_tags,
+        s.last_synced_at,
+        s.updated_at
+       FROM master.pricebook_services s
+       LEFT JOIN crm.pricebook_overrides o 
+         ON o.st_pricebook_id = s.st_id 
+         AND o.tenant_id::VARCHAR = s.tenant_id::VARCHAR
+         AND o.item_type = 'service'
+       WHERE ${whereClause}
+       ORDER BY COALESCE(o.override_name, s.display_name, s.name) ASC 
+       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       [...params, take, skip]
     );
     const services = servicesResult.rows;
@@ -229,19 +242,20 @@ router.get('/db/services', async (req, res) => {
       id: s.id,
       stId: s.st_id.toString(),
       code: s.code || '',
-      name: s.display_name || '',
+      name: s.name || '',
+      displayName: s.name || '',
       description: s.description || '',
       price: parseFloat(s.price) || 0,
-      memberPrice: parseFloat(s.member_price) || 0,
-      addOnPrice: parseFloat(s.add_on_price) || 0,
-      durationHours: parseFloat(s.hours) || 0,
+      cost: parseFloat(s.cost) || 0,
       active: s.active ?? true,
       taxable: s.taxable ?? false,
-      account: s.account || '',
-      categories: s.categories || [],
-      defaultImageUrl: s.assets?.length > 0 ? `/images/db/services/${s.st_id}` : null,
-      hasMaterials: (s.service_materials?.length || 0) > 0,
-      hasEquipment: (s.service_equipment?.length || 0) > 0,
+      durationHours: parseFloat(s.hours) || 0,
+      categoryId: s.category_st_id,
+      defaultImageUrl: s.image_url ? `/images/db/services/${s.st_id}` : null,
+      businessUnitIds: s.business_unit_ids || [],
+      hasPendingChanges: s.pending_sync === true,
+      internalNotes: s.internal_notes,
+      customTags: s.custom_tags || [],
     }));
     
     res.json({
@@ -252,7 +266,7 @@ router.get('/db/services', async (req, res) => {
       hasMore: skip + take < total,
     });
   } catch (error) {
-    console.error('Error fetching services from DB:', error);
+    console.error('Error fetching services from master:', error);
     res.status(500).json({ error: 'Failed to fetch services', message: error.message });
   } finally {
     await pool.end();
@@ -431,10 +445,9 @@ router.delete('/services/:id', createDeleteHandler(stEndpoints.services.delete))
 // MATERIALS (with defaultAssetUrl)
 // ═══════════════════════════════════════════════════════════════
 
-// Database-backed materials list with filtering (uses raw schema)
+// Database-backed materials list with filtering (queries master with CRM overrides)
 router.get('/db/materials', async (req, res) => {
   const pool = getPool();
-  const { resolveImageUrls } = await import('../services/imageResolver.js');
   const tenantId = req.headers['x-tenant-id'] || process.env.SERVICE_TITAN_TENANT_ID || '3222348440';
   
   try {
@@ -455,94 +468,124 @@ router.get('/db/materials', async (req, res) => {
     const take = parseInt(pageSize);
     
     // Build WHERE conditions
-    const conditions = [];
-    const params = [];
-    let paramIndex = 1;
+    const conditions = ['m.tenant_id = $1'];
+    const params = [tenantId];
+    let paramIndex = 2;
     
-    // Active filter
+    // Active filter (with CRM override)
     if (active !== undefined) {
-      conditions.push(`active = $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_active, m.active) = $${paramIndex++}`);
       params.push(active === 'true');
     }
     
-    // Search filter
+    // Search filter (with CRM overrides)
     if (search) {
-      conditions.push(`(code ILIKE $${paramIndex} OR display_name ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`);
+      conditions.push(`(
+        m.code ILIKE $${paramIndex} OR 
+        COALESCE(o.override_name, m.name) ILIKE $${paramIndex} OR 
+        COALESCE(o.override_description, m.description) ILIKE $${paramIndex}
+      )`);
       params.push(`%${search}%`);
       paramIndex++;
     }
     
-    // Cost filter
+    // Cost filter (with CRM override)
     if (costMin) {
-      conditions.push(`cost >= $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_cost, m.cost) >= $${paramIndex++}`);
       params.push(parseFloat(costMin));
     }
     if (costMax) {
-      conditions.push(`cost <= $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_cost, m.cost) <= $${paramIndex++}`);
       params.push(parseFloat(costMax));
     }
     
-    // Price filter
+    // Price filter (with CRM override)
     if (priceMin) {
-      conditions.push(`price >= $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_price, m.price) >= $${paramIndex++}`);
       params.push(parseFloat(priceMin));
     }
     if (priceMax) {
-      conditions.push(`price <= $${paramIndex++}`);
+      conditions.push(`COALESCE(o.override_price, m.price) <= $${paramIndex++}`);
       params.push(parseFloat(priceMax));
     }
     
     // Has images filter
     if (hasImages === 'true') {
-      conditions.push(`jsonb_array_length(COALESCE(assets, '[]'::jsonb)) > 0`);
+      conditions.push(`(COALESCE(o.override_image_url, m.s3_image_url) IS NOT NULL)`);
     } else if (hasImages === 'false') {
-      conditions.push(`jsonb_array_length(COALESCE(assets, '[]'::jsonb)) = 0`);
+      conditions.push(`(COALESCE(o.override_image_url, m.s3_image_url) IS NULL)`);
     }
     
     // Category filter
     if (categoryId) {
-      const allCategoryIds = await getAllDescendantCategoryIds(categoryId);
-      const categoryConditions = allCategoryIds.map(id => `categories @> '${id}'::jsonb`).join(' OR ');
-      conditions.push(`(${categoryConditions})`);
+      conditions.push(`m.categories @> '[{"id": ${parseInt(categoryId)}}]'::jsonb`);
     }
     
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause = conditions.join(' AND ');
     
     // Get total count
     const countResult = await pool.query(
-      `SELECT COUNT(*) as count FROM raw.st_pricebook_materials ${whereClause}`,
+      `SELECT COUNT(*) as count 
+       FROM master.pricebook_materials m
+       LEFT JOIN crm.pricebook_overrides o 
+         ON o.st_pricebook_id = m.st_id 
+         AND o.tenant_id::VARCHAR = m.tenant_id::VARCHAR
+         AND o.item_type = 'material'
+       WHERE ${whereClause}`,
       params
     );
     const totalCount = parseInt(countResult.rows[0]?.count || 0);
     
-    // Get materials
+    // Get materials with CRM overrides applied
     const materialsResult = await pool.query(
-      `SELECT * FROM raw.st_pricebook_materials ${whereClause} ORDER BY display_name ASC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
+      `SELECT 
+        m.id,
+        m.st_id,
+        m.tenant_id,
+        m.code,
+        COALESCE(o.override_name, m.display_name, m.name) AS name,
+        COALESCE(o.override_description, m.description) AS description,
+        COALESCE(o.override_active, m.active) AS active,
+        COALESCE(o.override_price, m.price) AS price,
+        COALESCE(o.override_cost, m.cost) AS cost,
+        m.taxable,
+        m.categories,
+        COALESCE(o.override_image_url, m.s3_image_url) AS image_url,
+        m.primary_vendor,
+        o.id AS override_id,
+        o.pending_sync,
+        o.internal_notes,
+        o.custom_tags
+       FROM master.pricebook_materials m
+       LEFT JOIN crm.pricebook_overrides o 
+         ON o.st_pricebook_id = m.st_id 
+         AND o.tenant_id::VARCHAR = m.tenant_id::VARCHAR
+         AND o.item_type = 'material'
+       WHERE ${whereClause}
+       ORDER BY COALESCE(o.override_name, m.name) ASC 
+       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       [...params, take, skip]
     );
     const materials = materialsResult.rows;
-    
-    // Batch resolve images for all materials
-    const stIds = materials.map(m => m.st_id);
-    const imageMap = await resolveImageUrls('materials', stIds, tenantId);
     
     // Transform to expected format
     const data = materials.map(mat => ({
       id: mat.id,
       stId: mat.st_id.toString(),
       code: mat.code || '',
-      name: mat.display_name || '',
-      displayName: mat.display_name || '',
+      name: mat.name || '',
+      displayName: mat.name || '',
       description: mat.description || '',
       cost: parseFloat(mat.cost) || 0,
       price: parseFloat(mat.price) || 0,
-      memberPrice: parseFloat(mat.member_price) || 0,
       active: mat.active ?? true,
       taxable: mat.taxable ?? true,
-      primaryVendor: mat.primary_vendor || null,
-      assets: mat.assets || [],
-      image_url: imageMap[mat.st_id] || null,
-      defaultAssetUrl: mat.assets?.[0]?.url ? `/images/db/materials/${mat.st_id}` : null,
+      categories: mat.categories || [],
+      primaryVendor: mat.primary_vendor,
+      defaultImageUrl: mat.image_url ? `/images/db/materials/${mat.st_id}` : null,
+      hasPendingChanges: mat.pending_sync === true,
+      internalNotes: mat.internal_notes,
+      customTags: mat.custom_tags || [],
     }));
     
     res.json({

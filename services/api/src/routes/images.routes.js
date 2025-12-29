@@ -222,20 +222,25 @@ router.get('/db/:type/:id', async (req, res) => {
       );
       imagePath = result.rows[0]?.image_url;
     } else {
-      // Services, materials, equipment - get first image asset
+      // Services, materials, equipment - get S3 image URL from master tables
       const tableMap = {
-        services: 'raw.st_pricebook_services',
-        materials: 'raw.st_pricebook_materials',
-        equipment: 'raw.st_pricebook_equipment',
+        services: 'master.pricebook_services',
+        materials: 'master.pricebook_materials',
+        equipment: 'master.pricebook_equipment',
       };
+      const tenantId = req.headers['x-tenant-id'] || process.env.SERVICE_TITAN_TENANT_ID || '3222348440';
       const result = await pool.query(
-        `SELECT assets FROM ${tableMap[type]} WHERE st_id = $1`,
-        [id]
+        `SELECT s3_image_url, assets FROM ${tableMap[type]} WHERE st_id = $1 AND tenant_id = $2`,
+        [id, tenantId]
       );
-      const assets = result.rows[0]?.assets;
-      if (Array.isArray(assets)) {
-        const imageAsset = assets.find(a => a.type === 'Image' && a.url);
-        imagePath = imageAsset?.url;
+      // Prefer S3 URL, fallback to assets
+      imagePath = result.rows[0]?.s3_image_url;
+      if (!imagePath) {
+        const assets = result.rows[0]?.assets;
+        if (Array.isArray(assets)) {
+          const imageAsset = assets.find(a => a.type === 'Image' && a.url);
+          imagePath = imageAsset?.url;
+        }
       }
     }
 
@@ -243,10 +248,17 @@ router.get('/db/:type/:id', async (req, res) => {
       return res.status(404).json({ error: 'No image for this item', type, id });
     }
 
-    // Query database for stored image data
+    // If it's an S3 URL, redirect to it
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      res.set('Cache-Control', 'public, max-age=86400');
+      res.set('X-Source', 's3-redirect');
+      return res.redirect(302, imagePath);
+    }
+
+    // Query database for stored image data (for legacy data)
     let imageQuery;
     let tableName;
-    
+
     if (type === 'categories') {
       tableName = 'raw.st_pricebook_categories';
       imageQuery = `SELECT image_data, image_content_type FROM ${tableName} WHERE st_id = $1`;
@@ -254,23 +266,49 @@ router.get('/db/:type/:id', async (req, res) => {
       tableName = 'master.pricebook_subcategories';
       imageQuery = `SELECT image_data, image_content_type FROM ${tableName} WHERE st_id = $1`;
     } else {
-      tableName = `raw.st_pricebook_${type}`;
-      imageQuery = `SELECT image_data, image_content_type FROM ${tableName} WHERE st_id = $1`;
+      // Use master tables with tenant ID
+      const masterTableMap = {
+        services: 'master.pricebook_services',
+        materials: 'master.pricebook_materials',
+        equipment: 'master.pricebook_equipment',
+      };
+      tableName = masterTableMap[type];
+      const tenantId = req.headers['x-tenant-id'] || process.env.SERVICE_TITAN_TENANT_ID || '3222348440';
+      imageQuery = `SELECT image_data, image_content_type FROM ${tableName} WHERE st_id = $1 AND tenant_id = $2`;
+      try {
+        const dbResult = await pool.query(imageQuery, [id, tenantId]);
+        if (dbResult.rows.length > 0 && dbResult.rows[0].image_data) {
+          const { image_data, image_content_type } = dbResult.rows[0];
+          imageCache.set(cacheKey, {
+            data: image_data,
+            contentType: image_content_type || 'image/jpeg',
+            timestamp: Date.now(),
+          });
+          res.set('Content-Type', image_content_type || 'image/jpeg');
+          res.set('Cache-Control', 'public, max-age=86400');
+          res.set('X-Cache', 'MISS');
+          res.set('X-Source', 'database');
+          return res.send(image_data);
+        }
+      } catch (dbErr) {
+        console.error('Database image query error:', dbErr.message);
+      }
+      return res.status(404).json({ error: 'Image not found', type, id });
     }
 
     try {
       const dbResult = await pool.query(imageQuery, [id]);
-      
+
       if (dbResult.rows.length > 0 && dbResult.rows[0].image_data) {
         const { image_data, image_content_type } = dbResult.rows[0];
-        
+
         // Cache the image in memory
         imageCache.set(cacheKey, {
           data: image_data,
           contentType: image_content_type || 'image/jpeg',
           timestamp: Date.now(),
         });
-        
+
         res.set('Content-Type', image_content_type || 'image/jpeg');
         res.set('Cache-Control', 'public, max-age=86400');
         res.set('X-Cache', 'MISS');
@@ -280,14 +318,14 @@ router.get('/db/:type/:id', async (req, res) => {
     } catch (dbErr) {
       console.error('Database image query error:', dbErr.message);
     }
-    
+
     // Image not in database
-    return res.status(404).json({ 
+    return res.status(404).json({
       error: 'Image not found in database',
-      type, 
-      id, 
+      type,
+      id,
       path: imagePath,
-      hint: 'Run download-pricebook-images.js script to populate images'
+      hint: 'Image may need to be synced from ServiceTitan'
     });
 
   } catch (error) {

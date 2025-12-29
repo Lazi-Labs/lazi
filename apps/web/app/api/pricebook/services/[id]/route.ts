@@ -8,11 +8,17 @@ export async function GET(
 ) {
   try {
     const { id } = params;
-    
-    // Fetch from ST Automation database-backed endpoint for full service details with linked materials
-    const res = await fetch(`${ST_AUTOMATION_URL}/pricebook/db/services/${id}`, {
-      headers: { 'Content-Type': 'application/json' },
-      next: { revalidate: 60 },
+
+    // Get tenant ID from request headers or use default
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
+
+    // Fetch from ST Automation consolidated endpoint for full service details
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/services/${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
+      cache: 'no-store',
     });
     
     if (!res.ok) {
@@ -25,24 +31,64 @@ export async function GET(
     
     const data = await res.json();
     
-    // Transform image URLs to use frontend proxy
-    if (data.materials) {
-      data.materials = data.materials.map((m: any) => ({
-        ...m,
-        imageUrl: m.imageUrl ? `/api${m.imageUrl}` : null,
-      }));
-    }
-    if (data.equipment) {
-      data.equipment = data.equipment.map((e: any) => ({
-        ...e,
-        imageUrl: e.imageUrl ? `/api${e.imageUrl}` : null,
-      }));
-    }
-    if (data.defaultImageUrl) {
-      data.defaultImageUrl = `/api${data.defaultImageUrl}`;
-    }
+    // Transform image URLs - use directly if S3/http, otherwise proxy through frontend
+    const transformImageUrl = (url: string | null): string | null => {
+      if (!url) return null;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      return `/dashboard/api${url}`;
+    };
+
+    // Transform from snake_case backend to camelCase frontend
+    const transformed = {
+      id: data.id?.toString(),
+      stId: data.st_id?.toString(),
+      code: data.code || '',
+      name: data.name || data.display_name || '',
+      displayName: data.display_name || data.name || '',
+      description: data.description || '',
+      warranty: data.warranty?.description || '',
+      price: parseFloat(data.price) || 0,
+      memberPrice: parseFloat(data.member_price) || 0,
+      addOnPrice: parseFloat(data.add_on_price) || 0,
+      memberAddOnPrice: parseFloat(data.member_add_on_price) || 0,
+      durationHours: parseFloat(data.hours) || 0,
+      active: data.active ?? true,
+      taxable: data.taxable ?? false,
+      account: data.account || '',
+      categories: (data.categories || []).map((cat: any) => ({
+        id: cat.st_id || cat.id,
+        name: cat.name,
+        path: cat.name,
+      })),
+      materials: (data.materials || []).map((m: any) => ({
+        id: m.id?.toString() || m.st_id?.toString(),
+        materialId: m.st_id?.toString(),
+        code: m.code || '',
+        name: m.name || '',
+        description: m.description || '',
+        quantity: m.quantity || 1,
+        unitCost: parseFloat(m.cost) || 0,
+        vendorName: m.vendor_name || m.primary_vendor || '',
+        imageUrl: transformImageUrl(m.image_url),
+      })),
+      equipment: (data.equipment || []).map((e: any) => ({
+        id: e.id?.toString() || e.st_id?.toString(),
+        equipmentId: e.st_id?.toString(),
+        code: e.code || '',
+        name: e.name || '',
+        description: e.description || '',
+        quantity: e.quantity || 1,
+        unitCost: parseFloat(e.cost) || 0,
+        vendorName: e.vendor_name || e.primary_vendor || '',
+        imageUrl: transformImageUrl(e.image_url),
+      })),
+      upgrades: data.upgrades || [],
+      recommendations: data.recommendations || [],
+      defaultImageUrl: transformImageUrl(data.s3_image_url || data.image_url),
+      image_url: transformImageUrl(data.s3_image_url || data.image_url),
+    };
     
-    return NextResponse.json(data);
+    return NextResponse.json(transformed);
   } catch (error) {
     console.error('Error fetching service:', error);
     return NextResponse.json(

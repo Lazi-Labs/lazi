@@ -30,6 +30,186 @@ function getTenantId(req) {
 }
 
 // ============================================================================
+// GET /api/pricebook/materials
+// List materials with filtering, pagination, and CRM override support
+// ============================================================================
+
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const pool = getPool();
+    const tenantId = getTenantId(req);
+    const {
+      active = 'true',
+      search,
+      category_id,
+      sort_by = 'name',
+      sort_order = 'asc',
+      page = '1',
+      limit = '100',
+    } = req.query;
+
+    try {
+      // Build query with CRM override support
+      const params = [tenantId];
+      let whereConditions = ['m.tenant_id = $1'];
+
+      // Active filter with CRM override (default: show only active)
+      if (active === 'true') {
+        whereConditions.push('COALESCE(o.override_active, m.active) = true');
+      } else if (active === 'false') {
+        whereConditions.push('COALESCE(o.override_active, m.active) = false');
+      }
+      // If active === 'all', don't filter by active status
+
+      // Search filter with CRM override
+      if (search) {
+        params.push(`%${search}%`);
+        whereConditions.push(`(
+          COALESCE(o.override_name, m.name) ILIKE $${params.length} OR 
+          m.code ILIKE $${params.length} OR 
+          m.display_name ILIKE $${params.length}
+        )`);
+      }
+
+      // Category filter (materials use categories JSONB, not category_st_id)
+      if (category_id) {
+        params.push(parseInt(category_id, 10));
+        whereConditions.push(`m.categories @> $${params.length}::jsonb`);
+        // Update param to be JSONB array format
+        params[params.length - 1] = JSON.stringify([{ id: parseInt(category_id, 10) }]);
+      }
+
+      const whereClause = whereConditions.join(' AND ');
+
+      // Validate sort
+      const allowedSorts = ['name', 'code', 'price', 'cost', 'created_at', 'updated_at'];
+      const safeSort = allowedSorts.includes(sort_by) ? sort_by : 'name';
+      const safeOrder = sort_order.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+
+      // Get total count with CRM override join
+      const countResult = await pool.query(
+        `SELECT COUNT(*) 
+         FROM master.pricebook_materials m
+         LEFT JOIN crm.pricebook_overrides o 
+           ON o.st_pricebook_id = m.st_id 
+           AND o.tenant_id = m.tenant_id
+           AND o.item_type = 'material'
+         WHERE ${whereClause}`,
+        params
+      );
+      const total = parseInt(countResult.rows[0].count, 10);
+
+      // Get materials with pagination and CRM overrides
+      const pageNum = Math.max(1, parseInt(page, 10));
+      const limitNum = Math.min(500, Math.max(1, parseInt(limit, 10)));
+      const offset = (pageNum - 1) * limitNum;
+
+      params.push(limitNum, offset);
+
+      const query = `
+        SELECT 
+          m.id,
+          m.st_id,
+          m.code,
+          COALESCE(o.override_name, m.name) as name,
+          m.display_name,
+          COALESCE(o.override_description, m.description) as description,
+          COALESCE(o.override_price, m.price) as price,
+          m.member_price,
+          m.add_on_price,
+          COALESCE(o.override_cost, m.cost) as cost,
+          COALESCE(o.override_active, m.active) as active,
+          m.taxable,
+          m.unit_of_measure,
+          m.account,
+          COALESCE(o.override_image_url, m.s3_image_url) as image_url,
+          m.categories,
+          m.primary_vendor,
+          m.other_vendors,
+          m.st_created_on,
+          m.st_modified_on,
+          m.created_at,
+          m.updated_at,
+          o.id as override_id,
+          o.pending_sync as has_pending_changes,
+          o.internal_notes,
+          o.preferred_vendor,
+          o.reorder_threshold,
+          o.custom_tags
+        FROM master.pricebook_materials m
+        LEFT JOIN crm.pricebook_overrides o 
+          ON o.st_pricebook_id = m.st_id 
+          AND o.tenant_id = m.tenant_id
+          AND o.item_type = 'material'
+        WHERE ${whereClause}
+        ORDER BY COALESCE(o.override_name, m.name) ${safeOrder}
+        LIMIT $${params.length - 1} OFFSET $${params.length}
+      `;
+
+      const result = await pool.query(query, params);
+
+      res.json({
+        data: result.rows,
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      });
+    } finally {
+      await pool.end();
+    }
+  })
+);
+
+// ============================================================================
+// GET /api/pricebook/materials/:stId
+// Get single material by ServiceTitan ID with CRM overrides
+// ============================================================================
+
+router.get(
+  '/:stId',
+  asyncHandler(async (req, res) => {
+    const pool = getPool();
+    const tenantId = getTenantId(req);
+    const { stId } = req.params;
+
+    try {
+      const result = await pool.query(`
+        SELECT 
+          m.*,
+          COALESCE(o.override_name, m.name) as name,
+          COALESCE(o.override_description, m.description) as description,
+          COALESCE(o.override_price, m.price) as price,
+          COALESCE(o.override_cost, m.cost) as cost,
+          COALESCE(o.override_active, m.active) as active,
+          COALESCE(o.override_image_url, m.s3_image_url) as image_url,
+          o.id as override_id,
+          o.pending_sync as has_pending_changes,
+          o.internal_notes,
+          o.preferred_vendor as override_preferred_vendor,
+          o.reorder_threshold,
+          o.custom_tags
+        FROM master.pricebook_materials m
+        LEFT JOIN crm.pricebook_overrides o 
+          ON o.st_pricebook_id = m.st_id 
+          AND o.tenant_id = m.tenant_id
+          AND o.item_type = 'material'
+        WHERE m.st_id = $1 AND m.tenant_id = $2
+      `, [parseInt(stId, 10), tenantId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Material not found' });
+      }
+
+      res.json(result.rows[0]);
+    } finally {
+      await pool.end();
+    }
+  })
+);
+
+// ============================================================================
 // POST /api/pricebook/materials/sync-from-st
 // Fetch materials from ServiceTitan API and store in RAW table
 // ============================================================================

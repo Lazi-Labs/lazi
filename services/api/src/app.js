@@ -219,13 +219,26 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Parse cookies (for refresh tokens)
 app.use(cookieParser());
 
-// Rate limiting (if configured)
+// Rate limiting (if configured) - skip for internal requests from frontend
 if (config.rateLimit.maxRequests > 0) {
   const limiter = rateLimit({
     windowMs: config.rateLimit.windowMs,
     max: config.rateLimit.maxRequests,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+      // Skip rate limiting for internal requests from lazi-web container
+      const forwardedFor = req.headers['x-forwarded-for'] || '';
+      const realIp = req.headers['x-real-ip'] || '';
+      const host = req.hostname || '';
+      // Skip if request is from internal Docker network or localhost
+      return forwardedFor.includes('172.') || 
+             realIp.includes('172.') || 
+             host === 'lazi-api' ||
+             req.ip?.includes('172.') ||
+             req.ip === '127.0.0.1' ||
+             req.ip === '::1';
+    },
     message: {
       error: {
         code: 'RATE_LIMIT_EXCEEDED',
