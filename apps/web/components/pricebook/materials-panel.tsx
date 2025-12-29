@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Download, List, ChevronRight, Filter, ChevronLeft } from 'lucide-react';
@@ -12,6 +12,7 @@ import { MaterialDetailPage } from './material-detail-page';
 
 interface Material {
   id: string;
+  stId?: string;
   code: string;
   name: string;
   displayName: string;
@@ -53,6 +54,7 @@ const defaultFilters: FilterState = {
 
 export function MaterialsPanel({ selectedCategory, onCategorySelect }: MaterialsPanelProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const currentSection = searchParams.get('section');
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -359,7 +361,7 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
                   "flex items-center justify-between p-3 hover:bg-muted/50 cursor-pointer transition-colors",
                   selectedMaterialId === material.id && "bg-primary/5"
                 )}
-                onClick={() => { setSelectedMaterialId(material.id); setShowDetailPage(true); }}
+                onClick={() => { router.push(`/pricebook/materials/${material.stId || material.id}`); }}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {material.defaultImageUrl && (

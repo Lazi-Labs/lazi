@@ -253,7 +253,7 @@ export function MaterialDetailPage({
 
         {/* Form Content */}
         <div className="flex-1 overflow-auto">
-          <div className="flex h-full">
+          <div className="flex">
             {/* Left Form Fields */}
             <div className="flex-1 p-4 space-y-3 min-w-0">
               {/* CODE */}
@@ -505,64 +505,65 @@ export function MaterialDetailPage({
           {/* Vendors Section */}
           <div className="border-t mt-4">
             {/* Add Vendor Button */}
-            <div className="px-4 py-2">
+            <div className="px-4 py-3">
               <Button 
                 variant="default" 
                 size="sm" 
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-[#00c853] hover:bg-[#00a844] text-white font-medium"
                 onClick={() => setShowAddVendor(true)}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                ADD A VENDOR
+                ADD A VENDOR...
               </Button>
             </div>
 
             {/* Vendors Table Header */}
-            <div className="grid grid-cols-7 gap-2 px-4 py-2 bg-muted/50 text-xs font-medium text-muted-foreground border-y">
+            <div className="grid grid-cols-[200px_80px_120px_120px_80px_60px_40px] gap-2 px-4 py-2 text-xs text-muted-foreground border-b">
               <div></div>
-              <div>Preferred</div>
+              <div className="text-center">Preferred</div>
               <div>UPC Code</div>
               <div>Vendor part #</div>
-              <div>Pay</div>
-              <div>Active</div>
+              <div className="text-right">Pay</div>
+              <div className="text-center">Active</div>
               <div></div>
             </div>
 
-            {/* Vendor Rows */}
-            {vendors.length > 0 ? (
-              vendors.map((vendor: Vendor, idx: number) => (
-                <div 
-                  key={vendor.id || idx} 
-                  className="grid grid-cols-7 gap-2 px-4 py-2 items-center border-b hover:bg-muted/30"
-                >
+            {/* Primary Vendor Row */}
+            {material?.primaryVendor && (
+              <>
+                <div className="grid grid-cols-[200px_80px_120px_120px_80px_60px_40px] gap-2 px-4 py-3 items-center border-b hover:bg-muted/30">
                   <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{vendor.vendorName}</span>
+                    <Settings className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    <span className="text-sm font-medium">{material.primaryVendor.vendorName}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={vendor.preferred} />
-                    {vendor.preferred && <span className="text-xs text-green-600">UPC Code</span>}
+                  <div className="flex justify-center items-center gap-2">
+                    <Settings className="h-3 w-3 text-muted-foreground" />
+                    <div className="w-5 h-5 rounded-full bg-[#00c853] flex items-center justify-center">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
                   </div>
                   <div>
                     <Input 
-                      defaultValue={vendor.upcCode || ''} 
+                      defaultValue={material.primaryVendor.upcCode || ''} 
                       className="h-7 text-xs"
                       placeholder="UPC Code"
                     />
                   </div>
                   <div>
                     <Input 
-                      defaultValue={vendor.vendorPart || ''} 
+                      defaultValue={material.primaryVendor.vendorPart || ''} 
                       className="h-7 text-xs"
-                      placeholder="PVCD75"
+                      placeholder=""
                     />
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Settings className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm">{formatCurrency(vendor.cost)}</span>
+                  <div className="flex items-center justify-end gap-1">
+                    <Checkbox checked={true} className="h-4 w-4" />
+                    <span className="text-sm font-medium">${material.primaryVendor.cost?.toFixed(2) || '0.00'}</span>
                   </div>
-                  <div>
-                    <Switch checked={vendor.active ?? true} />
+                  <div className="flex justify-center">
+                    <div className="w-5 h-5 rounded-full bg-[#00c853] flex items-center justify-center">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
                   </div>
                   <div>
                     <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -570,37 +571,78 @@ export function MaterialDetailPage({
                     </Button>
                   </div>
                 </div>
+                {/* Vendor's part description row */}
+                <div className="px-4 py-2 flex items-center gap-2 text-sm text-muted-foreground border-b bg-muted/10">
+                  <Settings className="h-4 w-4 ml-6" />
+                  <span>Vendor's part description</span>
+                </div>
+              </>
+            )}
+
+            {/* Other Vendor Rows */}
+            {vendors.length > 0 ? (
+              vendors.map((vendor: Vendor, idx: number) => (
+                <div key={vendor.id || idx}>
+                  <div className="grid grid-cols-[200px_80px_120px_120px_80px_60px_40px] gap-2 px-4 py-3 items-center border-b hover:bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                      <span className="text-sm font-medium">{vendor.vendorName}</span>
+                    </div>
+                    <div className="flex justify-center items-center gap-2">
+                      <Settings className="h-3 w-3 text-muted-foreground" />
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center",
+                        vendor.preferred ? "bg-[#00c853]" : "border-2 border-muted-foreground/30"
+                      )}>
+                        {vendor.preferred && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                    </div>
+                    <div>
+                      <Input 
+                        defaultValue={vendor.upcCode || ''} 
+                        className="h-7 text-xs"
+                        placeholder="UPC Code"
+                      />
+                    </div>
+                    <div>
+                      <Input 
+                        defaultValue={vendor.vendorPart || ''} 
+                        className="h-7 text-xs"
+                        placeholder="Vendor code"
+                      />
+                    </div>
+                    <div className="flex items-center justify-end gap-1">
+                      <Checkbox checked={false} className="h-4 w-4" />
+                      <span className="text-sm">${vendor.cost?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="flex justify-center">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center",
+                        vendor.active ? "bg-[#00c853]" : "border-2 border-muted-foreground/30"
+                      )}>
+                        {vendor.active && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                    </div>
+                    <div>
+                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Vendor's part description row */}
+                  <div className="px-4 py-2 flex items-center gap-2 text-sm text-muted-foreground border-b bg-muted/10">
+                    <Settings className="h-4 w-4 ml-6" />
+                    <span>Vendor's part description</span>
+                  </div>
+                </div>
               ))
-            ) : (
+            ) : !material?.primaryVendor && (
               <div className="px-4 py-3 text-sm text-muted-foreground">
                 No vendors added yet
               </div>
             )}
-
-            {/* Vendor's part description */}
-            <div className="px-4 py-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Settings className="h-4 w-4" />
-              <span>Vendor's part description</span>
-            </div>
           </div>
         </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div className="border-t px-4 py-2 flex items-center justify-between bg-muted/30">
-        <div className="flex items-center gap-2">
-          <Checkbox id="showHide" />
-          <Label htmlFor="showHide" className="text-xs text-muted-foreground">
-            Show/Hide Inactive Vendors
-          </Label>
-        </div>
-        <Button 
-          onClick={form.handleSubmit((data) => saveMutation.mutate(data))}
-          disabled={saveMutation.isPending}
-          className="bg-muted hover:bg-muted/80 text-foreground"
-        >
-          {saveMutation.isPending ? 'Saving...' : 'Add Line'}
-        </Button>
       </div>
     </div>
   );

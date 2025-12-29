@@ -1,88 +1,127 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Mock material data for development
-const mockMaterial = {
-  id: 'mat-1',
-  stId: 'ST-MAT-001',
-  code: 'C40-0014',
-  name: 'Pipe Conduit Sch40 .75',
-  displayName: 'Pipe Conduit Sch40 .75',
-  description: 'Sch 40 Conduit Pipe 3/4"',
-  cost: 0.26,
-  price: 0.87,
-  memberPrice: 0.75,
-  margin: 70,
-  taxPercent: 0,
-  skuPercent: 0,
-  active: true,
-  taxable: true,
-  chargeableByDefault: true,
-  trackStock: false,
-  defaultImageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop',
-  category: 'pipe-fittings-34',
-  categoryPath: 'Perfect Catch > Pipe & Fittings > 3/4"',
-  contact: '',
-  phone: '',
-  email: '',
-  primaryVendor: {
-    id: 'vendor-1',
-    vendorName: 'City Electric',
-    vendorId: 1,
-    cost: 0.26,
-    vendorPart: 'PVCD75',
-    upcCode: '',
-    preferred: true,
-    active: true,
-  },
-  vendors: [
-    {
-      id: 'vendor-1',
-      vendorName: 'City Electric',
-      vendorId: 1,
-      cost: 0.26,
-      vendorPart: 'PVCD75',
-      upcCode: '',
-      preferred: true,
-      active: true,
-    },
-  ],
-};
+const ST_AUTOMATION_URL = process.env.NEXT_INTERNAL_API_URL || process.env.ST_AUTOMATION_URL || 'http://lazi-api:3001';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  
-  // Return mock data with the requested ID
-  return NextResponse.json({
-    ...mockMaterial,
-    id,
-  });
+  try {
+    const { id } = params;
+
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
+
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/materials/${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
+      cache: 'no-store',
+    });
+    
+    if (!res.ok) {
+      console.error('Failed to fetch material:', res.status, await res.text());
+      return NextResponse.json(
+        { error: 'Material not found' },
+        { status: 404 }
+      );
+    }
+    
+    const data = await res.json();
+    
+    const transformImageUrl = (url: string | null): string | null => {
+      if (!url) return null;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      return `/dashboard/api${url}`;
+    };
+
+    // Transform from snake_case backend to camelCase frontend
+    const transformed = {
+      id: data.id?.toString(),
+      stId: data.st_id?.toString(),
+      code: data.code || '',
+      name: data.name || data.display_name || '',
+      displayName: data.display_name || data.name || '',
+      description: data.description || '',
+      cost: parseFloat(data.cost) || 0,
+      price: parseFloat(data.price) || 0,
+      memberPrice: parseFloat(data.member_price) || 0,
+      addOnPrice: parseFloat(data.add_on_price) || 0,
+      active: data.active ?? true,
+      taxable: data.taxable ?? false,
+      unitOfMeasure: data.unit_of_measure || '',
+      account: data.account || '',
+      categories: (data.categories || []).map((cat: any) => ({
+        id: cat.st_id || cat.id,
+        name: cat.name,
+        path: cat.name,
+      })),
+      primaryVendor: data.primary_vendor ? {
+        id: data.primary_vendor.vendorId?.toString(),
+        vendorName: data.primary_vendor.vendorName || data.primary_vendor.vendor_name || '',
+        vendorId: data.primary_vendor.vendorId || data.primary_vendor.vendor_id,
+        cost: parseFloat(data.primary_vendor.cost) || 0,
+        vendorPart: data.primary_vendor.vendorPart || data.primary_vendor.vendor_part || '',
+        preferred: true,
+        active: true,
+      } : null,
+      vendors: (data.other_vendors || []).map((v: any) => ({
+        id: v.vendorId?.toString() || v.vendor_id?.toString(),
+        vendorName: v.vendorName || v.vendor_name || '',
+        vendorId: v.vendorId || v.vendor_id,
+        cost: parseFloat(v.cost) || 0,
+        vendorPart: v.vendorPart || v.vendor_part || '',
+        preferred: false,
+        active: true,
+      })),
+      defaultImageUrl: transformImageUrl(data.s3_image_url || data.image_url),
+      overrideId: data.override_id,
+      hasPendingChanges: data.has_pending_changes || false,
+      internalNotes: data.internal_notes,
+      preferredVendor: data.override_preferred_vendor || data.preferred_vendor,
+      reorderThreshold: data.reorder_threshold,
+      customTags: data.custom_tags || [],
+    };
+    
+    return NextResponse.json(transformed);
+  } catch (error) {
+    console.error('Error fetching material:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch material' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  const body = await request.json();
-  
-  // Mock update - return merged data
-  return NextResponse.json({
-    ...mockMaterial,
-    ...body,
-    id,
-    updatedAt: new Date().toISOString(),
-  });
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
-  
-  // Mock delete
-  return NextResponse.json({ success: true, id });
+  try {
+    const { id } = params;
+    const body = await request.json();
+    const tenantId = request.headers.get('x-tenant-id') || '3222348440';
+    
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/materials/${id}`, {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
+      body: JSON.stringify(body),
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to update material');
+    }
+    
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error updating material:', error);
+    return NextResponse.json(
+      { error: 'Failed to update material' },
+      { status: 500 }
+    );
+  }
 }

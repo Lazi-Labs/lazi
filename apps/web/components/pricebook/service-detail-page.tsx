@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -577,7 +578,13 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                         m.code.toLowerCase().includes(materialSearch.toLowerCase())
                       )
                       .map((material) => (
-                        <MaterialRow key={material.id} material={material} />
+                        <MaterialRow 
+                          key={material.id} 
+                          material={material} 
+                          onNavigate={(materialId) => {
+                            window.location.href = `/dashboard/pricebook/materials/${materialId}`;
+                          }}
+                        />
                       ))
                   ) : (
                     <div className="p-8 text-center text-muted-foreground text-sm">
@@ -820,7 +827,13 @@ function PriceField({ label, value, onChange }: { label: string; value?: number;
   );
 }
 
-function MaterialRow({ material }: { material: MaterialLineItem }) {
+function MaterialRow({ material, onNavigate }: { material: MaterialLineItem; onNavigate?: (materialId: string) => void }) {
+  const handleClick = () => {
+    if (material.materialId && onNavigate) {
+      onNavigate(material.materialId);
+    }
+  };
+
   return (
     <div className="grid grid-cols-[auto_1fr_auto_80px_80px_auto_1fr_auto] gap-2 px-2 py-2 items-center hover:bg-muted/30">
       {/* Image */}
@@ -856,8 +869,14 @@ function MaterialRow({ material }: { material: MaterialLineItem }) {
         ${material.unitCost.toFixed(2)}
       </div>
 
-      {/* Arrow */}
-      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      {/* Arrow - Clickable to navigate to material detail */}
+      <button 
+        onClick={handleClick}
+        className="p-1 rounded hover:bg-muted cursor-pointer"
+        title="View material details"
+      >
+        <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+      </button>
 
       {/* Vendor */}
       <div className="text-xs text-muted-foreground truncate">
