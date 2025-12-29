@@ -1,0 +1,25 @@
+{
+  "name": "lazi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LAZI AI - Field Service Management Platform",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@lazi/web",
+    "dev:api": "turbo run dev --filter=@lazi/api",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "docker:up": "docker-compose -f infrastructure/docker/docker-compose.yml up -d",
+    "docker:tooling": "docker-compose -f infrastructure/docker/docker-compose.tooling.yml up -d",
+    "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down",
+    "setup": "./scripts/setup.sh"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

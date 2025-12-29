@@ -1,0 +1,188 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:17:41.398Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": [
+    {
+      "id": 53012629,
+      "type": "Discount",
+      "code": "DISCOUNT-0010",
+      "displayName": "Customer Discount 5% Off",
+      "description": "We appreciate your business and want to offer you a discount on our standard services",
+      "amountType": "Percentage",
+      "amount": 0.05,
+      "limit": 0,
+      "taxable": false,
+      "categories": [
+        53286184
+      ],
+      "hours": 0,
+      "assets": [
+        {
+          "alias": null,
+          "fileName": "6858221c-2f60-4eb7-bc50-c1f673cb466b.jpeg",
+          "isDefault": false,
+          "type": "Image",
+          "url": "Images/PriceModifier/6858221c-2f60-4eb7-bc50-c1f673cb466b.jpeg"
+        }
+      ],
+      "account": "Discounts / Refunds Given",
+      "crossSaleGroup": null,
+      "active": true,
+      "bonus": 0,
+      "commissionBonus": 0,
+      "paysCommission": false,
+      "excludeFromPayroll": false,
+      "externalData": [],
+      "budgetCostCode": null,
+      "budgetCostType": null
+    },
+    {
+      "id": 53287945,
+      "type": "Discount",
+      "code": "DISCOUNT-0030",
+      "displayName": "Customer Discount 15% Off",
+      "description": "Customer Discount 15% Off",
+      "amountType": "Percentage",
+      "amount": 0.15,
+      "limit": 0,
+      "taxable": false,
+      "categories": [
+        53286184
+      ],
+      "hours": 0,
+      "assets": [
+        {
+          "alias": null,
+          "fileName": "a3fa67a0-b517-4f43-8ce4-3de46eb3c8a5.png",
+          "isDefault": false,
+          "type": "Image",
+          "url": "Images/PriceModifier/a3fa67a0-b517-4f43-8ce4-3de46eb3c8a5.png"
+        }
+      ],
+      "account": "Discounts / Refunds Given",
+      "crossSaleGroup": null,
+      "active": true,
+      "bonus": 0,
+      "commissionBonus": 0,
+      "paysCommission": false,
+      "excludeFromPayroll": false,
+      "externalData": [],
+      "budgetCostCode": null,
+      "budgetCostType": null
+    },
+    {
+      "id": 53297559,
+      "type": "Discount",
+      "code": "DISCOUNT-0020",
+      "displayName": "Customer Discount 10% Off",
+      "description": "10% off you entire service",
+      "amountType": "Percentage",
+      "amount": 0.1,
+      "limit": 0,
+      "taxable": false,
+      "categories": [
+        53286184
+      ],
+      "hours": 0,
+      "assets": [
+        {
+          "alias": null,
+          "fileName": "e3c976e9-3097-4dd7-b401-9d4ca48c6a00.jpeg",
+          "isDefault": false,
+          "type": "Image",
+          "url": "Images/PriceModifier/e3c976e9-3097-4dd7-b401-9d4ca48c6a00.jpeg"
+        }
+      ],
+      "account": "Discounts / Refunds Given",
+      "crossSaleGroup": null,
+      "active": true,
+      "bonus": 0,
+      "commissionBonus": 0,
+      "paysCommission": false,
+      "excludeFromPayroll": false,
+      "externalData": [],
+      "budgetCostCode": null,
+      "budgetCostType": null
+    },
+    {
+      "id": 58076423,
+      "type": "Discount",
+      "code": "Summer-Special",
+      "displayName": "Gas Heater Special",
+      "description": "Summer discount gas heater free installation.",
+      "amountType": "Fixed",
+      "amount": 200,
+      "limit": 0,
+      "taxable": false,
+      "categories": [],
+      "hours": 0,
+      "assets": [],
+      "account": "Discounts / Refunds Given",
+      "crossSaleGroup": null,
+      "active": true,
+      "bonus": 0,
+      "commissionBonus": 0,
+      "paysCommission": false,
+      "excludeFromPayroll": false,
+      "externalData": [],
+      "budgetCostCode": null,
+      "budgetCostType": null
+    },
+    {
+      "id": 59130290,
+      "type": "Discount",
+      "code": "MILLITARY",
+      "displayName": "Military Discount",
+      "description": "Thank you for your service",
+      "amountType": "Percentage",
+      "amount": 0.1,
+      "limit": 250,
+      "taxable": false,
+      "categories": [
+        53286184
+      ],
+      "hours": 0,
+      "assets": [],
+      "account": "Discounts / Refunds Given",
+      "crossSaleGroup": null,
+      "active": true,
+      "bonus": 0,
+      "commissionBonus": 0,
+      "paysCommission": false,
+      "excludeFromPayroll": false,
+      "externalData": [],
+      "budgetCostCode": null,
+      "budgetCostType": null
+    },
+    {
+      "id": 59415827,
+      "type": "Fee",
+      "code": "Credit Card",
+      "displayName": "Credit Card Processing Fee 3%",
+      "description": "Credit Card Processing Fee 3%",
+      "amountType": "Percentage",
+      "amount": 0.03,
+      "limit": 0,
+      "taxable": false,
+      "categories": [
+        24751
+      ],
+      "hours": 0,
+      "assets": [],
+      "account": "INCOME-Sales",
+      "crossSaleGroup": null,
+      "active": true,
+      "bonus": 0,
+      "commissionBonus": 0,
+      "paysCommission": false,
+      "excludeFromPayroll": false,
+      "externalData": [],
+      "budgetCostCode": null,
+      "budgetCostType": null
+    }
+  ]
+}

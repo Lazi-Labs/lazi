@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:18:29.972Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": {
+    "summary": "Current Problem: Panel Needs to be upgraded to 200AMPs for future equipment. \n\n",
+    "customFields": [],
+    "externalData": null,
+    "id": 70636,
+    "jobNumber": "70636",
+    "projectId": null,
+    "customerId": 2023488,
+    "locationId": 2023493,
+    "jobStatus": "Canceled",
+    "completedOn": "2024-07-08T15:19:49.627372Z",
+    "businessUnitId": 1308,
+    "jobTypeId": 70397,
+    "priority": "Normal",
+    "campaignId": 33800,
+    "appointmentCount": 1,
+    "firstAppointmentId": 70637,
+    "lastAppointmentId": 70637,
+    "recallForId": null,
+    "warrantyId": null,
+    "jobGeneratedLeadSource": {
+      "jobId": null,
+      "employeeId": null
+    },
+    "noCharge": false,
+    "notificationsEnabled": true,
+    "createdOn": "2024-07-08T15:13:31.9393795Z",
+    "createdById": 26,
+    "modifiedOn": "2024-07-08T15:19:49.6373995Z",
+    "tagTypeIds": [
+      587
+    ],
+    "leadCallId": null,
+    "partnerLeadCallId": null,
+    "bookingId": null,
+    "soldById": null,
+    "customerPo": null,
+    "invoiceId": 70639,
+    "membershipId": null,
+    "total": 0,
+    "createdFromEstimateId": null,
+    "estimateIds": []
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:16:44.931Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": {
+    "id": 73905,
+    "active": true,
+    "name": "Maureen Boucher",
+    "type": "Residential",
+    "address": {
+      "street": "12205 State Street",
+      "unit": null,
+      "city": "Tampa",
+      "state": "FL",
+      "zip": "33635",
+      "country": "USA",
+      "latitude": 28.024844,
+      "longitude": -82.635615
+    },
+    "customFields": [],
+    "balance": 0,
+    "taxExempt": false,
+    "tagTypeIds": [],
+    "doNotMail": false,
+    "doNotService": false,
+    "nationalAccount": false,
+    "createdOn": "2024-07-08T17:41:53.3162722Z",
+    "createdById": 4617,
+    "modifiedOn": "2024-07-08T17:41:53.450599Z",
+    "mergedToId": null,
+    "paymentTermId": 55298,
+    "creditLimit": null,
+    "creditLimitBalance": null,
+    "externalData": null
+  }
+}

@@ -1,0 +1,305 @@
+{
+  "id": "pricebook-services",
+  "name": "Pricebook Services Pipeline",
+  "description": "Complete data flow for pricebook services from ServiceTitan to frontend",
+  "version": "1.0.0",
+  "createdAt": "2024-12-26T06:30:00Z",
+  "updatedAt": "2024-12-26T06:30:00Z",
+  "metadata": {
+    "category": "pricebook",
+    "isTemplate": false,
+    "tags": ["pricebook", "services", "servicetitan", "active"]
+  },
+  "nodes": [
+    {
+      "id": "servicetitan-api",
+      "type": "apiSource",
+      "position": { "x": 50, "y": 200 },
+      "data": {
+        "label": "ServiceTitan",
+        "description": "Pricebook Services API",
+        "config": {
+          "provider": "servicetitan",
+          "domain": "pricebook",
+          "endpoint": "/pricebook/v2/tenant/3222348440/services",
+          "method": "GET",
+          "auth": "OAuth2",
+          "pagination": {
+            "type": "offset",
+            "pageSize": 1000
+          }
+        },
+        "liveData": {
+          "status": "connected",
+          "lastFetch": "2024-12-26T05:42:34Z"
+        }
+      }
+    },
+    {
+      "id": "sync-script",
+      "type": "trigger",
+      "position": { "x": 250, "y": 100 },
+      "data": {
+        "label": "Sync Script",
+        "description": "sync-pricebook-services-raw.js",
+        "config": {
+          "script": "/app/scripts/sync-pricebook-services-raw.js",
+          "schedule": "manual",
+          "runtime": "Node.js"
+        },
+        "liveData": {
+          "lastRun": "2024-12-26T05:42:34Z",
+          "duration": "104.14s",
+          "status": "completed"
+        }
+      }
+    },
+    {
+      "id": "raw-table",
+      "type": "database",
+      "position": { "x": 450, "y": 200 },
+      "data": {
+        "label": "raw.st_pricebook_services",
+        "description": "Raw ServiceTitan data",
+        "config": {
+          "schema": "raw",
+          "table": "st_pricebook_services",
+          "operation": "UPSERT",
+          "conflictKey": ["st_id"],
+          "columns": [
+            "st_id", "tenant_id", "code", "display_name",
+            "description", "price", "member_price", "add_on_price",
+            "hours", "active", "taxable", "categories",
+            "service_materials", "service_equipment", "full_data"
+          ]
+        },
+        "liveData": {
+          "rowCount": 2161,
+          "lastSync": "2024-12-26T05:42:34Z",
+          "status": "synced"
+        }
+      }
+    },
+    {
+      "id": "transform",
+      "type": "transform",
+      "position": { "x": 650, "y": 100 },
+      "data": {
+        "label": "Transform",
+        "description": "Data normalization",
+        "config": {
+          "type": "SQL",
+          "mappings": [
+            { "from": "display_name", "to": "name" },
+            { "from": "created_on", "to": "st_created_on" },
+            { "from": "modified_on", "to": "st_modified_on" }
+          ],
+          "defaults": {
+            "active": true,
+            "taxable": true,
+            "price": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "master-table",
+      "type": "database",
+      "position": { "x": 850, "y": 200 },
+      "data": {
+        "label": "master.pricebook_services",
+        "description": "Normalized business data",
+        "config": {
+          "schema": "master",
+          "table": "pricebook_services",
+          "operation": "UPSERT",
+          "conflictKey": ["st_id", "tenant_id"],
+          "indexes": [
+            "idx_pricebook_services_tenant",
+            "idx_pricebook_services_active",
+            "idx_pricebook_services_category"
+          ]
+        },
+        "liveData": {
+          "rowCount": 2161,
+          "lastSync": "2024-12-26T05:42:34Z",
+          "status": "synced"
+        }
+      }
+    },
+    {
+      "id": "api-endpoint",
+      "type": "apiSource",
+      "position": { "x": 1050, "y": 150 },
+      "data": {
+        "label": "REST API",
+        "description": "/pricebook/db/services",
+        "config": {
+          "provider": "lazi-api",
+          "domain": "pricebook",
+          "endpoint": "/pricebook/db/services",
+          "method": "GET",
+          "features": [
+            "pagination",
+            "search",
+            "filters",
+            "category-hierarchy"
+          ]
+        },
+        "liveData": {
+          "status": "healthy",
+          "responseTime": "45ms",
+          "requests24h": 1247
+        }
+      }
+    },
+    {
+      "id": "frontend-services",
+      "type": "frontend",
+      "position": { "x": 1250, "y": 200 },
+      "data": {
+        "label": "Services Panel",
+        "description": "Pricebook UI",
+        "config": {
+          "component": "ServicesPanel",
+          "page": "/dashboard/pricebook?section=services",
+          "hooks": ["useQuery"],
+          "features": [
+            "list-view",
+            "detail-view",
+            "search",
+            "filters",
+            "pagination"
+          ]
+        },
+        "liveData": {
+          "activeUsers": 3,
+          "pageViews24h": 156
+        }
+      }
+    },
+    {
+      "id": "frontend-detail",
+      "type": "frontend",
+      "position": { "x": 1250, "y": 300 },
+      "data": {
+        "label": "Service Detail",
+        "description": "Individual service page",
+        "config": {
+          "component": "ServiceDetailPage",
+          "endpoint": "/pricebook/db/services/:id",
+          "idType": "stId"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-st-sync",
+      "source": "servicetitan-api",
+      "target": "sync-script",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { 
+        "label": "fetch",
+        "description": "Paginated API calls (1000/page)"
+      }
+    },
+    {
+      "id": "e-sync-raw",
+      "source": "sync-script",
+      "target": "raw-table",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { 
+        "label": "insert/update",
+        "description": "2,161 records synced"
+      }
+    },
+    {
+      "id": "e-raw-transform",
+      "source": "raw-table",
+      "target": "transform",
+      "type": "dataFlow",
+      "data": { 
+        "label": "trigger",
+        "description": "Manual SQL execution"
+      }
+    },
+    {
+      "id": "e-transform-master",
+      "source": "transform",
+      "target": "master-table",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { 
+        "label": "upsert",
+        "description": "ON CONFLICT (st_id, tenant_id)"
+      }
+    },
+    {
+      "id": "e-master-api",
+      "source": "master-table",
+      "target": "api-endpoint",
+      "type": "dataFlow",
+      "data": { 
+        "label": "query",
+        "description": "SELECT with filters"
+      }
+    },
+    {
+      "id": "e-api-frontend",
+      "source": "api-endpoint",
+      "target": "frontend-services",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { 
+        "label": "fetch",
+        "description": "React Query + pagination"
+      }
+    },
+    {
+      "id": "e-api-detail",
+      "source": "api-endpoint",
+      "target": "frontend-detail",
+      "type": "dataFlow",
+      "data": { 
+        "label": "fetch by ID",
+        "description": "GET /services/:stId"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "sync-from-st",
+      "label": "Sync from ServiceTitan",
+      "description": "Run sync-pricebook-services-raw.js",
+      "icon": "refresh",
+      "command": "docker exec lazi-api node /app/scripts/sync-pricebook-services-raw.js",
+      "confirmRequired": true
+    },
+    {
+      "id": "sync-to-master",
+      "label": "Sync Raw → Master",
+      "description": "Execute SQL INSERT...ON CONFLICT",
+      "icon": "arrow-right",
+      "endpoint": "/api/pricebook/services/sync-master",
+      "method": "POST"
+    },
+    {
+      "id": "view-services",
+      "label": "Open Services Panel",
+      "description": "Navigate to pricebook services page",
+      "icon": "external-link",
+      "url": "/dashboard/pricebook?section=services"
+    }
+  ],
+  "stats": {
+    "totalRecords": 2161,
+    "activeRecords": 2161,
+    "lastFullSync": "2024-12-26T05:42:34Z",
+    "syncDuration": "104.14s",
+    "dataFreshness": "current",
+    "apiHealth": "healthy"
+  }
+}

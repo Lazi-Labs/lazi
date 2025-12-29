@@ -1,0 +1,1676 @@
+{
+  "sourceFile": "tenant-dispatch-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/dispatch/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Dispatch",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "AppointmentAssignments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/appointment-assignments",
+          "operationId": "AppointmentAssignments_GetList",
+          "summary": "Gets a list of appointment assignments",
+          "description": "Gets a list of appointment assignments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appointmentIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Dispatch.V2.AppointmentAssignmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/appointment-assignments/assign-technicians",
+          "operationId": "AppointmentAssignments_AssignTechnicians",
+          "summary": "Assigns the list of technicians to the appointment",
+          "description": "Assigns the list of technicians to the appointment",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.AssignTechniciansRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/appointment-assignments/unassign-technicians",
+          "operationId": "AppointmentAssignments_UnassignTechnicians",
+          "summary": "Unassigns the list of technicians from the appointment",
+          "description": "Unassigns the list of technicians from the appointment",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.UnassignTechniciansRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ArrivalWindows",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/arrival-windows",
+          "operationId": "ArrivalWindows_GetList",
+          "summary": "ArrivalWindows_GetList",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Dispatch.V2.ArrivalWindowResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/arrival-windows",
+          "operationId": "ArrivalWindows_Create",
+          "summary": "ArrivalWindows_Create",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateArrivalWindowRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.ArrivalWindowResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/arrival-windows/{id}",
+          "operationId": "ArrivalWindows_Get",
+          "summary": "ArrivalWindows_Get",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.ArrivalWindowResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/arrival-windows/{id}",
+          "operationId": "ArrivalWindows_Update",
+          "summary": "ArrivalWindows_Update",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.UpdateArrivalWindowRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.ArrivalWindowResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/arrival-windows/{id}/activated",
+          "operationId": "ArrivalWindows_Activated",
+          "summary": "ArrivalWindows_Activated",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.SetArrivalWindowStatusRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/arrival-windows/configuration",
+          "operationId": "ArrivalWindows_GetConfiguration",
+          "summary": "ArrivalWindows_GetConfiguration",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.ArrivalWindowConfigurationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/arrival-windows/configuration",
+          "operationId": "ArrivalWindows_UpdatedConfiguration",
+          "summary": "ArrivalWindows_UpdatedConfiguration",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.UpdateArrivalWindowConfigurationRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.ArrivalWindowConfigurationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "BusinessHour",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/business-hours",
+          "operationId": "BusinessHour_GetList",
+          "summary": "Gets the business hours.",
+          "description": "Gets the business hours.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.BusinessHourModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/business-hours",
+          "operationId": "BusinessHour_Create",
+          "summary": "BusinessHour_Create",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateBusinessHourRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.CreateBusinessHourResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Capacity",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/capacity",
+          "operationId": "Capacity_GetList",
+          "summary": "Capacity_GetList",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CapacityRequestArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.CapacityResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/appointment-assignments",
+          "operationId": "Export_AppointmentAssignments",
+          "summary": "Provides export feed for appointment assignments",
+          "description": "Provides export feed for appointment assignments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Dispatch.V2.ExportAppointmentAssignmentsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gps",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/gps-provider/{gps_provider}/gps-pings",
+          "operationId": "Gps_Create",
+          "summary": "Creates new gps ping.",
+          "description": "Creates new gps ping.",
+          "pathParams": [
+            {
+              "name": "gps_provider",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "NonJobAppointments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/non-job-appointments",
+          "operationId": "NonJobAppointments_GetList",
+          "summary": "Gets a list of non-job appointments",
+          "description": "Gets a list of non-job appointments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "startsOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "startsOnOrBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "timesheetCodeId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "activeOnly",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "showOnTechnicianSchedule",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Dispatch.V2.NonJobAppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/non-job-appointments",
+          "operationId": "NonJobAppointments_Create",
+          "summary": "Create a new non-job appointment",
+          "description": "Create a new non-job appointment",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateNonJobAppointmentRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.Contracts.NonJobAppointment.CreateNonJobAppointmentResult"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/non-job-appointments/{id}",
+          "operationId": "NonJobAppointments_Delete",
+          "summary": "Delete non-job appointment",
+          "description": "Delete non-job appointment",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.Contracts.NonJobAppointment.DeleteNonJobAppointmentResult"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/non-job-appointments/{id}",
+          "operationId": "NonJobAppointments_Get",
+          "summary": "NonJobAppointments_Get",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.GetNonJobAppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/non-job-appointments/{id}",
+          "operationId": "NonJobAppointments_Update",
+          "summary": "Update an existing non-job appointment",
+          "description": "Update an existing non-job appointment",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.NonJobAppointmentUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.GetNonJobAppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Team",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/teams",
+          "operationId": "Team_GetList",
+          "summary": "Gets a list of teams",
+          "description": "Gets a list of teams",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "includeInactive",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Dispatch.V2.TeamResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/teams",
+          "operationId": "Team_Create",
+          "summary": "Creates new team",
+          "description": "Creates new team",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateTeamRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.CreateTeamResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/teams/{id}",
+          "operationId": "Team_Delete",
+          "summary": "Delete team",
+          "description": "Delete team",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/teams/{id}",
+          "operationId": "Team_Get",
+          "summary": "Gets a specific team",
+          "description": "Gets a specific team",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.TeamResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "TechnicianShifts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/technician-shifts",
+          "operationId": "TechnicianShifts_GetList",
+          "summary": "Gets a list of technician shifts",
+          "description": "Gets a list of technician shifts",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "startsOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "endsOnOrBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "shiftType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "titleContains",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "noteContains",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Dispatch.V2.TechnicianShiftResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/technician-shifts",
+          "operationId": "TechnicianShifts_Create",
+          "summary": "Creates new Technician Shift",
+          "description": "Creates new Technician Shift",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateTechnicianShiftRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.TechnicianShiftCreateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/technician-shifts/{id}",
+          "operationId": "TechnicianShifts_Delete",
+          "summary": "Deletes the specified technician shift",
+          "description": "Deletes the specified technician shift",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.Contracts.TechnicianShift.DeleteTechnicianShiftResult"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/technician-shifts/{id}",
+          "operationId": "TechnicianShifts_Get",
+          "summary": "Gets a specific technician shift",
+          "description": "Gets a specific technician shift",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.TechnicianShiftResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/technician-shifts/{id}",
+          "operationId": "TechnicianShifts_Update",
+          "summary": "Updates Technician Shift",
+          "description": "Updates Technician Shift",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.UpdateTechnicianShiftRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.TechnicianShiftUpdateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/technician-shifts/bulk-delete",
+          "operationId": "TechnicianShifts_BulkDelete",
+          "summary": "Deletes the technician shifts specified by the criteria",
+          "description": "Deletes the technician shifts specified by the criteria",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.BulkDeleteTechnicianShiftRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.Contracts.TechnicianShift.BulkDeleteTechnicianShiftResult"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "TechnicianTracking",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/technician-tracking",
+          "operationId": "TechnicianTracking_Get",
+          "summary": "TechnicianTracking_Get",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "appointmentId",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.TechnicianTrackingResponse"
+            },
+            "400": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Zone",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/zones",
+          "operationId": "Zone_GetList",
+          "summary": "Gets a list of zones",
+          "description": "Gets a list of zones",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Dispatch.V2.ZoneResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/zones",
+          "operationId": "Zone_CreateZone",
+          "summary": "Creates a new zone",
+          "description": "Creates a new zone",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateOrUpdateZoneRequestArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.CreateOrUpdateZoneResponse"
+            },
+            "400": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/zones/{id}",
+          "operationId": "Zone_Get",
+          "summary": "Gets a specific zone",
+          "description": "Gets a specific zone",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.ZoneResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/zones/{zoneId}",
+          "operationId": "Zone_DeleteZone",
+          "summary": "Deletes a zone",
+          "description": "Deletes a zone",
+          "pathParams": [
+            {
+              "name": "zoneId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/zones/{zoneId}",
+          "operationId": "Zone_UpdateZone",
+          "summary": "Updates an existing zone",
+          "description": "Updates an existing zone",
+          "pathParams": [
+            {
+              "name": "zoneId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Dispatch.V2.CreateOrUpdateZoneRequestArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Dispatch.V2.CreateOrUpdateZoneResponse"
+            },
+            "400": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 36,
+    "byMethod": {
+      "GET": 15,
+      "POST": 12,
+      "PATCH": 2,
+      "PUT": 3,
+      "DELETE": 4
+    }
+  }
+}

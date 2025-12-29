@@ -1,0 +1,183 @@
+version: '3.8'
+
+# =============================================================================
+# PERFECT CATCH - TOOLING STACK
+# =============================================================================
+# 
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.tooling.yml up -d
+#
+# Services:
+#   - Temporal (workflow orchestration) - http://localhost:8088
+#   - Metabase (BI dashboards) - http://localhost:3030
+#   - Prometheus (metrics) - http://localhost:9090
+#   - Grafana (dashboards) - http://localhost:3031
+#   - Hasura (GraphQL) - http://localhost:8080
+#
+# =============================================================================
+
+networks:
+  perfectcatch:
+    driver: bridge
+  default:
+    driver: bridge
+
+volumes:
+  temporal-db-data:
+  metabase-data:
+  prometheus-data:
+  grafana-data:
+  hasura-data:
+
+services:
+  # ===========================================================================
+  # TEMPORAL - Workflow Orchestration
+  # ===========================================================================
+  
+  temporal-db:
+    image: postgres:15-alpine
+    container_name: temporal-db
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal123}
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+    networks:
+      - perfectcatch
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: temporal
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=${TEMPORAL_DB_PASSWORD:-temporal123}
+      - POSTGRES_SEEDS=temporal-db
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+      - ENABLE_ES=false
+      - SKIP_DEFAULT_NAMESPACE_CREATION=false
+    ports:
+      - "7233:7233"
+    volumes:
+      - ./config/temporal:/etc/temporal/config/dynamicconfig:ro
+    networks:
+      - perfectcatch
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+  temporal-ui:
+    image: temporalio/ui:2.26.2
+    container_name: temporal-ui
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000,http://localhost:8088
+    ports:
+      - "8088:8080"
+    networks:
+      - perfectcatch
+    restart: unless-stopped
+
+  # ===========================================================================
+  # METABASE - BI Dashboards
+  # ===========================================================================
+  
+  metabase:
+    image: metabase/metabase:v0.48.0
+    container_name: metabase
+    ports:
+      - "3030:3000"
+    environment:
+      MB_DB_TYPE: h2
+      MB_DB_FILE: /metabase-data/metabase.db
+      JAVA_TIMEZONE: America/New_York
+    volumes:
+      - metabase-data:/metabase-data
+    networks:
+      - perfectcatch
+    restart: unless-stopped
+
+  # ===========================================================================
+  # PROMETHEUS - Metrics Collection
+  # ===========================================================================
+  
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=30d'
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    networks:
+      - perfectcatch
+    restart: unless-stopped
+
+  # ===========================================================================
+  # GRAFANA - Dashboards
+  # ===========================================================================
+  
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3031:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      # Enable embedding in iframes (for Developer Dashboard)
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      # Enable anonymous access for embedded dashboards
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_NAME: "Main Org."
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - perfectcatch
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ===========================================================================
+  # HASURA - GraphQL API
+  # ===========================================================================
+  
+  hasura:
+    image: hasura/graphql-engine:v2.36.0
+    container_name: hasura
+    ports:
+      - "8080:8080"
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: "postgresql://postgres:Catchadmin%402025@host.docker.internal:5432/perfectcatch"
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET:-perfectcatch123}
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - perfectcatch
+    restart: unless-stopped

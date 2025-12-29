@@ -1,0 +1,569 @@
+{
+  "sourceFile": "tenant-telecom.json",
+  "baseUrl": "https://api-integration.servicetitan.io/telecom",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Telecom",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "Calls",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v2/tenant/{tenant}/calls/{id}",
+          "operationId": "Calls_GetDetails",
+          "summary": "Get call's details.",
+          "description": "Get call's details.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Module.Telecom.Shared.DetailedBundleCallModel"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/v2/tenant/{tenant}/calls/{id}",
+          "operationId": "Calls_Update",
+          "summary": "Update existing call.",
+          "description": "Update existing call.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Module.Telecom.Shared.CallInUpdateModelV2"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Module.Telecom.Shared.DetailedCallModel"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v2/tenant/{tenant}/calls/{id}/recording",
+          "operationId": "Calls_GetRecording",
+          "summary": "Get recording of the call.",
+          "description": "Get recording of the call.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v2/tenant/{tenant}/calls/{id}/voicemail",
+          "operationId": "Calls_GetVoiceMail",
+          "summary": "Get voicemail of the call.",
+          "description": "Get voicemail of the call.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/tenant/{tenant}/calls",
+          "operationId": "Calls_Calls",
+          "summary": "Provides a feed for telecom calls",
+          "description": "Provides a feed for telecom calls",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "campaignId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "agentId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "minDuration",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "phoneNumberCalled",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "callerPhoneNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "agentName",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "agentIsExternal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "agentExternalId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "tag",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Telecom.V3.CallResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Calls (Deprecated)",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v2/tenant/{tenant}/calls",
+          "operationId": "Calls_GetCalls",
+          "summary": "Get filtered calls.",
+          "description": "Get filtered calls.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "minDuration",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "phoneNumberCalled",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "campaignId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "agentId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "agentName",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "agentIsExternal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "agentExternalId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "orderBy",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "orderByDirection",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "activeOnly",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/CollectionResult_Of_Module.Telecom.Shared.V2.BundleCallModel"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v2/tenant/{tenant}/export/calls",
+          "operationId": "Export_Calls",
+          "summary": "Provides export feed for telecom calls",
+          "description": "Provides export feed for telecom calls",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Telecom.V2.ExportCallResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "OptInOut",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v3/tenant/{tenant}/optinouts/optouts",
+          "operationId": "OptInOut_GetAllOptOuts",
+          "summary": "Returns all opt-outs for the tenant",
+          "description": "Numbers are returned in E.164 format.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Telecom.V3.OptOutListResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v3/tenant/{tenant}/optinouts/optouts",
+          "operationId": "OptInOut_CreateOptOutList",
+          "summary": "Adds opt-outs for the specified phone numbers",
+          "description": "Has to have at least one phone number in the request (use the dedicated endpoint if you need to get all the opt-outs).\nAll numbers in the request must be valid, otherwise the request will fail.\nIf a number is opted-out globally, you can't opt it out for marketing.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Telecom.V3.CreateOptOutListRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Telecom.V3.CreateOptOutListResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v3/tenant/{tenant}/optinouts/optouts/getlist",
+          "operationId": "OptInOut_GetOptOutList",
+          "summary": "For each phone number in the request, returns the opt-out status, if it exists",
+          "description": "Has to have at least one phone number in the request (use the dedicated endpoint if you need to get all the opt-outs).\nIf there's no opt-out info for a phone number, it won't be included in the response.\nAll numbers in the request must be valid (E.164 format is preferred, but not required), otherwise the request will fail.\nThe numbers in the response will be in E.164 format.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Telecom.V3.GetOptOutListRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Telecom.V3.OptOutListResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 10,
+    "byMethod": {
+      "GET": 7,
+      "POST": 2,
+      "PATCH": 0,
+      "PUT": 1,
+      "DELETE": 0
+    }
+  }
+}

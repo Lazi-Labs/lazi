@@ -1,0 +1,3622 @@
+{
+  "sourceFile": "tenant-jpm-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/jpm/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Job Planning and Management",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "Appointments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/appointments",
+          "operationId": "Appointments_GetList",
+          "summary": "Gets a list of appointments",
+          "description": "Gets a list of appointments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "startsOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "startsBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "customerId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "unused",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/appointments",
+          "operationId": "Appointments_Add",
+          "summary": "Adds a new appointment to an existing job",
+          "description": "Adds a new appointment to an existing job",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.AppointmentAddRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/appointments/{id}",
+          "operationId": "Appointments_Delete",
+          "summary": "Deletes appointment with specified id.",
+          "description": "Deletes appointment with specified id.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/appointments/{id}",
+          "operationId": "Appointments_Get",
+          "summary": "Gets appointment specified by ID",
+          "description": "Gets appointment specified by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/appointments/{id}/confirmation",
+          "operationId": "Appointments_RemoveConfirmation",
+          "summary": "Adds a confirmation to the specified appointment.",
+          "description": "Adds a confirmation to the specified appointment.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/appointments/{id}/confirmation",
+          "operationId": "Appointments_Confirm",
+          "summary": "Adds a confirmation to the specified appointment.",
+          "description": "Adds a confirmation to the specified appointment.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/appointments/{id}/hold",
+          "operationId": "Appointments_RemoveHold",
+          "summary": "Removes hold from the appointment",
+          "description": "Removes hold from the appointment",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/appointments/{id}/hold",
+          "operationId": "Appointments_Hold",
+          "summary": "Puts the appointment on hold",
+          "description": "Puts the appointment on hold",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.HoldAppointmentRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/appointments/{id}/reschedule",
+          "operationId": "Appointments_Reschedule",
+          "summary": "Reschedule job appointment",
+          "description": "Reschedule job appointment",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.AppointmentRescheduleRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/appointments/{id}/special-instructions",
+          "operationId": "Appointments_UpdateSpecialInstructions",
+          "summary": "Appointments_UpdateSpecialInstructions",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.UpdateAppointmentSpecialInstructionsRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.AppointmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "BudgetCodes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/budget-codes",
+          "operationId": "BudgetCodes_ListCompanyBudgetCodes",
+          "summary": "BudgetCodes_ListCompanyBudgetCodes",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "budgetCodeIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "segmentIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "segmentItemIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.BudgetCodes.BudgetCodeModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/work-breakdown-structure/budget-codes",
+          "operationId": "BudgetCodes_CreateBudgetCode",
+          "summary": "BudgetCodes_CreateBudgetCode",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.CreateFullBudgetCodeArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.CreateBudgetCodeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/work-breakdown-structure/budget-codes/batch",
+          "operationId": "BudgetCodes_CreateBudgetCodesBatch",
+          "summary": "BudgetCodes_CreateBudgetCodesBatch",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.CreateBudgetCodeBatchResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/budget-codes/match",
+          "operationId": "BudgetCodes_MatchCompanyBudgetCodes",
+          "summary": "BudgetCodes_MatchCompanyBudgetCodes",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "codes",
+              "type": "array",
+              "required": true
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.MatchBudgetCodesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/work-breakdown-structure/budget-codes/partial",
+          "operationId": "BudgetCodes_CreateBudgetCodePartial",
+          "summary": "BudgetCodes_CreateBudgetCodePartial",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.CreatePartialBudgetCodeArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.CreateBudgetCodeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/work-breakdown-structure/budget-codes/partial/batch",
+          "operationId": "BudgetCodes_CreateBudgetCodesPartialBatch",
+          "summary": "BudgetCodes_CreateBudgetCodesPartialBatch",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.CreateBudgetCodeBatchResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/projects/{projectId}/budget-codes",
+          "operationId": "BudgetCodes_ListProjectBudgetCodes",
+          "summary": "BudgetCodes_ListProjectBudgetCodes",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "budgetCodeIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "segmentIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "segmentItemIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.BudgetCodes.BudgetCodeModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/projects/{projectId}/budget-codes/match",
+          "operationId": "BudgetCodes_MatchProjectBudgetCodes",
+          "summary": "BudgetCodes_MatchProjectBudgetCodes",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "codes",
+              "type": "array",
+              "required": true
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.MatchBudgetCodesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/projects/{projectId}/segments",
+          "operationId": "BudgetCodes_ListProjectSegments",
+          "summary": "BudgetCodes_ListProjectSegments",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.ListSegmentsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/projects/{projectId}/segments/{segmentId}/items",
+          "operationId": "BudgetCodes_ListProjectSegmentItems",
+          "summary": "BudgetCodes_ListProjectSegmentItems",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "segmentId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "includeChildren",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.BudgetCodes.SegmentItemModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/projects/{projectId}/segments/{segmentId}/items/{segmentItemId}/children",
+          "operationId": "BudgetCodes_ListProjectSegmentItemChildren",
+          "summary": "BudgetCodes_ListProjectSegmentItemChildren",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "segmentId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "segmentItemId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "includeChildren",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.BudgetCodes.SegmentItemModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/segments",
+          "operationId": "BudgetCodes_ListCompanySegments",
+          "summary": "BudgetCodes_ListCompanySegments",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.BudgetCodes.ListSegmentsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/segments/{segmentId}/items",
+          "operationId": "BudgetCodes_ListCompanySegmentItems",
+          "summary": "BudgetCodes_ListCompanySegmentItems",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "segmentId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "includeChildren",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.BudgetCodes.SegmentItemModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/work-breakdown-structure/segments/{segmentId}/items/{segmentItemId}/children",
+          "operationId": "BudgetCodes_ListCompanySegmentItemChildren",
+          "summary": "BudgetCodes_ListCompanySegmentItemChildren",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "segmentId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "segmentItemId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "includeChildren",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.BudgetCodes.SegmentItemModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/appointments",
+          "operationId": "Export_Appointments",
+          "summary": "Provides export feed for appointments",
+          "description": "Provides export feed for appointments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportAppointmentsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/job-canceled-logs",
+          "operationId": "Export_JobCancelReasons",
+          "summary": "Provides export feed for job canceled logs",
+          "description": "Provides export feed for job canceled logs",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportJobCanceledLogResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/job-history",
+          "operationId": "Export_JobHistory",
+          "summary": "Provides export feed for job canceled logs",
+          "description": "Provides export feed for job canceled logs",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportJobHistoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/job-notes",
+          "operationId": "Export_JobNotes",
+          "summary": "Provides export feed for job notes",
+          "description": "Provides export feed for job notes",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportJobNotesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/jobs",
+          "operationId": "Export_Jobs",
+          "summary": "Provides export feed for jobs",
+          "description": "Provides export feed for jobs",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportJobsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/project-notes",
+          "operationId": "Export_ProjectNotes",
+          "summary": "Provides export feed for project notes",
+          "description": "Provides export feed for project notes",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportProjectNotesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/projects",
+          "operationId": "Export_Projects",
+          "summary": "Provides export feed for projects",
+          "description": "Provides export feed for projects",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Jpm.V2.ExportProjectsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "JobCancelReasons",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/job-cancel-reasons",
+          "operationId": "JobCancelReasons_GetList",
+          "summary": "Gets a list of job cancel reasons",
+          "description": "Gets a list of job cancel reasons",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.JobCancelReasonResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "JobHoldReasons",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/job-hold-reasons",
+          "operationId": "JobHoldReasons_Get",
+          "summary": "Gets a list of job hold reasons",
+          "description": "Gets a list of job hold reasons",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.JobHoldReasonResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs",
+          "operationId": "Jobs_GetList",
+          "summary": "Gets a list of jobs",
+          "description": "Gets a list of jobs",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "bookingId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobStatus",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appointmentStatus",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "priority",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "firstAppointmentStartsOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "firstAppointmentStartsBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appointmentStartsOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appointmentStartsBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "customerId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "locationId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "soldById",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobTypeId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "campaignId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "businessUnitId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "invoiceId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "completedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "completedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "tagTypeIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "hasUnusedAppointments",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.JobResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/jobs",
+          "operationId": "Jobs_Create",
+          "summary": "Creates a job",
+          "description": "Creates a job",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.JobCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/{id}",
+          "operationId": "Jobs_Get",
+          "summary": "Gets a job by ID",
+          "description": "Gets a job by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/jobs/{id}",
+          "operationId": "Jobs_Update",
+          "summary": "Updates a job",
+          "description": "Updates a job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.UpdateJobRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/{id}/booked-log",
+          "operationId": "Jobs_GetBookedLog",
+          "summary": "Get booked log for the specified job",
+          "description": "Get booked log for the specified job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobBookedLogResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/jobs/{id}/cancel",
+          "operationId": "Jobs_Cancel",
+          "summary": "Cancels a job",
+          "description": "Cancels a job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.CancelJobRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/{id}/canceled-log",
+          "operationId": "Jobs_GetJobCanceledLogs",
+          "summary": "Get a list of cancelled logs for the specified job",
+          "description": "Get a list of cancelled logs for the specified job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.JobCanceledLogResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/jobs/{id}/complete",
+          "operationId": "Jobs_Complete",
+          "summary": "Completes a job",
+          "description": "Completes a job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.CompleteJobRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/{id}/history",
+          "operationId": "Jobs_GetHistory",
+          "summary": "Gets a list of history entries for the specified job",
+          "description": "Gets a list of history entries for the specified job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobHistoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/jobs/{id}/hold",
+          "operationId": "Jobs_Hold",
+          "summary": "Puts a job on hold",
+          "description": "Puts a job on hold",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.HoldJobRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/jobs/{id}/messages",
+          "operationId": "Jobs_CreateMessage",
+          "summary": "Creates a message on a job",
+          "description": "Creates a message on a job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.MessageCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.MessageResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/{id}/notes",
+          "operationId": "Jobs_GetNotes",
+          "summary": "Gets a list of notes on the specified job",
+          "description": "Gets a list of notes on the specified job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.NoteResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/jobs/{id}/notes",
+          "operationId": "Jobs_CreateNote",
+          "summary": "Creates a note on the specified job",
+          "description": "Creates a note on the specified job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.JobNoteCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.NoteResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/jobs/{id}/remove-cancellation",
+          "operationId": "Jobs_RemoveCancellation",
+          "summary": "Removes cancellation from a job",
+          "description": "Removes cancellation from a job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/cancel-reasons",
+          "operationId": "Jobs_GetCancelReasons",
+          "summary": "Gets a list of cancel reasons for specific jobs",
+          "description": "Gets a list of cancel reasons for specific jobs",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.CancelReasonResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/custom-fields",
+          "operationId": "Jobs_GetCustomFieldTypes",
+          "summary": "Returns a list of custom field types available for projects",
+          "description": "Returns a list of custom field types available for projects",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.CustomFieldTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "JobTypes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/job-types",
+          "operationId": "JobTypes_GetList",
+          "summary": "Gets a list of job types",
+          "description": "Gets a list of job types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "minDuration",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "maxDuration",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "priority",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "orderBy",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "orderByDirection",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.JobTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/job-types",
+          "operationId": "JobTypes_Create",
+          "summary": "Creates a job type",
+          "description": "Creates a job type",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.CreateJobTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/job-types/{id}",
+          "operationId": "JobTypes_Get",
+          "summary": "Gets a job type by ID",
+          "description": "Gets a job type by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/job-types/{id}",
+          "operationId": "JobTypes_Update",
+          "summary": "Update a job type",
+          "description": "Update a job type",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.UpdateJobTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.JobTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/projects",
+          "operationId": "Projects_GetList",
+          "summary": "Gets a list of projects",
+          "description": "Gets a list of projects",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customerId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "locationId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "projectTypeId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "invoiceId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "appointmentId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "projectManagerIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "startsBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "startsOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "completedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "completedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "targetCompletionDateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "targetCompletionDateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.ProjectResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/projects",
+          "operationId": "Projects_Create",
+          "summary": "Creates a New Project",
+          "description": "Creates a New Project",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.CreateProjectRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.ProjectResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/projects/{id}",
+          "operationId": "Projects_Get",
+          "summary": "Gets a project by ID",
+          "description": "Gets a project by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.ProjectResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/projects/{id}",
+          "operationId": "Projects_Update",
+          "summary": "Update a project",
+          "description": "Update a project",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.UpdateProjectRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.ProjectResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/projects/{id}/attach-job/{jobId}",
+          "operationId": "Projects_AttachJob",
+          "summary": "Attaches Job to the specified project",
+          "description": "Attaches Job to the specified project",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/projects/{id}/messages",
+          "operationId": "Projects_CreateMessage",
+          "summary": "Creates a message on a project",
+          "description": "Creates a message on a project",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.MessageCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.MessageResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/projects/{id}/notes",
+          "operationId": "Projects_GetNotes",
+          "summary": "Gets a list of notes on the specified project",
+          "description": "Gets a list of notes on the specified project",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.NoteResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/projects/{id}/notes",
+          "operationId": "Projects_CreateNote",
+          "summary": "Creates a note on the specified project",
+          "description": "Creates a note on the specified project",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Jpm.V2.ProjectNoteCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.NoteResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/projects/custom-fields",
+          "operationId": "Projects_GetCustomFieldTypes",
+          "summary": "Returns a list of custom field types available for projects",
+          "description": "Returns a list of custom field types available for projects",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.CustomFieldTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/projects/detach-job/{jobId}",
+          "operationId": "Projects_DetachJob",
+          "summary": "Detaches Job from the project",
+          "description": "Detaches Job from the project",
+          "pathParams": [
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ProjectStatuses",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/project-statuses",
+          "operationId": "ProjectStatuses_GetList",
+          "summary": "Gets a list of project statuses",
+          "description": "Gets a list of project statuses",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.ProjectStatusResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/project-statuses/{id}",
+          "operationId": "ProjectStatuses_Get",
+          "summary": "Gets a project status by ID",
+          "description": "Gets a project status by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.ProjectStatusResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ProjectSubStatuses",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/project-substatuses",
+          "operationId": "ProjectSubStatuses_GetList",
+          "summary": "Gets a list of project sub statuses",
+          "description": "Gets a list of project sub statuses",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "statusId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.ProjectSubStatusResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/project-substatuses/{id}",
+          "operationId": "ProjectSubStatuses_Get",
+          "summary": "Gets a project sub status by ID",
+          "description": "Gets a project sub status by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.ProjectSubStatusResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ProjectTypes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/project-types",
+          "operationId": "ProjectTypes_GetList",
+          "summary": "Gets a list of project types",
+          "description": "Gets a list of project types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jpm.V2.ProjectTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/project-types/{id}",
+          "operationId": "ProjectTypes_Get",
+          "summary": "Gets a project type by ID",
+          "description": "Gets a project type by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Jpm.V2.ProjectTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 69,
+    "byMethod": {
+      "GET": 41,
+      "POST": 14,
+      "PATCH": 4,
+      "PUT": 7,
+      "DELETE": 3
+    }
+  }
+}

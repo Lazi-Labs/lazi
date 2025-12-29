@@ -1,0 +1,1044 @@
+{
+  "sourceFile": "tenant-settings-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/settings/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Settings",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "BusinessUnits",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/business-units",
+          "operationId": "BusinessUnits_GetList",
+          "summary": "Gets a list of business units",
+          "description": "Gets a list of business units",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_TenantSettings.V2.BusinessUnitResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/business-units/{id}",
+          "operationId": "BusinessUnits_Get",
+          "summary": "Gets a business unit by ID",
+          "description": "Gets a business unit by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.BusinessUnitResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/business-units/{id}",
+          "operationId": "BusinessUnits_Update",
+          "summary": "Update an existing BusinessUnit",
+          "description": "Update an existing BusinessUnit",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.UpdateBusinessUnitRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/employees",
+          "operationId": "Employees_GetList",
+          "summary": "Gets a list of employees",
+          "description": "Gets a list of employees",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "userIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "email",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_TenantSettings.V2.EmployeeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/employees",
+          "operationId": "Employees_Create",
+          "summary": "Creates new employee",
+          "description": "Creates new employee",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.EmployeeCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.EmployeeCreateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/employees/{id}",
+          "operationId": "Employees_Get",
+          "summary": "Gets a employee by ID",
+          "description": "Gets a employee by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.EmployeeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/employees/{id}",
+          "operationId": "Employees_Update",
+          "summary": "Updates employee",
+          "description": "Updates employee",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.EmployeeUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.EmployeeUpdateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/employees/{id}/account-actions",
+          "operationId": "Employees_AccountActions",
+          "summary": "Performs standard actions with the account",
+          "description": "Performs standard actions with the account",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.AccountActionRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.AccountActionResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/business-units",
+          "operationId": "Export_BusinessUnits",
+          "summary": "Provides export feed for business units",
+          "description": "Provides export feed for business units",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_TenantSettings.V2.ExportBusinessUnitResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/employees",
+          "operationId": "Export_Employees",
+          "summary": "Provides export feed for employees",
+          "description": "Provides export feed for employees",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_TenantSettings.V2.ExportEmployeeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/tag-types",
+          "operationId": "Export_TagTypes",
+          "summary": "Provides export feed for tag types",
+          "description": "Provides export feed for tag types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_TenantSettings.V2.ExportTagTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/technicians",
+          "operationId": "Export_Technicians",
+          "summary": "Provides export feed for technicians",
+          "description": "Provides export feed for technicians",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_TenantSettings.V2.ExportTechnicianResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "TagTypes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/tag-types",
+          "operationId": "TagTypes_GetList",
+          "summary": "Gets a list of tag types",
+          "description": "Gets a list of tag types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_TenantSettings.V2.TagTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/tag-types",
+          "operationId": "TagTypes_Create",
+          "summary": "TagTypes_Create",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.CreateTagTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Technicians",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/technicians",
+          "operationId": "Technicians_GetList",
+          "summary": "Gets a list of technicians",
+          "description": "Gets a list of technicians",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "userIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_TenantSettings.V2.TechnicianResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/technicians",
+          "operationId": "Technicians_Create",
+          "summary": "Creates new technician",
+          "description": "Creates new technician",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.TechnicianCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.TechnicianCreateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/technicians/{id}",
+          "operationId": "Technicians_Get",
+          "summary": "Gets a technician by ID",
+          "description": "Gets a technician by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.TechnicianResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/technicians/{id}",
+          "operationId": "Technicians_Update",
+          "summary": "Updates technician",
+          "description": "Updates technician",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.TechnicianUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.TechnicianUpdateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/technicians/{id}/account-actions",
+          "operationId": "Technicians_AccountActions",
+          "summary": "Performs standard actions with the account",
+          "description": "Performs standard actions with the account",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TenantSettings.V2.TechnicianAccountActionRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TenantSettings.V2.AccountActionResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "UserRoles",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/user-roles",
+          "operationId": "UserRoles_GetList",
+          "summary": "Gets a list of user roles",
+          "description": "Gets a list of user roles",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "employeeType",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_TenantSettings.V2.UserRoleResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 20,
+    "byMethod": {
+      "GET": 12,
+      "POST": 5,
+      "PATCH": 3,
+      "PUT": 0,
+      "DELETE": 0
+    }
+  }
+}

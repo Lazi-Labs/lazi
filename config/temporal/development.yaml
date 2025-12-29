@@ -1,0 +1,29 @@
+# Temporal Dynamic Configuration
+
+limit.maxIDLength:
+  - value: 255
+    constraints: {}
+
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+    constraints: {}
+
+history.defaultActivityRetryPolicy:
+  - value:
+      InitialIntervalInSeconds: 1
+      MaximumIntervalInSeconds: 300
+      BackoffCoefficient: 2
+      MaximumAttempts: 10
+    constraints: {}
+
+system.enableActivityEagerExecution:
+  - value: true
+    constraints: {}
+
+frontend.rps:
+  - value: 2400
+    constraints: {}
+
+frontend.namespaceRPS:
+  - value: 2400
+    constraints: {}

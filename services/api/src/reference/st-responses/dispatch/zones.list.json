@@ -1,0 +1,405 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:18:39.337Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": [
+    {
+      "id": 2024141,
+      "active": true,
+      "name": "South Pinellas - Service Zone",
+      "zips": [
+        "33705",
+        "33711",
+        "33712",
+        "33714",
+        "33713"
+      ],
+      "cities": [
+        "Gulfport",
+        "Pinellas Park. ",
+        "Lealman  "
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 4617,
+      "createdOn": "2024-07-08T16:49:50.4844766Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "1",
+        "3",
+        "5"
+      ],
+      "businessUnits": [],
+      "technicians": [
+        12161,
+        14465,
+        15105,
+        71018,
+        2024197
+      ]
+    },
+    {
+      "id": 54887710,
+      "active": true,
+      "name": "Pool Install Zone - Pasco (North)",
+      "zips": [
+        "33545",
+        "33541",
+        "33542",
+        "33543",
+        "34639",
+        "34638",
+        "34637",
+        "34610",
+        "34669",
+        "34654",
+        "34655",
+        "33558",
+        "33576"
+      ],
+      "cities": [
+        "Wesley Chapel ",
+        "Land O Lakes",
+        "Starkey Ranch"
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 26,
+      "createdOn": "2024-11-23T14:39:48.3296811Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "1",
+        "3",
+        "5"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    },
+    {
+      "id": 54888336,
+      "active": true,
+      "name": "NORTH Pinellas - Service Zone",
+      "zips": [
+        "33761",
+        "34684",
+        "33765",
+        "33764"
+      ],
+      "cities": [
+        "Dunedin",
+        "Safety Harbor",
+        "Oldsmar"
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 26,
+      "createdOn": "2024-11-23T14:24:51.1888533Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    },
+    {
+      "id": 54963510,
+      "active": true,
+      "name": "South West Pinellas - Service Zone",
+      "zips": [
+        "33744",
+        "33707",
+        "33710"
+      ],
+      "cities": [
+        "Bay Pines",
+        "Seminole. ",
+        "Gulfport ",
+        "South Pasadena",
+        "St Pete Beach",
+        "Bear Creek"
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54809353,
+      "createdOn": "2024-12-04T12:21:18.4228699Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "1",
+        "3",
+        "5"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    },
+    {
+      "id": 54963533,
+      "active": true,
+      "name": "North EAST Pinellas - Service Zone",
+      "zips": [
+        "34688",
+        "34685",
+        "33759",
+        "34677",
+        "34695",
+        "33602"
+      ],
+      "cities": [
+        "East Lake",
+        "Oldsmar ",
+        "Clearwater.  ",
+        "Safety Harbor ",
+        "TAMPA",
+        "TARPON SPRINGS",
+        "NEW PORT RICHEY",
+        "LARGO",
+        "SEMINOLE"
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54809353,
+      "createdOn": "2024-12-04T14:13:26.0020055Z",
+      "modifiedOn": "2025-03-16T21:36:05.6143007Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    },
+    {
+      "id": 54963534,
+      "active": true,
+      "name": "FAR North WEST Pinellas - Service Zone",
+      "zips": [
+        "34689"
+      ],
+      "cities": [],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54809353,
+      "createdOn": "2024-12-04T14:14:28.1784996Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    },
+    {
+      "id": 54966694,
+      "active": true,
+      "name": "West Pinellas - Service Zone",
+      "zips": [
+        "33778",
+        "33755",
+        "33756",
+        "33770",
+        "33774",
+        "33776",
+        "33772"
+      ],
+      "cities": [
+        "Seminole  ",
+        "Ridgecrest",
+        "Clearwater. ",
+        "Belleair",
+        "Belleair Bluffs",
+        "Harbor Bluffs"
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54809353,
+      "createdOn": "2024-12-04T12:22:41.8599382Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "1",
+        "3",
+        "5"
+      ],
+      "businessUnits": [],
+      "technicians": [
+        55810,
+        59011
+      ]
+    },
+    {
+      "id": 54972235,
+      "active": true,
+      "name": "North WEST Pinellas - Service Zone\t",
+      "zips": [
+        "34683",
+        "34681",
+        "34698",
+        "33763"
+      ],
+      "cities": [
+        "Palm Harbor",
+        "Dunedin. ",
+        "Clearwater "
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54809353,
+      "createdOn": "2024-12-04T14:07:16.471424Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": true,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": [
+        58944518,
+        62354566
+      ]
+    },
+    {
+      "id": 54978696,
+      "active": true,
+      "name": "Central - Service Zone",
+      "zips": [
+        "33760",
+        "33762",
+        "33782",
+        "33781",
+        "33709",
+        "33777",
+        "33773",
+        "33771"
+      ],
+      "cities": [
+        "Largo",
+        "Highpoint",
+        "Feather Sound",
+        "Lealman",
+        "Kenneth City",
+        "Seminole "
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54861065,
+      "createdOn": "2024-12-04T14:34:28.3718411Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": true,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": [
+        12417,
+        2024197,
+        14465,
+        55810
+      ]
+    },
+    {
+      "id": 54979336,
+      "active": true,
+      "name": "Peninsula North WEST - Service Zone",
+      "zips": [
+        "33767",
+        "33786",
+        "33785"
+      ],
+      "cities": [
+        "Bellair Shore",
+        "Clearwater",
+        "Indian Rock Beach",
+        "Indian Shores",
+        "Belleair Beach",
+        "Dunedin "
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54861065,
+      "createdOn": "2024-12-04T14:23:14.3023055Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": [
+        59011,
+        55459334,
+        60616473,
+        61607952,
+        62151820
+      ]
+    },
+    {
+      "id": 54979465,
+      "active": true,
+      "name": "East - Service Zone",
+      "zips": [
+        "33701",
+        "33703",
+        "33704",
+        "33702",
+        "33716"
+      ],
+      "cities": [
+        "Gandy",
+        "Lealman "
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54861065,
+      "createdOn": "2024-12-04T14:39:46.588179Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": false,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    },
+    {
+      "id": 54979591,
+      "active": true,
+      "name": "Peninsula WEST - Service Zone",
+      "zips": [
+        "33708",
+        "33706",
+        "33715"
+      ],
+      "cities": [
+        "Tierra Verde",
+        "St. Pete Beach",
+        "Treasure Island",
+        "Madeira Beach",
+        "Redington Beach",
+        "Redington Shroes",
+        "North Redington Beach",
+        "Seminole"
+      ],
+      "territoryNumbers": [],
+      "locnNumbers": [],
+      "createdBy": 54861065,
+      "createdOn": "2024-12-04T14:29:05.6929862Z",
+      "modifiedOn": "2025-03-16T21:34:45.6675436Z",
+      "serviceDaysEnabled": true,
+      "serviceDays": [
+        "2",
+        "4"
+      ],
+      "businessUnits": [],
+      "technicians": []
+    }
+  ]
+}

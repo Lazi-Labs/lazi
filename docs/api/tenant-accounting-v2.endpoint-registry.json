@@ -1,0 +1,3582 @@
+{
+  "sourceFile": "tenant-accounting-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/accounting/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Accounting",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "ApBills",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/ap-bills",
+          "operationId": "ApBills_GetListPaginated",
+          "summary": "Returns a paginated list of AP bills with detailed item information, filtering capabilities, and associated metadata",
+          "description": "Returns a paginated list of AP bills with detailed item information, filtering capabilities, and associated metadata",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchNumber",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "billNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customField.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customField.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateFrom",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateTo",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderTypes",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "statuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "sources",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "minCost",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "maxCost",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "billType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.ApBillResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/ap-bills/{billId}",
+          "operationId": "ApBills_GetById",
+          "summary": "Returns a single AP bill by its unique identifier with complete details including items, expense items, and associated metadata",
+          "description": "Returns a single AP bill by its unique identifier with complete details including items, expense items, and associated metadata",
+          "pathParams": [
+            {
+              "name": "billId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.ApBillResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/ap-bills/custom-fields",
+          "operationId": "ApBills_GetCustomFieldTypes",
+          "summary": "Returns a paginated list of filtered custom field types available for AP bills",
+          "description": "Returns a paginated list of filtered custom field types available for AP bills",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.CustomFieldTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/ap-bills/custom-fields",
+          "operationId": "ApBills_UpdateCustomFields",
+          "summary": "Updates custom field values on multiple AP bills",
+          "description": "Updates custom field values on multiple AP bills",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/ap-bills/markasexported",
+          "operationId": "ApBills_MarkAsExported",
+          "summary": "Marks multiple AP bills as exported, updating their sync status to indicate they have been exported to external systems",
+          "description": "Marks multiple AP bills as exported, updating their sync status to indicate they have been exported to external systems",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.MarkApBillAsExportedUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ApCredits",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/ap-credits",
+          "operationId": "ApCredits_GetList",
+          "summary": "Gets a paginated list of ap credits",
+          "description": "Gets a paginated list of ap credits",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "array",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.ApCreditResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/ap-credits/markasexported",
+          "operationId": "ApCredits_MarkAsExported",
+          "summary": "Marks ap-credits as exported.",
+          "description": "Marks ap-credits as exported.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ApPayments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/ap-payments",
+          "operationId": "ApPayments_GetList",
+          "summary": "ApPayments_GetList",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "array",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.ApPaymentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/ap-payments/markasexported",
+          "operationId": "ApPayments_MarkAsExported",
+          "summary": "Marks ap-payments as exported.",
+          "description": "Marks ap-payments as exported.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreditMemos",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/credit-memos",
+          "operationId": "CreditMemos_GetList",
+          "summary": "CreditMemos_GetList",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appliedToInvoiceIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appliedToReferenceNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appliedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appliedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customField.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customField.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "totalFilter.Amount",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "totalFilter.Comparer",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "balanceFilter.Amount",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "balanceFilter.Comparer",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.CreditMemos.CreditMemoPublicResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/credit-memos/{id}",
+          "operationId": "CreditMemos_Update",
+          "summary": "CreditMemos_Update",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.CreditMemos.CreditMemoUpdatePublicRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.CreditMemos.CreditMemoUpdatePublicResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deposits",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/bank-deposits",
+          "operationId": "Deposits_GetList",
+          "summary": "Gets a paginated list of deposits",
+          "description": "Gets a paginated list of deposits",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "depositDateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "depositDateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reviewedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reviewedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reviewStatus",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "depositStatus",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatus",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "grossAmountGreater",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "grossAmountLess",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.DetailedDepositResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/bank-deposits/{id}/transactions",
+          "operationId": "Deposits_GetTransactionsList",
+          "summary": "Gets a paginated list of transactions",
+          "description": "Gets a paginated list of transactions",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.DetailedTransactionResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/bank-deposits/markasexported",
+          "operationId": "Deposits_MarkAsExported",
+          "summary": "Marks deposits as exported",
+          "description": "Marks deposits as exported",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.MarkDepositsAsExportedRequestArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/inventory-bills",
+          "operationId": "Export_InventoryBills",
+          "summary": "Provides export feed for inventory bills",
+          "description": "Provides export feed for inventory bills",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Accounting.V2.ExportInventoryBillResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/invoice-items",
+          "operationId": "Export_InvoiceItems",
+          "summary": "Provides export feed for invoice items",
+          "description": "Provides export feed for invoice items",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Accounting.V2.ExportInvoiceItemResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/invoices",
+          "operationId": "Export_Invoices",
+          "summary": "Provides export feed for invoices",
+          "description": "Provides export feed for invoices",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Accounting.V2.ExportInvoiceResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/payments",
+          "operationId": "Export_Payments",
+          "summary": "Provides export feed for payments",
+          "description": "Provides export feed for payments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Accounting.V2.ExportPaymentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "GlAccounts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/gl-accounts",
+          "operationId": "GlAccounts_GetList",
+          "summary": "Retrieves General Ledger accounts that match the given criteria",
+          "description": "Retrieves General Ledger accounts that match the given criteria",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "names",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "numbers",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "types",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "subtypes",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "description",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "source",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "isIntacctGroup",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "isIntacctBankAccount",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.GlAccountExtendedResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/gl-accounts",
+          "operationId": "GlAccounts_CreateAccount",
+          "summary": "Creates a new General Ledger account",
+          "description": "Creates a new General Ledger account",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.GlAccountCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Accounting.V2.GlAccountExtendedResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/gl-accounts/{accountId}",
+          "operationId": "GlAccounts_GetAccount",
+          "summary": "Retrieves single General Ledger account by account id",
+          "description": "Retrieves single General Ledger account by account id",
+          "pathParams": [
+            {
+              "name": "accountId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.GlAccountExtendedResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/gl-accounts/{accountId}",
+          "operationId": "GlAccounts_UpdateAccount",
+          "summary": "Updates General Ledger account",
+          "description": "This method can also deactivate the account, which acts as a temporary soft delete. There is no way to permanently delete an account.",
+          "pathParams": [
+            {
+              "name": "accountId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.GlAccountUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.GlAccountExtendedResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/gl-accounts/types",
+          "operationId": "GlAccounts_GetTypeList",
+          "summary": "Retrieves General Ledger account types that match the given criteria",
+          "description": "Retrieves General Ledger account types that match the given criteria",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "names",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.GlAccountTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "InventoryBills",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/inventory-bills",
+          "operationId": "InventoryBills_GetList",
+          "summary": "InventoryBills_GetList",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchNumber",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "billNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customField.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customField.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateFrom",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateTo",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderTypes",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "minCost",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "maxCost",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "billType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/inventory-bills/custom-fields",
+          "operationId": "InventoryBills_GetCustomFieldTypes",
+          "summary": "Returns a paginated list of filtered custom field types available for inventory bills",
+          "description": "Returns a paginated list of filtered custom field types available for inventory bills",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.CustomFieldTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/inventory-bills/custom-fields",
+          "operationId": "InventoryBills_UpdateCustomFields",
+          "summary": "InventoryBills_UpdateCustomFields",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/inventory-bills/markasexported",
+          "operationId": "InventoryBills_MarkAsExported",
+          "summary": "mark bill as exported. Id = inventoryBillId",
+          "description": "mark bill as exported. Id = inventoryBillId",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.MarkInventoryBillAsExportedUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/inventory-bills/paginated",
+          "operationId": "InventoryBills_GetListPaginated",
+          "summary": "InventoryBills_GetListPaginated",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchNumber",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "billNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customField.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customField.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateFrom",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateTo",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderTypes",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "minCost",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "maxCost",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "billType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.InventoryBillResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/invoices",
+          "operationId": "Invoices_GetList",
+          "summary": "Retrieves a list of invoices.  By default, all invoices will be returned regardless of status.",
+          "description": "Retrieves a list of invoices.  By default, all invoices will be returned regardless of status.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "activeState",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "statuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchNumber",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "customField.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customField.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "customerId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "invoicedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "invoicedOnBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "adjustmentToId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "totalGreater",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "totalLess",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "balanceFilter.Balance",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "balanceFilter.Comparer",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dueDateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dueDateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "orderBy",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "orderByDirection",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reviewStatuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "assignedToIds",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.InvoiceResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/invoices",
+          "operationId": "Invoices_CreateAdjustmentInvoice",
+          "summary": "create adjustment invoice",
+          "description": "create adjustment invoice",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.AdjustmentInvoiceCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/invoices/{id}",
+          "operationId": "Invoices_UpdateInvoice",
+          "summary": "update invoice",
+          "description": "update invoice",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.InvoiceUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/invoices/{invoiceId}/items",
+          "operationId": "Invoices_UpdateInvoiceItems",
+          "summary": "update invoice items",
+          "description": "update invoice items",
+          "pathParams": [
+            {
+              "name": "invoiceId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.InvoiceItemUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/invoices/{invoiceId}/items/{itemId}",
+          "operationId": "Invoices_DeleteInvoiceItem",
+          "summary": "delete invoice item",
+          "description": "delete invoice item",
+          "pathParams": [
+            {
+              "name": "invoiceId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "itemId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/invoices/custom-fields",
+          "operationId": "Invoices_GetCustomFieldTypes",
+          "summary": "Returns a paginated list of filtered custom field types available for invoices",
+          "description": "Returns a paginated list of filtered custom field types available for invoices",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.CustomFieldTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/invoices/custom-fields",
+          "operationId": "Invoices_UpdateCustomFields",
+          "summary": "Updates custom fields for specified invoices",
+          "description": "Updates custom fields for specified invoices",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/invoices/markasexported",
+          "operationId": "Invoices_MarkAsExported",
+          "summary": "mark invoice as exported. Id = invoiceId",
+          "description": "mark invoice as exported. Id = invoiceId",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "JournalEntries",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/journal-entries",
+          "operationId": "JournalEntries_GetList",
+          "summary": "Gets a list of journal entries.",
+          "description": "Gets a list of journal entries.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "exportedFrom",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "exportedTo",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "postedFrom",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "postedTo",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "exportedBy",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "numberFrom",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "numberTo",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "statuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "transactionPostedFrom",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "transactionPostedTo",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "serviceAgreementIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customerName",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "locationName",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "vendorName",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "inventoryLocationName",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "refNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "transactionTypes",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "customField",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "empty",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.JournalEntryPagingResponse_Of_Accounting.V2.JournalEntryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/journal-entries/{id}",
+          "operationId": "JournalEntries_Update",
+          "summary": "Updates a journal entry.",
+          "description": "Updates a journal entry.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.JournalEntryUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.JournalEntryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/journal-entries/{id}/details",
+          "operationId": "JournalEntries_GetDetails",
+          "summary": "Gets a list of journal entry items aggregated by account, business unit, transaction and pricebook item.",
+          "description": "Gets a list of journal entry items aggregated by account, business unit, transaction and pricebook item.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.JournalEntryPagingResponse_Of_Accounting.V2.JournalEntryDetailsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/journal-entries/{id}/summary",
+          "operationId": "JournalEntries_GetSummary",
+          "summary": "Gets a list of journal entry items aggregated by account and business unit.",
+          "description": "Gets a list of journal entry items aggregated by account and business unit.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.JournalEntryPagingResponse_Of_Accounting.V2.JournalEntrySummaryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/journal-entries/{id}/sync",
+          "operationId": "JournalEntries_SyncUpdate",
+          "summary": "Updates a journal entry sync state.",
+          "description": "Updates a journal entry sync state.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.JournalEntrySyncUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.JournalEntryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/payments",
+          "operationId": "Payments_GetList",
+          "summary": "Gets a paginated list of payments",
+          "description": "Gets a paginated list of payments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "activeState",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appliedToInvoiceIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "appliedToReferenceNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "statuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "paidOnAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "paidOnBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchNumber",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "transactionType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customerId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "totalGreater",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "totalLess",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "depositIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "customField.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customField.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.DetailedPaymentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/payments",
+          "operationId": "Payments_Create",
+          "summary": "Creates new payment",
+          "description": "Creates new payment",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.PaymentCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.PaymentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/payments/{id}",
+          "operationId": "Payments_Update",
+          "summary": "Updates specified payment in \"patch\" mode",
+          "description": "Updates specified payment in \"patch\" mode",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.PaymentUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.PaymentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/payments/custom-fields",
+          "operationId": "Payments_GetCustomFieldTypes",
+          "summary": "Returns a paginated list of filtered custom field types available for payments",
+          "description": "Returns a paginated list of filtered custom field types available for payments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.CustomFieldTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/payments/custom-fields",
+          "operationId": "Payments_UpdateCustomFields",
+          "summary": "Update custom fields for specified payments",
+          "description": "Update custom fields for specified payments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/payments/status",
+          "operationId": "Payments_UpdateStatus",
+          "summary": "Updates payment status",
+          "description": "Updates payment status",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Accounting.V2.PaymentStatusBatchRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PaymentTerms",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/payment-terms",
+          "operationId": "PaymentTerms_GetList",
+          "summary": "Gets a list of payment terms",
+          "description": "Gets a list of payment terms",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.PaymentTermAPIModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/payment-terms/{paymentTermId}",
+          "operationId": "PaymentTerms_GetPaymentTermModel",
+          "summary": "Gets Payment Term",
+          "description": "Gets Payment Term",
+          "pathParams": [
+            {
+              "name": "paymentTermId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.PaymentTermAPIModel"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PaymentTypes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/payment-types",
+          "operationId": "PaymentTypes_GetList",
+          "summary": "Gets a list of payment types",
+          "description": "Gets a list of payment types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.PaymentTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/payment-types/{id}",
+          "operationId": "PaymentTypes_Get",
+          "summary": "Gets payment type specified by ID",
+          "description": "Gets payment type specified by ID",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.PaymentTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "RemittanceVendors",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/remittance-vendors",
+          "operationId": "RemittanceVendors_GetList",
+          "summary": "Returns a paginated list of Remittance Vendors with detailed item information, filtering capabilities, and associated metadata",
+          "description": "Returns a paginated list of Remittance Vendors with detailed item information, filtering capabilities, and associated metadata",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.RemittanceVendorResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/remittance-vendors/{id}",
+          "operationId": "RemittanceVendors_GetById",
+          "summary": "Returns a single Remittance Vendor by its unique identifier with complete details including items, expense items, and associated metadata",
+          "description": "Returns a single Remittance Vendor by its unique identifier with complete details including items, expense items, and associated metadata",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Accounting.V2.RemittanceVendorResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "TaxZones",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/tax-zones",
+          "operationId": "TaxZones_GetList",
+          "summary": "Get a list of tax zones and their rates.",
+          "description": "Gets a list of tax zones and their rates based on the supplied filter.\nIf no filter is supplied it returns all tax zones.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Accounting.V2.TaxZoneResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 54,
+    "byMethod": {
+      "GET": 32,
+      "POST": 10,
+      "PATCH": 11,
+      "PUT": 0,
+      "DELETE": 1
+    }
+  }
+}

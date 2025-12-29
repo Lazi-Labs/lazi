@@ -1,0 +1,1906 @@
+{
+  "sourceFile": "tenant-pricebook-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/pricebook/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Pricebook",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "Categories",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/categories",
+          "operationId": "Categories_GetList",
+          "summary": "GET the categories in your pricebook",
+          "description": "GET the categories in your pricebook",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "categoryType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Pricebook.V2.CategoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/categories",
+          "operationId": "Categories_Create",
+          "summary": "Post to add a new category to your pricebook",
+          "description": "Post to add a new category to your pricebook",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.CategoryCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.CategoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/categories/{id}",
+          "operationId": "Categories_Delete",
+          "summary": "Deletes an existing category from your pricebook",
+          "description": "Deletes an existing category from your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "204": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/categories/{id}",
+          "operationId": "Categories_Get",
+          "summary": "Gets category details",
+          "description": "Gets category details",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.CategoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/categories/{id}",
+          "operationId": "Categories_Update",
+          "summary": "Edits an existing category in your pricebook",
+          "description": "Edits an existing category in your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.CategoryUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.CategoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClientSpecificPricing",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/clientspecificpricing",
+          "operationId": "ClientSpecificPricing_GetAllRateSheets",
+          "summary": "ClientSpecificPricing_GetAllRateSheets",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "searchTerm",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Estimates.V2.ClientSpecificPricingResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/clientspecificpricing/{rateSheetId}",
+          "operationId": "ClientSpecificPricing_UpdateRateSheet",
+          "summary": "ClientSpecificPricing_UpdateRateSheet",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "rateSheetId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Estimates.V2.UpdateClientSpecificPricingRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Estimates.V2.UpdateClientSpecificPricingResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "DiscountAndFees",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/discounts-and-fees",
+          "operationId": "DiscountAndFees_GetList",
+          "summary": "Get data on all of the discounts or fees in the pricebook.",
+          "description": "Get data on all of the discounts or fees in the pricebook.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Pricebook.V2.DiscountAndFeesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/discounts-and-fees",
+          "operationId": "DiscountAndFees_Create",
+          "summary": "Post to add a new discount or fee to your pricebook",
+          "description": "Post to add a new discount or fee to your pricebook",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.DiscountAndFeesCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.DiscountAndFeesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/discounts-and-fees/{id}",
+          "operationId": "DiscountAndFees_Delete",
+          "summary": "Deletes a discount or fee from your pricebook",
+          "description": "Deletes a discount or fee from your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "204": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/discounts-and-fees/{id}",
+          "operationId": "DiscountAndFees_Get",
+          "summary": "Get details if a discount or fees in the pricebook.",
+          "description": "Get details if a discount or fees in the pricebook.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.DiscountAndFeesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/discounts-and-fees/{id}",
+          "operationId": "DiscountAndFees_Update",
+          "summary": "Edit an existing item in your pricebook",
+          "description": "Edit an existing item in your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.DiscountAndFeesUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.DiscountAndFeesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Equipment",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/equipment",
+          "operationId": "Equipment_GetList",
+          "summary": "Get data on all the equipment in the pricebook.",
+          "description": "Get data on all the equipment in the pricebook.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Pricebook.V2.EquipmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/equipment",
+          "operationId": "Equipment_Create",
+          "summary": "Post to add new equipment to your pricebook",
+          "description": "Post to add new equipment to your pricebook",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.EquipmentCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.EquipmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/equipment/{id}",
+          "operationId": "Equipment_Delete",
+          "summary": "Deletes equipment from your pricebook",
+          "description": "Deletes equipment from your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "204": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/equipment/{id}",
+          "operationId": "Equipment_Get",
+          "summary": "Get details a equipment in the pricebook.",
+          "description": "Get details a equipment in the pricebook.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.EquipmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/equipment/{id}",
+          "operationId": "Equipment_Update",
+          "summary": "Edit an existing item in your pricebook",
+          "description": "Edit an existing item in your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.EquipmentUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.EquipmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/categories",
+          "operationId": "Export_Categories",
+          "summary": "Provides export feed for categories",
+          "description": "Provides export feed for categories",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Pricebook.V2.ExportCategoryResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/equipment",
+          "operationId": "Export_Equipment",
+          "summary": "Provides export feed for equipment",
+          "description": "Provides export feed for equipment",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Pricebook.V2.ExportEquipmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/materials",
+          "operationId": "Export_Materials",
+          "summary": "Provides export feed for materials",
+          "description": "Provides export feed for materials",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Pricebook.V2.ExportMaterialResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/services",
+          "operationId": "Export_Services",
+          "summary": "Provides export feed for services",
+          "description": "Provides export feed for services",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Pricebook.V2.ExportServiceResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/images",
+          "operationId": "Images_Get",
+          "summary": "Downloads a specified pricebook image.",
+          "description": "Downloads a specified pricebook image.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "302": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/images",
+          "operationId": "Images_Post",
+          "summary": "Uploads a specified image to temporary storage.\nTo associate the image with a pricebook item, send a separate request to update that item.",
+          "description": "Uploads a specified image to temporary storage.\nTo associate the image with a pricebook item, send a separate request to update that item.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.ImageUploadResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Materials",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/materials",
+          "operationId": "Materials_GetList",
+          "summary": "Get details on materials in the pricebook.",
+          "description": "Get details on materials in the pricebook.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "isOtherDirectCost",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "costTypeIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Pricebook.V2.MaterialResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/materials",
+          "operationId": "Materials_Create",
+          "summary": "Add a new Materials to your pricebook",
+          "description": "Add a new Materials to your pricebook",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.MaterialCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.MaterialResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/materials/{id}",
+          "operationId": "Materials_Delete",
+          "summary": "Deletes a material from your pricebook",
+          "description": "Deletes a material from your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "204": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/materials/{id}",
+          "operationId": "Materials_Get",
+          "summary": "Get details on a material in the pricebook.",
+          "description": "Get details on a material in the pricebook.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.MaterialResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/materials/{id}",
+          "operationId": "Materials_Update",
+          "summary": "Edit an existing item in your pricebook",
+          "description": "Edit an existing item in your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.MaterialUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.MaterialResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/materials/costtypes",
+          "operationId": "Materials_GetCostTypes",
+          "summary": "Get details on materials in the pricebook.",
+          "description": "Get details on materials in the pricebook.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Pricebook.V2.CostTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "MaterialsMarkup",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/materialsmarkup",
+          "operationId": "MaterialsMarkup_GetList",
+          "summary": "Get materials markup collection",
+          "description": "Get materials markup collection",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/CollectionResult_Of_Pricebook.V2.MaterialsMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/materialsmarkup",
+          "operationId": "MaterialsMarkup_Create",
+          "summary": "Create materials markup item",
+          "description": "Create materials markup item",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.MaterialsMarkupRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Result_Of_Pricebook.V2.MaterialsMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/materialsmarkup/{id}",
+          "operationId": "MaterialsMarkup_Get",
+          "summary": "Get materials markup item",
+          "description": "Get materials markup item",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Result_Of_Pricebook.V2.MaterialsMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/tenant/{tenant}/materialsmarkup/{id}",
+          "operationId": "MaterialsMarkup_Update",
+          "summary": "Update materials markup item",
+          "description": "Update materials markup item",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.MaterialsMarkupRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Result_Of_Pricebook.V2.MaterialsMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PricebookBulk",
+      "endpoints": [
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/pricebook",
+          "operationId": "PricebookBulk_Update",
+          "summary": "PricebookBulk_Update",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.PricebookBulkUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/pricebook",
+          "operationId": "PricebookBulk_Create",
+          "summary": "PricebookBulk_Create",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.PricebookBulkCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.PricebookBulkCreateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/services",
+          "operationId": "Services_GetList",
+          "summary": "Get data on all of the services in the pricebook.",
+          "description": "Get data on all of the services in the pricebook.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "calculatePrices",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Pricebook.V2.ServiceGetResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/services",
+          "operationId": "Services_Create",
+          "summary": "Post to add a new service to your pricebook",
+          "description": "Post to add a new service to your pricebook",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.ServiceCreateRequest"
+          },
+          "responses": {
+            "201": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.ServiceResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/services/{id}",
+          "operationId": "Services_Delete",
+          "summary": "Deletes a service from your pricebook",
+          "description": "Deletes a service from your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "204": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/services/{id}",
+          "operationId": "Services_Get",
+          "summary": "Get details a service in the pricebook.",
+          "description": "Get details a service in the pricebook.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "calculatePrices",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.ServiceGetResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/services/{id}",
+          "operationId": "Services_Update",
+          "summary": "Edit an existing item in your pricebook",
+          "description": "Edit an existing item in your pricebook",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Pricebook.V2.ServiceUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Pricebook.V2.ServiceResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 40,
+    "byMethod": {
+      "GET": 19,
+      "POST": 8,
+      "PATCH": 7,
+      "PUT": 1,
+      "DELETE": 5
+    }
+  }
+}

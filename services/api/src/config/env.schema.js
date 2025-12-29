@@ -1,0 +1,67 @@
+/**
+ * Environment Variable Schema
+ * Validates all required environment variables using Zod
+ */
+
+import { z } from 'zod';
+
+export const envSchema = z.object({
+  // ServiceTitan API credentials
+  SERVICE_TITAN_TENANT_ID: z.string().min(1, 'SERVICE_TITAN_TENANT_ID is required'),
+  SERVICE_TITAN_CLIENT_ID: z.string().min(1, 'SERVICE_TITAN_CLIENT_ID is required'),
+  SERVICE_TITAN_CLIENT_SECRET: z.string().min(1, 'SERVICE_TITAN_CLIENT_SECRET is required'),
+  SERVICE_TITAN_APP_KEY: z.string().min(1, 'SERVICE_TITAN_APP_KEY is required'),
+
+  // Server configuration
+  PORT: z.string().default('3001').transform(Number),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  // Optional: API key for protecting internal endpoints
+  API_KEY: z.string().optional(),
+
+  // Optional: Rate limiting
+  RATE_LIMIT_WINDOW_MS: z.string().default('60000').transform(Number),
+  RATE_LIMIT_MAX_REQUESTS: z.string().default('100').transform(Number),
+
+  // Optional: Token cache TTL (seconds before expiry to refresh)
+  TOKEN_REFRESH_BUFFER_SECONDS: z.string().default('300').transform(Number),
+
+  // Optional: Retry configuration
+  MAX_RETRIES: z.string().default('3').transform(Number),
+  RETRY_DELAY_MS: z.string().default('1000').transform(Number),
+
+  // Optional: Log level
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
+
+  // Database configuration (for job sync)
+  DATABASE_URL: z.string().optional(),
+  DATABASE_MAX_CONNECTIONS: z.string().default('20').transform(Number),
+
+  // AWS S3 configuration (for pricebook images)
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_REGION: z.string().default('us-east-1'),
+  AWS_S3_BUCKET: z.string().optional(),
+  AWS_CLOUDFRONT_DOMAIN: z.string().optional(),
+
+  // Redis configuration (for BullMQ queues)
+  REDIS_URL: z.string().optional(),
+  REDIS_HOST: z.string().optional(),
+  REDIS_PORT: z.string().optional().transform(val => val ? Number(val) : undefined),
+  REDIS_PASSWORD: z.string().optional(),
+  REDIS_DB: z.string().optional().transform(val => val ? Number(val) : undefined),
+});
+
+export function validateEnv() {
+  const result = envSchema.safeParse(process.env);
+
+  if (!result.success) {
+    console.error('❌ Environment validation failed:');
+    result.error.issues.forEach((issue) => {
+      console.error(`   - ${issue.path.join('.')}: ${issue.message}`);
+    });
+    process.exit(1);
+  }
+
+  return result.data;
+}

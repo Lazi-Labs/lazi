@@ -1,0 +1,172 @@
+{
+  "id": "data-flow-chain",
+  "name": "LAZI Data Flow Chain",
+  "description": "Shows how data flows from ServiceTitan through all database schemas to frontend",
+  "version": "1.0.0",
+  "createdAt": "2024-12-26T00:00:00Z",
+  "updatedAt": "2024-12-26T00:00:00Z",
+  "metadata": {
+    "category": "data-flow",
+    "isTemplate": true,
+    "tags": ["core", "data-flow", "servicetitan"]
+  },
+  "nodes": [
+    {
+      "id": "st-api",
+      "type": "apiSource",
+      "position": { "x": 50, "y": 200 },
+      "data": {
+        "label": "ServiceTitan",
+        "description": "External API",
+        "config": {
+          "provider": "servicetitan",
+          "domain": "all",
+          "endpoint": "/api/v2/*",
+          "method": "GET"
+        }
+      }
+    },
+    {
+      "id": "raw-schema",
+      "type": "database",
+      "position": { "x": 250, "y": 200 },
+      "data": {
+        "label": "raw.*",
+        "description": "Raw ST data storage",
+        "config": {
+          "schema": "raw",
+          "table": "st_*",
+          "description": "Exact copies of ST API responses"
+        },
+        "liveData": {
+          "rowCount": 6217,
+          "lastSync": "2024-12-26T00:00:00Z"
+        }
+      }
+    },
+    {
+      "id": "master-schema",
+      "type": "database",
+      "position": { "x": 450, "y": 200 },
+      "data": {
+        "label": "master.*",
+        "description": "Normalized business data",
+        "config": {
+          "schema": "master",
+          "table": "*",
+          "description": "Cleaned and normalized data"
+        },
+        "liveData": {
+          "rowCount": 1451
+        }
+      }
+    },
+    {
+      "id": "crm-schema",
+      "type": "database",
+      "position": { "x": 650, "y": 200 },
+      "data": {
+        "label": "crm.*",
+        "description": "CRM-specific data",
+        "config": {
+          "schema": "crm",
+          "table": "*",
+          "description": "Customer relationship data"
+        },
+        "liveData": {
+          "rowCount": 8
+        }
+      }
+    },
+    {
+      "id": "audit-schema",
+      "type": "database",
+      "position": { "x": 850, "y": 200 },
+      "data": {
+        "label": "audit.*",
+        "description": "Audit logs",
+        "config": {
+          "schema": "audit",
+          "table": "*",
+          "description": "Change history and audit trail"
+        },
+        "liveData": {
+          "rowCount": 0
+        }
+      }
+    },
+    {
+      "id": "frontend-customers",
+      "type": "frontend",
+      "position": { "x": 650, "y": 50 },
+      "data": {
+        "label": "Customers Page",
+        "config": {
+          "component": "CustomersPage",
+          "page": "/customers",
+          "hooks": ["useCustomers"]
+        }
+      }
+    },
+    {
+      "id": "frontend-jobs",
+      "type": "frontend",
+      "position": { "x": 650, "y": 350 },
+      "data": {
+        "label": "Jobs Page",
+        "config": {
+          "component": "JobsPage",
+          "page": "/jobs",
+          "hooks": ["useJobs"]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-st-raw",
+      "source": "st-api",
+      "target": "raw-schema",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { "label": "sync" }
+    },
+    {
+      "id": "e-raw-master",
+      "source": "raw-schema",
+      "target": "master-schema",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { "label": "trigger" }
+    },
+    {
+      "id": "e-master-crm",
+      "source": "master-schema",
+      "target": "crm-schema",
+      "type": "dataFlow",
+      "animated": true,
+      "data": { "label": "trigger" }
+    },
+    {
+      "id": "e-crm-audit",
+      "source": "crm-schema",
+      "target": "audit-schema",
+      "type": "dataFlow",
+      "data": { "label": "trigger" }
+    },
+    {
+      "id": "e-crm-customers",
+      "source": "crm-schema",
+      "target": "frontend-customers",
+      "type": "dataFlow",
+      "data": { "label": "API" }
+    },
+    {
+      "id": "e-master-jobs",
+      "source": "master-schema",
+      "target": "frontend-jobs",
+      "type": "dataFlow",
+      "data": { "label": "API" }
+    }
+  ]
+}

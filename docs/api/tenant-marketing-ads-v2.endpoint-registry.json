@@ -1,0 +1,341 @@
+{
+  "sourceFile": "tenant-marketing-ads-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/marketingads/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Marketing Ads",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "AttributedLeads",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/attributed-leads",
+          "operationId": "AttributedLeads_Get",
+          "summary": "Returns attributed leads data.",
+          "description": "Returns attributed leads data.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "fromUtc",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "toUtc",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "leadType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Marketing.Ads.Contracts.AttributedLeads.GetAttributedLeadsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "CapacityAwarenessWarning",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/capacity-warnings",
+          "operationId": "CapacityAwarenessWarning_Get",
+          "summary": "Returns all capacity awareness warnings.",
+          "description": "Returns all capacity awareness warnings.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Marketing.Ads.Contracts.CapacityAwarenessWarningQueryResult"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExternalCallAttributions",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/external-call-attributions",
+          "operationId": "ExternalCallAttributions_Create",
+          "summary": "Attributes an external call (possibly coming from Call Tracking Software) to a web session.",
+          "description": "Attributes an external call (possibly coming from Call Tracking Software) to a web session.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Marketing.Ads.V2.CreateExternalCallAttributionRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Performance",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/performance",
+          "operationId": "Performance_Get",
+          "summary": "Returns performance data.",
+          "description": "Returns performance data.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "fromUtc",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "toUtc",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "performanceSegmentationType",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Marketing.Ads.Contracts.Performance.GetPerformanceResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ScheduledJobAttributions",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/job-attributions",
+          "operationId": "ScheduledJobAttributions_Create",
+          "summary": "Attributes a job to a web session.",
+          "description": "Attributes a job to a web session.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Marketing.Ads.V2.CreateScheduledJobAttributionRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "WebBookingAttributions",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/web-booking-attributions",
+          "operationId": "WebBookingAttributions_Create",
+          "summary": "Attributes a web booking to a web session.",
+          "description": "Attributes a web booking to a web session.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Marketing.Ads.V2.CreateWebBookingAttributionRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "WebLeadFormAttributions",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/web-lead-form-attributions",
+          "operationId": "WebLeadFormAttributions_Create",
+          "summary": "Attributes a web lead form to a web session.",
+          "description": "Attributes a web lead form to a web session.",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Marketing.Ads.V2.CreateWebLeadFormAttributionRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 7,
+    "byMethod": {
+      "GET": 3,
+      "POST": 4,
+      "PATCH": 0,
+      "PUT": 0,
+      "DELETE": 0
+    }
+  }
+}

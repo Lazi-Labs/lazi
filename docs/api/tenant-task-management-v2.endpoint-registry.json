@@ -1,0 +1,361 @@
+{
+  "sourceFile": "tenant-task-management-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/taskmanagement/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Task Management",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "ClientSideData",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/data",
+          "operationId": "ClientSideData_Get",
+          "summary": "ClientSideData_Get",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TaskManagement.V2.ClientSideDataResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/tasks",
+          "operationId": "Tasks_GetTasks",
+          "summary": "Get a list of tasks",
+          "description": "Get a list of tasks",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reportedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reportedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "completeBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "completeOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "isClosed",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "statuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeSubtasks",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "employeeTaskTypeIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "employeeTaskSourceIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "employeeTaskResolutionIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "reportedById",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "assignedToId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "involvedEmployeeIdList",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customerId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "priorities",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "taskNumber",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_TaskManagement.V2.TaskGetResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/tasks",
+          "operationId": "Tasks_Create",
+          "summary": "Tasks_Create",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TaskManagement.V2.TaskCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TaskManagement.V2.TaskCreateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/tasks/{id}",
+          "operationId": "Tasks_GetTask",
+          "summary": "Get a Task by Id",
+          "description": "Get a Task by Id",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "includeSubtasks",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TaskManagement.V2.TaskGetResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/tasks/{id}/subtasks",
+          "operationId": "Tasks_CreateSubtask",
+          "summary": "Tasks_CreateSubtask",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/TaskManagement.V2.SubtaskCreateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/TaskManagement.V2.SubtaskCreateResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 5,
+    "byMethod": {
+      "GET": 3,
+      "POST": 2,
+      "PATCH": 0,
+      "PUT": 0,
+      "DELETE": 0
+    }
+  }
+}

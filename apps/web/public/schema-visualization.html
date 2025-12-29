@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfect Catch - Database Schema Data Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .schema-box {
+            transition: all 0.3s ease;
+        }
+        .schema-box:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .flow-arrow {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .data-path {
+            stroke-dasharray: 5;
+            animation: dash 1s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -10; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-4xl font-bold text-center mb-2">Perfect Catch Database Architecture</h1>
+        <p class="text-gray-400 text-center mb-8">9 Schemas · Data Flow · Connections</p>
+        
+        <!-- Main Flow Diagram -->
+        <div class="bg-gray-800 rounded-2xl p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 text-center">Data Flow Overview</h2>
+            
+            <svg viewBox="0 0 1000 600" class="w-full">
+                <!-- Background Grid -->
+                <defs>
+                    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#374151" stroke-width="0.5"/>
+                    </pattern>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#60A5FA"/>
+                    </marker>
+                    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#34D399"/>
+                    </marker>
+                    <marker id="arrowhead-purple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#A78BFA"/>
+                    </marker>
+                    <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#FBBF24"/>
+                    </marker>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)"/>
+                
+                <!-- External Sources -->
+                <g transform="translate(50, 150)">
+                    <rect x="0" y="0" width="120" height="80" rx="10" fill="#1F2937" stroke="#6366F1" stroke-width="2"/>
+                    <text x="60" y="35" text-anchor="middle" fill="#A5B4FC" font-size="12" font-weight="bold">ServiceTitan</text>
+                    <text x="60" y="55" text-anchor="middle" fill="#9CA3AF" font-size="10">API</text>
+                </g>
+                
+                <g transform="translate(50, 350)">
+                    <rect x="0" y="0" width="120" height="80" rx="10" fill="#1F2937" stroke="#6366F1" stroke-width="2"/>
+                    <text x="60" y="35" text-anchor="middle" fill="#A5B4FC" font-size="12" font-weight="bold">User</text>
+                    <text x="60" y="55" text-anchor="middle" fill="#9CA3AF" font-size="10">Frontend</text>
+                </g>
+                
+                <!-- RAW Schema -->
+                <g transform="translate(220, 120)">
+                    <rect x="0" y="0" width="140" height="140" rx="10" fill="#1E3A5F" stroke="#3B82F6" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#60A5FA" font-size="14" font-weight="bold">RAW</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">24 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">st_customers</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">st_jobs</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">st_invoices</text>
+                    <text x="70" y="125" text-anchor="middle" fill="#9CA3AF" font-size="9">~10,327 rows</text>
+                </g>
+                
+                <!-- MASTER Schema -->
+                <g transform="translate(420, 120)">
+                    <rect x="0" y="0" width="140" height="140" rx="10" fill="#1E3A5F" stroke="#3B82F6" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#60A5FA" font-size="14" font-weight="bold">MASTER</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">12 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">customers</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">jobs</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">invoices</text>
+                    <text x="70" y="125" text-anchor="middle" fill="#9CA3AF" font-size="9">~8,555 rows</text>
+                </g>
+                
+                <!-- CRM Schema -->
+                <g transform="translate(620, 120)">
+                    <rect x="0" y="0" width="140" height="140" rx="10" fill="#1E3A5F" stroke="#10B981" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#34D399" font-size="14" font-weight="bold">CRM</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">13 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">contacts</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">opportunities</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">activities</text>
+                    <text x="70" y="125" text-anchor="middle" fill="#9CA3AF" font-size="9">~1,699 rows</text>
+                </g>
+                
+                <!-- AUDIT Schema -->
+                <g transform="translate(820, 120)">
+                    <rect x="0" y="0" width="140" height="140" rx="10" fill="#1E3A5F" stroke="#A78BFA" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#A78BFA" font-size="14" font-weight="bold">AUDIT</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">8 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">change_log</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">entity_history</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">event_log</text>
+                    <text x="70" y="125" text-anchor="middle" fill="#9CA3AF" font-size="9">All changes</text>
+                </g>
+                
+                <!-- AUTH Schema -->
+                <g transform="translate(220, 320)">
+                    <rect x="0" y="0" width="140" height="120" rx="10" fill="#1E3A5F" stroke="#F59E0B" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#FBBF24" font-size="14" font-weight="bold">AUTH</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">3 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">users</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">sessions</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">password_resets</text>
+                </g>
+                
+                <!-- WORKFLOW Schema -->
+                <g transform="translate(420, 320)">
+                    <rect x="0" y="0" width="140" height="120" rx="10" fill="#1E3A5F" stroke="#EC4899" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#F472B6" font-size="14" font-weight="bold">WORKFLOW</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">11 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">definitions</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">executions</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">Temporal state</text>
+                </g>
+                
+                <!-- SYNC Schema -->
+                <g transform="translate(620, 320)">
+                    <rect x="0" y="0" width="140" height="120" rx="10" fill="#1E3A5F" stroke="#06B6D4" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#22D3EE" font-size="14" font-weight="bold">SYNC</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">3 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">outbound_queue</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">entity_mappings</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">history</text>
+                </g>
+                
+                <!-- INTEGRATIONS Schema -->
+                <g transform="translate(820, 320)">
+                    <rect x="0" y="0" width="140" height="120" rx="10" fill="#1E3A5F" stroke="#8B5CF6" stroke-width="3"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#A78BFA" font-size="14" font-weight="bold">INTEGRATIONS</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="10">4 tables</text>
+                    <line x1="10" y1="60" x2="130" y2="60" stroke="#374151"/>
+                    <text x="70" y="80" text-anchor="middle" fill="#D1D5DB" font-size="9">oauth_tokens</text>
+                    <text x="70" y="95" text-anchor="middle" fill="#D1D5DB" font-size="9">webhooks</text>
+                    <text x="70" y="110" text-anchor="middle" fill="#D1D5DB" font-size="9">QuickBooks, etc</text>
+                </g>
+                
+                <!-- External Systems -->
+                <g transform="translate(820, 500)">
+                    <rect x="0" y="0" width="140" height="70" rx="10" fill="#1F2937" stroke="#8B5CF6" stroke-width="2"/>
+                    <text x="70" y="30" text-anchor="middle" fill="#A78BFA" font-size="11" font-weight="bold">External Systems</text>
+                    <text x="70" y="50" text-anchor="middle" fill="#9CA3AF" font-size="9">QuickBooks, Stripe</text>
+                </g>
+                
+                <!-- Flow Arrows -->
+                <!-- ServiceTitan to RAW -->
+                <path d="M 170 190 L 210 190" stroke="#3B82F6" stroke-width="3" marker-end="url(#arrowhead)" class="data-path"/>
+                <text x="190" y="180" fill="#60A5FA" font-size="9" text-anchor="middle">fetch</text>
+                
+                <!-- RAW to MASTER (trigger) -->
+                <path d="M 360 190 L 410 190" stroke="#3B82F6" stroke-width="3" marker-end="url(#arrowhead)" class="data-path"/>
+                <text x="385" y="180" fill="#60A5FA" font-size="9" text-anchor="middle">trigger</text>
+                
+                <!-- MASTER to CRM (trigger) -->
+                <path d="M 560 190 L 610 190" stroke="#10B981" stroke-width="3" marker-end="url(#arrowhead-green)" class="data-path"/>
+                <text x="585" y="180" fill="#34D399" font-size="9" text-anchor="middle">trigger</text>
+                
+                <!-- CRM to AUDIT (trigger) -->
+                <path d="M 760 190 L 810 190" stroke="#A78BFA" stroke-width="3" marker-end="url(#arrowhead-purple)" class="data-path"/>
+                <text x="785" y="180" fill="#A78BFA" font-size="9" text-anchor="middle">trigger</text>
+                
+                <!-- User to AUTH -->
+                <path d="M 170 390 L 210 380" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrowhead-yellow)"/>
+                <text x="190" y="375" fill="#FBBF24" font-size="9" text-anchor="middle">login</text>
+                
+                <!-- User to CRM -->
+                <path d="M 170 370 L 620 180" stroke="#10B981" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                <text x="380" y="260" fill="#34D399" font-size="9" text-anchor="middle">read/write</text>
+                
+                <!-- SYNC to External -->
+                <path d="M 760 420 L 850 500" stroke="#06B6D4" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <text x="810" y="470" fill="#22D3EE" font-size="9" text-anchor="middle">push</text>
+                
+                <!-- INTEGRATIONS to External -->
+                <path d="M 890 440 L 890 490" stroke="#8B5CF6" stroke-width="2" marker-end="url(#arrowhead-purple)"/>
+                <text x="905" y="470" fill="#A78BFA" font-size="9" text-anchor="middle">auth</text>
+                
+            </svg>
+        </div>
+        
+        <!-- Schema Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- RAW -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-blue-400">RAW</h3>
+                    <span class="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm">24 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">Immutable ServiceTitan API data</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-blue-300">ServiceTitan Fetchers</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Triggers only</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">st_customers, st_jobs</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">📥 Data comes IN from ServiceTitan API via scheduled Temporal workflows</p>
+                </div>
+            </div>
+            
+            <!-- MASTER -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-blue-400">MASTER</h3>
+                    <span class="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm">12 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">Denormalized business data</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-blue-300">Triggers (raw.*)</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Dashboard, Reports</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">customers, jobs, invoices</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">🔄 Auto-populated via triggers when raw.* changes. READ-ONLY for app.</p>
+                </div>
+            </div>
+            
+            <!-- CRM -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-green-400">CRM</h3>
+                    <span class="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm">13 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">User-editable CRM data</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-green-300">Users + Triggers</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Frontend UI</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">contacts, opportunities</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">✏️ Users can edit. Initial data comes from master.* via triggers.</p>
+                </div>
+            </div>
+            
+            <!-- AUTH -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-yellow-400">AUTH</h3>
+                    <span class="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-sm">3 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">User authentication</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-yellow-300">Login/Register</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Auth middleware</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">users, sessions</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">🔐 JWT tokens, sessions, password hashes. Isolated from business data.</p>
+                </div>
+            </div>
+            
+            <!-- AUDIT -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-purple-400">AUDIT</h3>
+                    <span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm">8 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">Change tracking & history</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-purple-300">Triggers (crm.*)</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Admin, Debugging</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">change_log</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">📋 Every CRM change logged automatically. Who changed what, when.</p>
+                </div>
+            </div>
+            
+            <!-- WORKFLOW -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-pink-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-pink-400">WORKFLOW</h3>
+                    <span class="bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full text-sm">11 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">Automation definitions</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-pink-300">Admin UI</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Temporal Workers</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">definitions, executions</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">⚙️ Stores workflow definitions. Temporal handles actual execution.</p>
+                </div>
+            </div>
+            
+            <!-- SYNC -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-cyan-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-cyan-400">SYNC</h3>
+                    <span class="bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full text-sm">3 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">Outbound sync queue</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-cyan-300">App Logic</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">Sync Workers</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">outbound_queue</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">📤 Queue for pushing data OUT to QuickBooks, ServiceTitan, etc.</p>
+                </div>
+            </div>
+            
+            <!-- INTEGRATIONS -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-violet-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-violet-400">INTEGRATIONS</h3>
+                    <span class="bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full text-sm">4 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">External API credentials</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Write from:</span>
+                        <span class="text-violet-300">OAuth Callbacks</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Read by:</span>
+                        <span class="text-gray-300">API Clients</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Key tables:</span>
+                        <span class="text-gray-300">oauth_tokens, webhooks</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">🔑 Stores QuickBooks, Stripe, Google OAuth tokens securely.</p>
+                </div>
+            </div>
+            
+            <!-- PUBLIC -->
+            <div class="schema-box bg-gray-800 rounded-xl p-6 border-l-4 border-gray-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-400">PUBLIC</h3>
+                    <span class="bg-gray-500/20 text-gray-300 px-3 py-1 rounded-full text-sm">0 tables</span>
+                </div>
+                <p class="text-gray-400 mb-4">PostgreSQL extensions only</p>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Contains:</span>
+                        <span class="text-gray-300">uuid-ossp, pgcrypto</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Status:</span>
+                        <span class="text-green-300">Clean ✓</span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                    <p class="text-xs text-gray-400">🧹 Cleaned up. Was 67 legacy tables, now empty.</p>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Data Flow Chain -->
+        <div class="bg-gray-800 rounded-2xl p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6 text-center">The Main Data Flow Chain</h2>
+            
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                <!-- ServiceTitan -->
+                <div class="bg-indigo-900/50 rounded-xl p-4 text-center min-w-[150px]">
+                    <div class="text-3xl mb-2">🏢</div>
+                    <div class="text-indigo-300 font-semibold">ServiceTitan</div>
+                    <div class="text-gray-500 text-sm">External API</div>
+                </div>
+                
+                <div class="text-2xl text-blue-400 transform md:rotate-0 rotate-90">→</div>
+                
+                <!-- RAW -->
+                <div class="bg-blue-900/50 rounded-xl p-4 text-center min-w-[150px] border-2 border-blue-500">
+                    <div class="text-3xl mb-2">📥</div>
+                    <div class="text-blue-300 font-semibold">raw.*</div>
+                    <div class="text-gray-500 text-sm">Temporal fetches</div>
+                </div>
+                
+                <div class="text-2xl text-blue-400 transform md:rotate-0 rotate-90">→</div>
+                <div class="text-xs text-gray-500 -mt-2 md:-mt-8">trigger</div>
+                
+                <!-- MASTER -->
+                <div class="bg-blue-900/50 rounded-xl p-4 text-center min-w-[150px] border-2 border-blue-500">
+                    <div class="text-3xl mb-2">📊</div>
+                    <div class="text-blue-300 font-semibold">master.*</div>
+                    <div class="text-gray-500 text-sm">Denormalized</div>
+                </div>
+                
+                <div class="text-2xl text-green-400 transform md:rotate-0 rotate-90">→</div>
+                <div class="text-xs text-gray-500 -mt-2 md:-mt-8">trigger</div>
+                
+                <!-- CRM -->
+                <div class="bg-green-900/50 rounded-xl p-4 text-center min-w-[150px] border-2 border-green-500">
+                    <div class="text-3xl mb-2">👤</div>
+                    <div class="text-green-300 font-semibold">crm.*</div>
+                    <div class="text-gray-500 text-sm">User-editable</div>
+                </div>
+                
+                <div class="text-2xl text-purple-400 transform md:rotate-0 rotate-90">→</div>
+                <div class="text-xs text-gray-500 -mt-2 md:-mt-8">trigger</div>
+                
+                <!-- AUDIT -->
+                <div class="bg-purple-900/50 rounded-xl p-4 text-center min-w-[150px] border-2 border-purple-500">
+                    <div class="text-3xl mb-2">📋</div>
+                    <div class="text-purple-300 font-semibold">audit.*</div>
+                    <div class="text-gray-500 text-sm">Change log</div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center text-gray-400">
+                <p class="text-sm">Data flows automatically via PostgreSQL triggers. You only write to <span class="text-blue-300">raw.*</span> (from fetchers) and <span class="text-green-300">crm.*</span> (from UI).</p>
+            </div>
+        </div>
+        
+        <!-- Usage Guide -->
+        <div class="bg-gray-800 rounded-2xl p-8">
+            <h2 class="text-2xl font-semibold mb-6 text-center">When to Use Each Schema</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left py-3 px-4 text-gray-400">I want to...</th>
+                            <th class="text-left py-3 px-4 text-gray-400">Use Schema</th>
+                            <th class="text-left py-3 px-4 text-gray-400">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Store data from ServiceTitan API</td>
+                            <td class="py-3 px-4"><code class="bg-blue-500/20 text-blue-300 px-2 py-1 rounded">raw.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">INSERT INTO raw.st_customers</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Read data for dashboard/reports</td>
+                            <td class="py-3 px-4"><code class="bg-blue-500/20 text-blue-300 px-2 py-1 rounded">master.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">SELECT FROM master.customers</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Create/edit CRM contacts</td>
+                            <td class="py-3 px-4"><code class="bg-green-500/20 text-green-300 px-2 py-1 rounded">crm.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">UPDATE crm.contacts SET stage = 'Lead'</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Create/update opportunities</td>
+                            <td class="py-3 px-4"><code class="bg-green-500/20 text-green-300 px-2 py-1 rounded">crm.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">INSERT INTO crm.opportunities</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Authenticate users</td>
+                            <td class="py-3 px-4"><code class="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded">auth.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">SELECT FROM auth.users WHERE email = ?</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Store QuickBooks OAuth token</td>
+                            <td class="py-3 px-4"><code class="bg-violet-500/20 text-violet-300 px-2 py-1 rounded">integrations.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">INSERT INTO integrations.oauth_tokens</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">Queue invoice to send to QuickBooks</td>
+                            <td class="py-3 px-4"><code class="bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded">sync.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">INSERT INTO sync.outbound_queue</td>
+                        </tr>
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3 px-4">View who changed a contact</td>
+                            <td class="py-3 px-4"><code class="bg-purple-500/20 text-purple-300 px-2 py-1 rounded">audit.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">SELECT FROM audit.change_log WHERE record_id = ?</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4">Define automation workflow</td>
+                            <td class="py-3 px-4"><code class="bg-pink-500/20 text-pink-300 px-2 py-1 rounded">workflow.*</code></td>
+                            <td class="py-3 px-4 text-gray-400">INSERT INTO workflow.definitions</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-500 text-sm">
+            <p>Perfect Catch CRM • 9 Schemas • Single PostgreSQL Database</p>
+        </div>
+    </div>
+</body>
+</html>

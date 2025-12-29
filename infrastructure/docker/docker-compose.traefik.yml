@@ -1,0 +1,35 @@
+# ============================================
+# LAZI CRM - Traefik Routing Configuration
+# ============================================
+# This creates a lightweight container that exists solely to provide
+# Traefik routing labels for the LAZI services running via PM2
+
+version: '3.8'
+
+networks:
+  traefik-net:
+    external: true
+
+services:
+  lazi-router:
+    image: alpine:latest
+    container_name: lazi-router
+    command: sleep infinity
+    restart: unless-stopped
+    networks:
+      - traefik-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      # Enable Traefik for this container
+      - "traefik.enable=true"
+      
+      # ============================================
+      # LAZI API (Express on port 3001)
+      # ============================================
+      - "traefik.http.routers.lazi-api.rule=Host(`lazilabs.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.lazi-api.entrypoints=websecure"
+      - "traefik.http.routers.lazi-api.tls=true"
+      - "traefik.http.routers.lazi-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lazi-api.service=lazi-api"
+      - "traefik.http.services.lazi-api.loadbalancer.server.url=http://host.docker.internal:3001"

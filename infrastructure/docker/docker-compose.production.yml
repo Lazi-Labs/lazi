@@ -1,0 +1,130 @@
+version: "3.8"
+
+services:
+  # ===========================================================================
+  # LAZI API (Express Backend)
+  # ===========================================================================
+  lazi-api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: lazi-api
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://lazi-redis:6379
+      - SERVICE_TITAN_CLIENT_ID=${SERVICE_TITAN_CLIENT_ID}
+      - SERVICE_TITAN_CLIENT_SECRET=${SERVICE_TITAN_CLIENT_SECRET}
+      - SERVICE_TITAN_APP_KEY=${SERVICE_TITAN_APP_KEY}
+      - SERVICE_TITAN_TENANT_ID=${SERVICE_TITAN_TENANT_ID}
+      - ENABLE_SCHEDULED_SYNC=true
+      - PRICEBOOK_CATEGORY_SYNC_ENABLED=true
+      - PRICEBOOK_FULL_SYNC_ENABLED=true
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=https://lazilabs.com,https://www.lazilabs.com
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+    networks:
+      - lazi-internal
+      - traefik-net
+    depends_on:
+      lazi-redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lazi-api.rule=Host(`api.lazilabs.com`)"
+      - "traefik.http.routers.lazi-api.entrypoints=websecure"
+      - "traefik.http.routers.lazi-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lazi-api.loadbalancer.server.port=3001"
+      - "traefik.docker.network=traefik-net"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===========================================================================
+  # LAZI Web (Next.js Frontend)
+  # ===========================================================================
+  lazi-web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=https://api.lazilabs.com
+        - NEXT_PUBLIC_AUTH_API_URL=https://api.lazilabs.com/api/auth
+        - NEXT_PUBLIC_CRM_API_URL=https://api.lazilabs.com/api/crm
+        - NEXT_PUBLIC_TENANT_ID=${SERVICE_TITAN_TENANT_ID}
+    container_name: lazi-web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://api.lazilabs.com
+      - NEXT_PUBLIC_AUTH_API_URL=https://api.lazilabs.com/api/auth
+      - NEXT_PUBLIC_CRM_API_URL=https://api.lazilabs.com/api/crm
+      - NEXT_INTERNAL_API_URL=http://lazi-api:3001
+      - NEXT_PUBLIC_TENANT_ID=${SERVICE_TITAN_TENANT_ID}
+      # Plaid Integration
+      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
+      - PLAID_SECRET=${PLAID_SECRET}
+      - PLAID_ENV=${PLAID_ENV:-production}
+      - PLAID_WEBHOOK_URL=https://lazilabs.com/dashboard/api/plaid/webhook
+      - PLAID_REDIRECT_URI=https://lazilabs.com/dashboard/api/plaid/oauth-redirect
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    networks:
+      - lazi-internal
+      - traefik-net
+    depends_on:
+      lazi-api:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lazi-web.rule=Host(`lazilabs.com`) || Host(`www.lazilabs.com`)"
+      - "traefik.http.routers.lazi-web.entrypoints=websecure"
+      - "traefik.http.routers.lazi-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lazi-web.priority=1"
+      - "traefik.http.services.lazi-web.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-net"
+
+  # ===========================================================================
+  # Redis (Cache & Job Queue)
+  # ===========================================================================
+  lazi-redis:
+    image: redis:7-alpine
+    container_name: lazi-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - lazi-redis-data:/data
+    networks:
+      - lazi-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+# ===========================================================================
+# Networks
+# ===========================================================================
+networks:
+  lazi-internal:
+    driver: bridge
+  traefik-net:
+    external: true
+
+# ===========================================================================
+# Volumes
+# ===========================================================================
+volumes:
+  lazi-redis-data:
+    driver: local

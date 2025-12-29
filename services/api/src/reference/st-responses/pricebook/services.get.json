@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:17:42.452Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": {
+    "calculatedPrice": null,
+    "useStaticPrices": null,
+    "id": 12175,
+    "code": "PB-PUMP-20A-GFCI",
+    "displayName": "PUMP - 20A GFCI Breaker (PB)",
+    "description": "Siemens 2POL20 GFCI Breaker",
+    "warranty": {
+      "duration": 0,
+      "description": ""
+    },
+    "categories": [
+      {
+        "id": 6799,
+        "name": "Breakers",
+        "active": true
+      }
+    ],
+    "price": 216,
+    "memberPrice": 200,
+    "addOnPrice": 194,
+    "addOnMemberPrice": 200,
+    "taxable": false,
+    "account": "Services income",
+    "hours": 0.15,
+    "isLabor": false,
+    "recommendations": [],
+    "upgrades": [],
+    "assets": [
+      {
+        "alias": "B8C4B13E-8625-4DAD-AAC5-A87F08F08B71",
+        "fileName": "26872862-1c77-4a3a-b45e-d05a591b14f4.jpg",
+        "isDefault": true,
+        "type": "Image",
+        "url": "Images/Service/26872862-1c77-4a3a-b45e-d05a591b14f4.jpg"
+      }
+    ],
+    "serviceMaterials": [],
+    "serviceEquipment": [],
+    "active": true,
+    "crossSaleGroup": "",
+    "paysCommission": false,
+    "bonus": 0,
+    "commissionBonus": 0,
+    "modifiedOn": "2025-12-15T02:56:35.0643846Z",
+    "source": null,
+    "externalId": null,
+    "externalData": [],
+    "businessUnitId": 4623,
+    "cost": 0,
+    "createdOn": "2024-05-26T00:47:22.5118392Z",
+    "soldByCommission": 0,
+    "defaultAssetUrl": "Images/Service/26872862-1c77-4a3a-b45e-d05a591b14f4.jpg",
+    "budgetCostCode": null,
+    "budgetCostType": null
+  }
+}

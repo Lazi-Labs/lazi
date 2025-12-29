@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files - NEVER commit these
+.env
+.env.*
+!.env.example
+.env.production
+.env.staging
+.env.local
+.env.development.local
+.env.test.local
+
+# Logs
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Runtime data
+lib-cov/
+coverage/
+.nyc_output/
+.grunt/
+.lock-wscript/
+
+# Build outputs
+dist/
+build/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Docker
+.dockerignore
+
+# Misc
+.cache/

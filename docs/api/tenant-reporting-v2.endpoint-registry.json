@@ -1,0 +1,292 @@
+{
+  "sourceFile": "tenant-reporting-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/reporting/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Reporting",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "DynamicValueSets",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/dynamic-value-sets/{dynamicSetId}",
+          "operationId": "DynamicValueSets_GetDynamicSet",
+          "summary": "List values of given dynamic set including key and display name",
+          "description": "List values of given dynamic set including key and display name",
+          "pathParams": [
+            {
+              "name": "dynamicSetId",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Reporting.V2.DynamicSetResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ReportCategories",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/report-categories",
+          "operationId": "ReportCategories_GetCategories",
+          "summary": "List categories for existing  reports",
+          "description": "List categories for existing  reports",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Reporting.V2.ReportCategoryListItem"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ReportCategoryReports",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/report-category/{report_category}/reports",
+          "operationId": "ReportCategoryReports_GetReports",
+          "summary": "List reports within given category",
+          "description": "List reports within given category",
+          "pathParams": [
+            {
+              "name": "report_category",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Reporting.V2.ReportListItem"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/report-category/{report_category}/reports/{reportId}",
+          "operationId": "ReportCategoryReports_Get",
+          "summary": "Get report description including input parameters and output fields etc.\nTake a note that the report description isn't fixed and may be changed by the report owner.",
+          "description": "Get report description including input parameters and output fields etc.\nTake a note that the report description isn't fixed and may be changed by the report owner.",
+          "pathParams": [
+            {
+              "name": "report_category",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "reportId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Reporting.V2.ReportResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/report-category/{report_category}/reports/{reportId}/data",
+          "operationId": "ReportCategoryReports_GetData",
+          "summary": "Get report data. The result is based on current report description which isn't constant in general.\nBeware that report columns may be changed. Result field names are listed alongside the data in the response\nto validate that all the requested columns are there.",
+          "description": "Get report data. The result is based on current report description which isn't constant in general.\nBeware that report columns may be changed. Result field names are listed alongside the data in the response\nto validate that all the requested columns are there.",
+          "pathParams": [
+            {
+              "name": "report_category",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "reportId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Reporting.V2.ReportDataRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Reporting.V2.ReportDataResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 5,
+    "byMethod": {
+      "GET": 4,
+      "POST": 1,
+      "PATCH": 0,
+      "PUT": 0,
+      "DELETE": 0
+    }
+  }
+}

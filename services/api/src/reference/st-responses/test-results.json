@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "runAt": "2025-12-26T00:18:39.588Z",
+    "tenantId": "3222348440"
+  },
+  "summary": {
+    "total": 4,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 1
+  },
+  "tests": [
+    {
+      "name": "dispatch.technicians.list",
+      "status": "passed",
+      "duration": 949
+    },
+    {
+      "name": "dispatch.teams.list",
+      "status": "passed",
+      "duration": 135
+    },
+    {
+      "name": "dispatch.zones.list",
+      "status": "passed",
+      "duration": 148
+    },
+    {
+      "name": "dispatch.technicians.get",
+      "status": "skipped",
+      "reason": "No ID available"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+# ============================================
+# Supabase Studio - Schema Editor Only
+# ============================================
+# Purpose: Provides a web UI for managing PostgreSQL schema
+# - Create/edit tables, columns, constraints
+# - View and edit data
+# - Manage enums and relationships
+#
+# Usage: docker compose -f docker-compose.studio.yml up -d
+# Access: http://localhost:54323
+#
+# Note: This connects to your EXISTING PostgreSQL instance.
+# It does NOT replace or modify your Postgres setup.
+# ============================================
+
+services:
+  # ============================================
+  # Supabase Studio (Web UI)
+  # ============================================
+  # The main web interface for schema management.
+  # Requires postgres-meta for database introspection.
+  # ============================================
+  studio:
+    image: supabase/studio:20240101-8e4a094
+    container_name: pc-supabase-studio
+    restart: unless-stopped
+    ports:
+      - "54323:3000"
+    healthcheck:
+      disable: true
+    environment:
+      # Studio configuration
+      STUDIO_PG_META_URL: http://meta:8080
+      SUPABASE_URL: http://localhost:54323
+      SUPABASE_REST_URL: http://localhost:54323/rest/v1/
+      
+      # PostgreSQL connection (passed to meta service)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-perfectcatch2025}
+      
+      # Disable features we don't need
+      NEXT_PUBLIC_ENABLE_LOGS: "false"
+      NEXT_ANALYTICS_BACKEND_PROVIDER: ""
+      
+      # Default project reference (required by Studio)
+      SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+      SUPABASE_SERVICE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+    depends_on:
+      meta:
+        condition: service_healthy
+    networks:
+      - pc-internal
+
+  # ============================================
+  # Postgres Meta (Schema Introspection API)
+  # ============================================
+  # Required by Studio for:
+  # - Reading table/column definitions
+  # - Executing schema changes (CREATE TABLE, ALTER, etc.)
+  # - Querying data
+  #
+  # This is a lightweight REST API that wraps pg_catalog queries.
+  # It does NOT store any data itself.
+  # ============================================
+  meta:
+    image: supabase/postgres-meta:v0.83.2
+    container_name: pc-supabase-meta
+    restart: unless-stopped
+    environment:
+      # Connection to your existing PostgreSQL
+      PG_META_DB_HOST: ${POSTGRES_HOST:-pc-postgres}
+      PG_META_DB_PORT: ${POSTGRES_PORT:-5432}
+      PG_META_DB_NAME: ${POSTGRES_DB:-perfectcatch}
+      PG_META_DB_USER: ${POSTGRES_USER:-postgres}
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:-perfectcatch2025}
+      # Port for the meta API server
+      PG_META_PORT: 8080
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:8080/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - pc-internal
+
+# ============================================
+# Network Configuration
+# ============================================
+# Uses the same network as your main docker-compose.yml
+# so it can reach the existing PostgreSQL container.
+# ============================================
+networks:
+  pc-internal:
+    external: true
+    name: pc-internal

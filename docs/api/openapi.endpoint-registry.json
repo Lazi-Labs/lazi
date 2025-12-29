@@ -1,0 +1,575 @@
+{
+  "sourceFile": "openapi.yaml",
+  "baseUrl": "http://localhost:3001",
+  "openapiVersion": "3.0.3",
+  "api": {
+    "title": "Perfect Catch ST Automation API",
+    "version": "2.0.0"
+  },
+  "sections": [
+    {
+      "name": "Customers",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/customers",
+          "operationId": null,
+          "summary": "List all customers",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/customers",
+          "operationId": null,
+          "summary": "Create a customer",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "201": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/customers/{id}",
+          "operationId": null,
+          "summary": "Get customer by ID",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "404": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/customers/{id}",
+          "operationId": null,
+          "summary": "Update customer",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "404": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estimates",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/estimates",
+          "operationId": null,
+          "summary": "List all estimates",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/estimates",
+          "operationId": null,
+          "summary": "Create an estimate",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "201": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/estimates/{id}",
+          "operationId": null,
+          "summary": "Get estimate by ID",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/estimates/{id}",
+          "operationId": null,
+          "summary": "Update estimate",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/estimates/{id}/dismiss",
+          "operationId": null,
+          "summary": "Dismiss estimate",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/estimates/{id}/sell",
+          "operationId": null,
+          "summary": "Mark estimate as sold",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/estimates/{id}/unsell",
+          "operationId": null,
+          "summary": "Unmark estimate as sold",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "operationId": null,
+          "summary": "Detailed health check",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/HealthResponse"
+            },
+            "503": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/ping",
+          "operationId": null,
+          "summary": "Simple health check",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "operationId": null,
+          "summary": "Full system status",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/StatusResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/jobs",
+          "operationId": null,
+          "summary": "List all jobs",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/jobs/{id}",
+          "operationId": null,
+          "summary": "Get job by ID",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "404": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Opportunities",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/opportunities",
+          "operationId": null,
+          "summary": "List all opportunities",
+          "description": "",
+          "pathParams": [],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/opportunities/{id}",
+          "operationId": null,
+          "summary": "Get opportunity by ID",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/opportunities/{id}/followups",
+          "operationId": null,
+          "summary": "Get opportunity follow-ups",
+          "description": "",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 20,
+    "byMethod": {
+      "GET": 13,
+      "POST": 2,
+      "PATCH": 0,
+      "PUT": 5,
+      "DELETE": 0
+    }
+  }
+}

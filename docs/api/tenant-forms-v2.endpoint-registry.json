@@ -1,0 +1,364 @@
+{
+  "sourceFile": "tenant-forms-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/forms/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Forms",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "Form",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/forms",
+          "operationId": "Form_GetForms",
+          "summary": "Retrieve Form data",
+          "description": "Retrieve Form data",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "hasConditionalLogic",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "hasTriggers",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Forms.V2.FormResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "FormSubmission",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/submissions",
+          "operationId": "FormSubmission_GetFormSubmissions",
+          "summary": "Retrieve Form Submission Data",
+          "description": "Retrieve Form Submission Data",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "formIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdById",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "submittedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "submittedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "ownerType",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "owners",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Forms.V2.FormSubmissionResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/jobs/{id}/attachments",
+          "operationId": "Jobs_CreateAttachment",
+          "summary": "Creates a Attachment on the specified Job",
+          "description": "Creates a Attachment on the specified Job",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": null
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Forms.V2.AttachmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/{jobId}/attachments",
+          "operationId": "Jobs_GetJobAttachments",
+          "summary": "Gets Attachments on the specified Job",
+          "description": "Gets Attachments on the specified Job",
+          "pathParams": [
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/jobs/attachment/{id}",
+          "operationId": "Jobs_Get",
+          "summary": "Downloads a specified job attachment.",
+          "description": "Downloads a specified job attachment.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 5,
+    "byMethod": {
+      "GET": 4,
+      "POST": 1,
+      "PATCH": 0,
+      "PUT": 0,
+      "DELETE": 0
+    }
+  }
+}

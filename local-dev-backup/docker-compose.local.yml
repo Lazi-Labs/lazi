@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: lazi-redis-local
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lazi-local
+
+  # ============================================
+  # OPTIONAL: Redis Commander (Uncomment to use)
+  # ============================================
+  # redis-commander:
+  #   image: rediscommander/redis-commander:latest
+  #   container_name: lazi-redis-commander
+  #   environment:
+  #     - REDIS_HOSTS=local:redis:6379
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - redis
+  #   restart: unless-stopped
+  #   networks:
+  #     - lazi-local
+
+  # ============================================
+  # OPTIONAL: Temporal (Uncomment if needed)
+  # ============================================
+  # temporal:
+  #   image: temporalio/auto-setup:latest
+  #   container_name: lazi-temporal-local
+  #   ports:
+  #     - "7233:7233"
+  #   environment:
+  #     - DB=postgresql
+  #     - DB_PORT=5432
+  #     - POSTGRES_USER=temporal
+  #     - POSTGRES_PWD=temporal
+  #     - POSTGRES_SEEDS=postgresql
+  #   volumes:
+  #     - temporal_data:/etc/temporal
+  #   restart: unless-stopped
+  #   networks:
+  #     - lazi-local
+
+  # temporal-web:
+  #   image: temporalio/web:latest
+  #   container_name: lazi-temporal-web
+  #   ports:
+  #     - "8088:8088"
+  #   environment:
+  #     - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+  #   depends_on:
+  #     - temporal
+  #   restart: unless-stopped
+  #   networks:
+  #     - lazi-local
+
+  # ============================================
+  # OPTIONAL: PostgreSQL (if not using Supabase)
+  # ============================================
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: lazi-postgres-local
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=lazi
+  #     - POSTGRES_PASSWORD=lazi_dev_password
+  #     - POSTGRES_DB=lazi_crm
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U lazi"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - lazi-local
+
+  # ============================================
+  # OPTIONAL: Mailhog (Email testing)
+  # ============================================
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   container_name: lazi-mailhog
+  #   ports:
+  #     - "1025:1025"  # SMTP
+  #     - "8025:8025"  # Web UI
+  #   restart: unless-stopped
+  #   networks:
+  #     - lazi-local
+
+volumes:
+  redis_data:
+    driver: local
+  # temporal_data:
+  #   driver: local
+  # postgres_data:
+  #   driver: local
+
+networks:
+  lazi-local:
+    driver: bridge

@@ -1,0 +1,2824 @@
+{
+  "sourceFile": "tenant-inventory-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/inventory/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Inventory",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "Adjustments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/adjustments",
+          "operationId": "Adjustments_GetList",
+          "summary": "Get a list of inventory adjustments",
+          "description": "Get a list of inventory adjustments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "referenceNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "invoiceIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "inventoryLocationIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "adjustmentTypes",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customFields.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customFields.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.InventoryAdjustmentResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/adjustments/{id}",
+          "operationId": "Adjustments_Update",
+          "summary": "Update an existing adjustment",
+          "description": "Update an existing adjustment",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateAdjustmentRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/adjustments/custom-fields",
+          "operationId": "Adjustments_UpdateCustomFields",
+          "summary": "Update custom fields on adjustments",
+          "description": "Update custom fields on adjustments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/adjustments",
+          "operationId": "Export_Adjustments",
+          "summary": "Provides export feed for adjustments",
+          "description": "Provides export feed for adjustments",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Inventory.V2.ExportAdjustmentsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/purchase-orders",
+          "operationId": "Export_PurchaseOrders",
+          "summary": "Provides export feed for purchase orders",
+          "description": "Provides export feed for purchase orders",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Inventory.V2.ExportPurchaseOrdersResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/returns",
+          "operationId": "Export_Returns",
+          "summary": "Provides export feed for returns",
+          "description": "Provides export feed for returns",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Inventory.V2.ExportReturnsResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/export/transfers",
+          "operationId": "Export_Transfers",
+          "summary": "Provides export feed for transfers",
+          "description": "Provides export feed for transfers",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "from",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "includeRecentChanges",
+              "type": "boolean",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ExportResponse_Of_Inventory.V2.ExportTransfersResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PurchaseOrders",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/purchase-orders",
+          "operationId": "PurchaseOrders_GetList",
+          "summary": "Get a list of purchase orders",
+          "description": "Get a list of purchase orders",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sentOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sentBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.PurchaseOrderResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/purchase-orders",
+          "operationId": "PurchaseOrders_Create",
+          "summary": "Create a new purchase order",
+          "description": "Create a new purchase order",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CreatePurchaseOrderRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/purchase-orders/{id}",
+          "operationId": "PurchaseOrders_GetById",
+          "summary": "Get purchase order by Id",
+          "description": "Get purchase order by Id",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Inventory.V2.PurchaseOrderResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/purchase-orders/{id}",
+          "operationId": "PurchaseOrders_Update",
+          "summary": "Update an existing purchase order",
+          "description": "Update an existing purchase order",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdatePurchaseOrderRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/purchase-orders/{id}/cancellation",
+          "operationId": "PurchaseOrders_Cancel",
+          "summary": "Cancel a purchase order",
+          "description": "Cancel a purchase order",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CancelResourceRequest_Of_Inventory.V2.PurchaseOrderCancellationReason"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/purchase-orders/requests",
+          "operationId": "PurchaseOrders_GetRequests",
+          "summary": "Get a list of purchase order requests",
+          "description": "Get a list of purchase order requests",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "requestStatus",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "requestNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "jobIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "technicianId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "projectId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.PurchaseOrderRequestResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/purchase-orders/requests/{id}/approve",
+          "operationId": "PurchaseOrders_ApproveRequest",
+          "summary": "Approve purchase order request",
+          "description": "Approve purchase order request",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/purchase-orders/requests/{id}/reject",
+          "operationId": "PurchaseOrders_RejectRequest",
+          "summary": "Reject purchase order request",
+          "description": "Reject purchase order request",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.PurchaseOrderRequestRejectionArgs"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PurchaseOrdersMarkup",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/purchase-order-markups",
+          "operationId": "PurchaseOrdersMarkup_Get",
+          "summary": "Get a list of purchase order markups",
+          "description": "Get a list of purchase order markups",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.Markups.PurchaseOrderMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/purchase-order-markups",
+          "operationId": "PurchaseOrdersMarkup_Create",
+          "summary": "Create a new purchase order markup",
+          "description": "Create a new purchase order markup",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.Markups.CreatePurchaseOrderMarkupRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Inventory.V2.Markups.PurchaseOrderMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tenant/{tenant}/purchase-order-markups/{id}",
+          "operationId": "PurchaseOrdersMarkup_Delete",
+          "summary": "Deletes aan existing purchase order markup.",
+          "description": "Deletes aan existing purchase order markup.",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": false,
+            "destructive": true
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/purchase-order-markups/{id}",
+          "operationId": "PurchaseOrdersMarkup_GetById",
+          "summary": "Get purchase order markup by Id",
+          "description": "Get purchase order markup by Id",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Inventory.V2.Markups.PurchaseOrderMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/purchase-order-markups/{id}",
+          "operationId": "PurchaseOrdersMarkup_Update",
+          "summary": "Update an existing purchase order markup",
+          "description": "Update an existing purchase order markup",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.Markups.UpdatePurchaseOrderMarkupRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Inventory.V2.Markups.PurchaseOrderMarkupResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PurchaseOrderTypes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/purchase-order-types",
+          "operationId": "PurchaseOrderTypes_GetList",
+          "summary": "Get a list of purchase order types",
+          "description": "Get a list of purchase order types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.PurchaseOrderTypeResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/purchase-order-types",
+          "operationId": "PurchaseOrderTypes_Create",
+          "summary": "Create a new Purchase Order Type",
+          "description": "Create a new Purchase Order Type",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CreatePurchaseOrderTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/purchase-order-types/{id}",
+          "operationId": "PurchaseOrderTypes_Update",
+          "summary": "Update an existing purchase order type",
+          "description": "Update an existing purchase order type",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdatePurchaseOrderTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receipts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/receipts",
+          "operationId": "Receipts_GetList",
+          "summary": "Get a list of receipts",
+          "description": "Get a list of receipts",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "vendorInvoiceNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "billId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "vendorIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "inventoryLocationIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customFields.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customFields.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "receivedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "receivedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.InventoryReceiptResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/receipts",
+          "operationId": "Receipts_CreateReceipt",
+          "summary": "Create a receipt for Purchase Order",
+          "description": "Create a receipt for Purchase Order",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.ReceivePurchaseOrderRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/receipts/{id}/cancellation",
+          "operationId": "Receipts_CancelReceipts",
+          "summary": "Cancel the receipts",
+          "description": "Cancel the receipts",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CancelResourceRequest_Of_Inventory.V2.ReceiptCancellationReason"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/receipts/custom-fields",
+          "operationId": "Receipts_UpdateCustomFields",
+          "summary": "Update custom fields on receipts",
+          "description": "Update custom fields on receipts",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Returns",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/returns",
+          "operationId": "Returns_GetList",
+          "summary": "Get a list of returns",
+          "description": "Get a list of returns",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "referenceNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "jobId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "purchaseOrderId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "vendorIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "businessUnitIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "inventoryLocationIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customFields.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customFields.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "returnDateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "returnDateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.InventoryReturnResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/returns",
+          "operationId": "Returns_CreateReturn",
+          "summary": "Create a Return",
+          "description": "Create a Return",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CreateInventoryReturnRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/returns/{id}",
+          "operationId": "Returns_Update",
+          "summary": "Update an existing Return",
+          "description": "Update an existing Return",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateReturnRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/returns/{id}/cancellation",
+          "operationId": "Returns_Cancel",
+          "summary": "Cancel a Return",
+          "description": "Cancel a Return",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CancelResourceRequest_Of_Inventory.V2.ReturnCancellationReason"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/returns/custom-fields",
+          "operationId": "Returns_UpdateCustomFields",
+          "summary": "Update custom fields on returns",
+          "description": "Update custom fields on returns",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "ReturnTypes",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/return-types",
+          "operationId": "ReturnTypes_GetList",
+          "summary": "Returns the list of Return Types",
+          "description": "Returns the list of Return Types",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "activeOnly",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.ListReturnTypesResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/return-types",
+          "operationId": "ReturnTypes_Create",
+          "summary": "Create a new Return Type",
+          "description": "Create a new Return Type",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CreateReturnTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/return-types/{id}",
+          "operationId": "ReturnTypes_Update",
+          "summary": "Update an existing Return Type",
+          "description": "Update an existing Return Type",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateReturnTypeRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "409": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transfers",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/transfers",
+          "operationId": "Transfers_GetList",
+          "summary": "Get a list of transfers",
+          "description": "Get a list of transfers",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "statuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "referenceNumber",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "batchId",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "transferTypeIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "fromLocationIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "toLocationIds",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "syncStatuses",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "customFields.Fields",
+              "type": "object",
+              "required": false
+            },
+            {
+              "name": "customFields.Operator",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "dateBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.InventoryTransferResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/transfers/{id}",
+          "operationId": "Transfers_Update",
+          "summary": "Update an existing Transfer",
+          "description": "Update an existing Transfer",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateTransferRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/transfers/custom-fields",
+          "operationId": "Transfers_UpdateCustomFields",
+          "summary": "Update custom fields on transfers",
+          "description": "Update custom fields on transfers",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CustomFieldUpdateRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": null
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trucks",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/trucks",
+          "operationId": "Trucks_GetList",
+          "summary": "Get a list of trucks",
+          "description": "Get a list of trucks",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.TruckResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/trucks",
+          "operationId": "Trucks_Create",
+          "summary": "Create a new truck",
+          "description": "Create a new truck",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CreateTruckRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/trucks/{id}",
+          "operationId": "Trucks_Update",
+          "summary": "Update an existing truck",
+          "description": "Update an existing truck",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateTruckRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendors",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/vendors",
+          "operationId": "Vendors_GetList",
+          "summary": "Get a list of vendors",
+          "description": "Get a list of vendors",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "array",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.VendorResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tenant/{tenant}/vendors",
+          "operationId": "Vendors_Create",
+          "summary": "Create a new vendor",
+          "description": "Create a new vendor",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.CreateVendorRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/vendors/{id}",
+          "operationId": "Vendors_GetById",
+          "summary": "Get vendor by Id",
+          "description": "Get vendor by Id",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/Inventory.V2.VendorResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/vendors/{id}",
+          "operationId": "Vendors_Update",
+          "summary": "Update an existing vendor",
+          "description": "Update an existing vendor",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateVendorRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Warehouses",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/warehouses",
+          "operationId": "Warehouses_GetList",
+          "summary": "Get a list of warehouses",
+          "description": "Get a list of warehouses",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "ids",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataApplicationGuid",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataKey",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "externalDataValues",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Inventory.V2.WarehouseResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tenant/{tenant}/warehouses/{id}",
+          "operationId": "Warehouses_Update",
+          "summary": "Update an existing warehouse",
+          "description": "Update an existing warehouse",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [],
+          "requestBody": {
+            "contentTypes": [
+              "application/json"
+            ],
+            "schemaRef": "#/components/schemas/Inventory.V2.UpdateWarehouseRequest"
+          },
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/ModificationResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            },
+            "404": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": false,
+            "writesData": true,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 47,
+    "byMethod": {
+      "GET": 19,
+      "POST": 8,
+      "PATCH": 19,
+      "PUT": 0,
+      "DELETE": 1
+    }
+  }
+}

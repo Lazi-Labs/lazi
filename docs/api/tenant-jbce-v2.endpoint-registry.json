@@ -1,0 +1,101 @@
+{
+  "sourceFile": "tenant-jbce-v2.json",
+  "baseUrl": "https://api-integration.servicetitan.io/jbce/v2",
+  "openapiVersion": "3.0.1",
+  "api": {
+    "title": "Job Booking",
+    "version": "1.0"
+  },
+  "sections": [
+    {
+      "name": "CallReasons",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/tenant/{tenant}/call-reasons",
+          "operationId": "CallReasons_Get",
+          "summary": "Gets a list of call reasons",
+          "description": "Gets a list of call reasons",
+          "pathParams": [
+            {
+              "name": "tenant",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "pageSize",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "name": "includeTotal",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "active",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "createdOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedBefore",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "modifiedOnOrAfter",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "sort",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requestBody": null,
+          "responses": {
+            "200": {
+              "schemaRef": "#/components/schemas/PaginatedResponse_Of_Jbce.V2.CallReasonResponse"
+            },
+            "400": {
+              "schemaRef": "#/components/schemas/ApiErrorResponse"
+            }
+          },
+          "classification": {
+            "readOnly": true,
+            "writesData": false,
+            "destructive": false
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalEndpoints": 1,
+    "byMethod": {
+      "GET": 1,
+      "POST": 0,
+      "PATCH": 0,
+      "PUT": 0,
+      "DELETE": 0
+    }
+  }
+}

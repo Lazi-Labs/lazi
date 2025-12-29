@@ -1,0 +1,150 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:17:43.169Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": {
+    "id": 9404,
+    "code": "TRANS-100",
+    "displayName": "100W Transformer Intermatic",
+    "description": "100W Transormer",
+    "cost": 92,
+    "active": true,
+    "price": 92,
+    "memberPrice": 184,
+    "addOnPrice": 184,
+    "addOnMemberPrice": 184,
+    "hours": 0,
+    "bonus": 0,
+    "commissionBonus": 0,
+    "paysCommission": false,
+    "deductAsJobCost": false,
+    "unitOfMeasure": "Null",
+    "isInventory": false,
+    "account": "INCOME-Sales",
+    "costOfSaleAccount": "SUPPLIES & MATERIALS – COGS:Materials & Parts (COGS)",
+    "assetAccount": null,
+    "taxable": false,
+    "primaryVendor": {
+      "id": 10497,
+      "vendorName": "CED",
+      "vendorId": 8833,
+      "memo": null,
+      "vendorPart": "PX100",
+      "cost": 92,
+      "active": true,
+      "primarySubAccount": null,
+      "otherSubAccounts": []
+    },
+    "otherVendors": [
+      {
+        "id": 10498,
+        "vendorName": "Amazon",
+        "vendorId": 10124,
+        "memo": null,
+        "vendorPart": null,
+        "cost": 0,
+        "active": false,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      },
+      {
+        "id": 10502,
+        "vendorName": "SCP",
+        "vendorId": 9858,
+        "memo": null,
+        "vendorPart": null,
+        "cost": 0,
+        "active": false,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      },
+      {
+        "id": 10497,
+        "vendorName": "CED",
+        "vendorId": 8833,
+        "memo": null,
+        "vendorPart": "PX100",
+        "cost": 92,
+        "active": true,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      },
+      {
+        "id": 10499,
+        "vendorName": "City Electric ",
+        "vendorId": 8577,
+        "memo": null,
+        "vendorPart": null,
+        "cost": 0,
+        "active": false,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      },
+      {
+        "id": 9406,
+        "vendorName": "Big Horn Supply",
+        "vendorId": 6793,
+        "memo": null,
+        "vendorPart": null,
+        "cost": 0,
+        "active": false,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      },
+      {
+        "id": 10501,
+        "vendorName": "Imported Default Replenishment Vendor",
+        "vendorId": 582,
+        "memo": null,
+        "vendorPart": null,
+        "cost": 0,
+        "active": false,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      },
+      {
+        "id": 10500,
+        "vendorName": "Default Replenishment Vendor",
+        "vendorId": 581,
+        "memo": null,
+        "vendorPart": null,
+        "cost": 0,
+        "active": false,
+        "primarySubAccount": null,
+        "otherSubAccounts": []
+      }
+    ],
+    "categories": [
+      6427
+    ],
+    "assets": [
+      {
+        "alias": "8D9492AD-2873-48CC-93B3-99247BADEF0C",
+        "fileName": "3633ae51-884b-45ac-9ba7-789d1693b6b4.jpg",
+        "isDefault": true,
+        "type": "Image",
+        "url": "Images/Material/3633ae51-884b-45ac-9ba7-789d1693b6b4.jpg"
+      }
+    ],
+    "modifiedOn": "2025-11-17T12:18:44.6515081Z",
+    "source": null,
+    "externalId": null,
+    "externalData": [],
+    "isConfigurableMaterial": false,
+    "chargeableByDefault": true,
+    "variationsOrConfigurableMaterials": [],
+    "businessUnitId": null,
+    "createdById": 0,
+    "createdOn": "2024-05-24T00:59:09.8100781Z",
+    "displayInAmount": false,
+    "generalLedgerAccountId": 41352,
+    "isOtherDirectCost": false,
+    "costTypeId": null,
+    "defaultAssetUrl": "Images/Material/3633ae51-884b-45ac-9ba7-789d1693b6b4.jpg",
+    "budgetCostCode": null,
+    "budgetCostType": null
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:18:30.355Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": {
+    "id": 70637,
+    "jobId": 70636,
+    "appointmentNumber": "70636-1",
+    "start": "2024-07-09T16:00:00Z",
+    "end": "2024-07-09T18:00:00Z",
+    "arrivalWindowStart": "2024-07-09T16:00:00Z",
+    "arrivalWindowEnd": "2024-07-09T18:00:00Z",
+    "status": "Canceled",
+    "specialInstructions": "",
+    "createdOn": "2024-07-08T15:13:31.9394887Z",
+    "modifiedOn": "2024-07-08T15:19:49.5914574Z",
+    "customerId": 2023488,
+    "unused": false,
+    "createdById": 26,
+    "isConfirmed": false,
+    "active": true
+  }
+}

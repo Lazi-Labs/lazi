@@ -1,0 +1,58 @@
+{
+  "_meta": {
+    "savedAt": "2025-12-26T00:18:38.938Z",
+    "tenantId": "3222348440",
+    "isError": false,
+    "recordCount": 1
+  },
+  "response": [
+    {
+      "id": 70956,
+      "active": true,
+      "name": "POOL- INSTALL",
+      "createdBy": 26,
+      "createdOn": "2024-07-08T17:11:42.1900849Z",
+      "modifiedOn": "2025-09-23T10:59:38.0650897Z"
+    },
+    {
+      "id": 2024171,
+      "active": true,
+      "name": "SALES",
+      "createdBy": 4617,
+      "createdOn": "2024-07-08T18:46:08.3941565Z",
+      "modifiedOn": "2025-08-14T16:56:17.0561181Z"
+    },
+    {
+      "id": 54674311,
+      "active": true,
+      "name": "ELECTRICAL - SERVICE/ DIAGNOSTIC",
+      "createdBy": 26,
+      "createdOn": "2024-11-07T00:03:33.4086785Z",
+      "modifiedOn": "2025-08-14T16:56:17.0666841Z"
+    },
+    {
+      "id": 57132449,
+      "active": true,
+      "name": "INSTALL TEAM - ELECTRICAL (A)",
+      "createdBy": 26,
+      "createdOn": "2025-02-20T17:31:36.020178Z",
+      "modifiedOn": "2025-10-01T12:48:20.3969458Z"
+    },
+    {
+      "id": 57132450,
+      "active": true,
+      "name": "INSTALL TEAM - ELECTRCIAL (B)",
+      "createdBy": 26,
+      "createdOn": "2025-02-20T17:31:36.0413133Z",
+      "modifiedOn": "2025-09-23T10:59:38.0844422Z"
+    },
+    {
+      "id": 60159752,
+      "active": true,
+      "name": "POOL-SERVICE/DIAGNOSTIC",
+      "createdBy": 60030086,
+      "createdOn": "2025-08-19T19:03:28.183719Z",
+      "modifiedOn": "2025-09-23T10:59:38.0731228Z"
+    }
+  ]
+}
