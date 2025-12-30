@@ -99,13 +99,24 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
     
-    const material = {
-      id: crypto.randomUUID(),
-      ...body,
-    };
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/materials`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
+      body: JSON.stringify(body),
+    });
     
-    return NextResponse.json(material);
+    const data = await res.json();
+    
+    if (!res.ok) {
+      return NextResponse.json(data, { status: res.status });
+    }
+    
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Failed to create material:', error);
     return NextResponse.json({ error: 'Failed to create material' }, { status: 500 });
