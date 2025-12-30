@@ -186,23 +186,87 @@ router.get(
     const { stId } = req.params;
 
     try {
+      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
       const result = await pool.query(`
         SELECT 
-          m.*,
-          COALESCE(o.override_name, m.name) as name,
+          m.id,
+          m.st_id,
+          m.tenant_id,
+          m.code,
+          COALESCE(o.override_name, m.display_name, m.name) as display_name,
+          m.name,
           COALESCE(o.override_description, m.description) as description,
-          COALESCE(o.override_price, m.price) as price,
+          
+          -- Pricing (with overrides)
           COALESCE(o.override_cost, m.cost) as cost,
+          COALESCE(o.override_price, m.price) as price,
+          COALESCE(o.override_member_price, m.member_price) as member_price,
+          COALESCE(o.override_add_on_price, m.add_on_price) as add_on_price,
+          COALESCE(o.override_add_on_member_price, m.add_on_member_price) as add_on_member_price,
+          
+          -- Labor & Commission (with overrides)
+          COALESCE(o.override_hours, m.hours) as hours,
+          COALESCE(o.override_bonus, m.bonus) as bonus,
+          COALESCE(o.override_commission_bonus, m.commission_bonus) as commission_bonus,
+          COALESCE(o.override_pays_commission, m.pays_commission) as pays_commission,
+          
+          -- Flags (with overrides)
           COALESCE(o.override_active, m.active) as active,
-          COALESCE(o.override_image_url, m.s3_image_url) as image_url,
-          o.id as override_id,
-          o.pending_sync as has_pending_changes,
-          o.internal_notes,
+          COALESCE(o.override_taxable, m.taxable) as taxable,
+          COALESCE(o.override_deduct_as_job_cost, m.deduct_as_job_cost) as deduct_as_job_cost,
+          COALESCE(o.override_is_inventory, m.is_inventory) as is_inventory,
+          m.is_configurable_material,
+          COALESCE(o.override_chargeable_by_default, m.chargeable_by_default) as chargeable_by_default,
+          m.display_in_amount,
+          m.is_other_direct_cost,
+          
+          -- Categorization
+          m.categories,
+          COALESCE(o.override_unit_of_measure, m.unit_of_measure) as unit_of_measure,
+          
+          -- Accounting
+          m.account,
+          m.cost_of_sale_account,
+          m.asset_account,
+          m.general_ledger_account_id,
+          m.cost_type_id,
+          m.budget_cost_code,
+          m.budget_cost_type,
+          
+          -- Vendors (with overrides)
           COALESCE(o.override_primary_vendor, m.primary_vendor) as primary_vendor,
           COALESCE(o.override_other_vendors, m.other_vendors) as other_vendors,
+          
+          -- Assets
+          m.assets,
+          m.default_asset_url,
+          COALESCE(o.override_image_url, m.s3_image_url, m.default_asset_url) as image_url,
+          m.s3_image_url,
+          
+          -- Business
+          COALESCE(o.override_business_unit_id, m.business_unit_id) as business_unit_id,
+          
+          -- External
+          m.external_id,
+          m.source,
+          
+          -- Timestamps
+          m.st_created_on,
+          m.st_modified_on,
+          m.created_by_id,
+          m.created_at,
+          m.updated_at,
+          m.last_synced_at,
+          
+          -- CRM status
+          o.id as override_id,
+          o.pending_sync as has_pending_changes,
+          o.sync_error,
+          o.internal_notes,
           o.preferred_vendor as override_preferred_vendor,
           o.reorder_threshold,
           o.custom_tags
+          
         FROM master.pricebook_materials m
         LEFT JOIN crm.pricebook_overrides o 
           ON o.st_pricebook_id = m.st_id 
@@ -215,7 +279,85 @@ router.get(
         return res.status(404).json({ error: 'Material not found' });
       }
 
-      res.json(result.rows[0]);
+      // Format response with camelCase keys
+      const row = result.rows[0];
+      res.json({
+        id: row.st_id?.toString(),
+        stId: row.st_id?.toString(),
+        code: row.code,
+        displayName: row.display_name,
+        name: row.name,
+        description: row.description,
+        
+        // Pricing
+        cost: parseFloat(row.cost) || 0,
+        price: parseFloat(row.price) || 0,
+        memberPrice: parseFloat(row.member_price) || 0,
+        addOnPrice: parseFloat(row.add_on_price) || 0,
+        addOnMemberPrice: parseFloat(row.add_on_member_price) || 0,
+        
+        // Labor & Commission
+        hours: parseFloat(row.hours) || 0,
+        bonus: parseFloat(row.bonus) || 0,
+        commissionBonus: parseFloat(row.commission_bonus) || 0,
+        paysCommission: row.pays_commission || false,
+        
+        // Flags
+        active: row.active !== false,
+        taxable: row.taxable,
+        deductAsJobCost: row.deduct_as_job_cost || false,
+        isInventory: row.is_inventory || false,
+        isConfigurableMaterial: row.is_configurable_material || false,
+        chargeableByDefault: row.chargeable_by_default !== false,
+        displayInAmount: row.display_in_amount || false,
+        isOtherDirectCost: row.is_other_direct_cost || false,
+        
+        // Categorization
+        categories: row.categories || [],
+        unitOfMeasure: row.unit_of_measure,
+        
+        // Accounting
+        account: row.account,
+        costOfSaleAccount: row.cost_of_sale_account,
+        assetAccount: row.asset_account,
+        generalLedgerAccountId: row.general_ledger_account_id,
+        costTypeId: row.cost_type_id,
+        budgetCostCode: row.budget_cost_code,
+        budgetCostType: row.budget_cost_type,
+        
+        // Vendors
+        primaryVendor: row.primary_vendor,
+        otherVendors: row.other_vendors || [],
+        
+        // Assets
+        assets: row.assets || [],
+        defaultAssetUrl: row.default_asset_url,
+        imageUrl: row.image_url,
+        s3ImageUrl: row.s3_image_url,
+        
+        // Business
+        businessUnitId: row.business_unit_id,
+        
+        // External
+        externalId: row.external_id,
+        source: row.source,
+        
+        // Timestamps
+        createdOn: row.st_created_on,
+        modifiedOn: row.st_modified_on,
+        createdById: row.created_by_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        lastSyncedAt: row.last_synced_at,
+        
+        // CRM
+        overrideId: row.override_id,
+        hasPendingChanges: row.has_pending_changes || false,
+        syncError: row.sync_error,
+        internalNotes: row.internal_notes,
+        reorderThreshold: row.reorder_threshold,
+        customTags: row.custom_tags,
+      });
     } finally {
       await pool.end();
     }
@@ -282,7 +424,8 @@ router.post(
 
       // Insert/update each material in RAW table
       for (const material of allMaterials) {
-        const result = await pool.query(`
+        console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
+      const result = await pool.query(`
           INSERT INTO raw.st_pricebook_materials (
             st_id, tenant_id, code, display_name, description,
             cost, price, member_price, add_on_price, hours,
@@ -374,12 +517,33 @@ router.post(
     console.log(`[MATERIALS SYNC] Starting RAW → MASTER sync for tenant ${tenantId}`);
 
     try {
+      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
       const result = await pool.query(`
         INSERT INTO master.pricebook_materials (
           st_id, tenant_id, code, name, display_name, description,
-          cost, price, member_price, add_on_price, unit_of_measure,
-          taxable, active, account, categories, assets,
-          primary_vendor, other_vendors, st_created_on, st_modified_on, last_synced_at
+          -- Pricing
+          cost, price, member_price, add_on_price, add_on_member_price,
+          -- Labor & Commission
+          hours, bonus, commission_bonus, pays_commission,
+          -- Flags
+          active, taxable, deduct_as_job_cost, is_inventory,
+          is_configurable_material, chargeable_by_default, display_in_amount, is_other_direct_cost,
+          -- Categorization
+          categories, unit_of_measure,
+          -- Accounting
+          account, cost_of_sale_account, asset_account,
+          general_ledger_account_id, cost_type_id, budget_cost_code, budget_cost_type,
+          -- Vendors
+          primary_vendor, other_vendors,
+          -- Assets
+          assets, default_asset_url,
+          -- Business
+          business_unit_id,
+          -- External
+          external_id, source,
+          -- Timestamps
+          st_created_on, st_modified_on, created_by_id,
+          last_synced_at
         )
         SELECT 
           r.st_id,
@@ -388,20 +552,52 @@ router.post(
           COALESCE(r.display_name, 'Unnamed Material'),
           r.display_name,
           r.description,
+          -- Pricing
           COALESCE(r.cost, 0),
           COALESCE(r.price, 0),
           COALESCE(r.member_price, 0),
           COALESCE(r.add_on_price, 0),
-          r.unit_of_measure,
-          COALESCE(r.taxable, true),
+          COALESCE((r.full_data->>'addOnMemberPrice')::decimal, 0),
+          -- Labor & Commission
+          COALESCE((r.full_data->>'hours')::decimal, 0),
+          COALESCE((r.full_data->>'bonus')::decimal, 0),
+          COALESCE((r.full_data->>'commissionBonus')::decimal, 0),
+          COALESCE((r.full_data->>'paysCommission')::boolean, false),
+          -- Flags
           COALESCE(r.active, true),
-          r.full_data->>'account',
+          r.taxable,
+          COALESCE((r.full_data->>'deductAsJobCost')::boolean, false),
+          COALESCE((r.full_data->>'isInventory')::boolean, false),
+          COALESCE((r.full_data->>'isConfigurableMaterial')::boolean, false),
+          COALESCE((r.full_data->>'chargeableByDefault')::boolean, true),
+          COALESCE((r.full_data->>'displayInAmount')::boolean, false),
+          COALESCE((r.full_data->>'isOtherDirectCost')::boolean, false),
+          -- Categorization
           r.categories,
-          r.full_data->'assets',
+          r.unit_of_measure,
+          -- Accounting
+          r.full_data->>'account',
+          r.full_data->>'costOfSaleAccount',
+          r.full_data->>'assetAccount',
+          (r.full_data->>'generalLedgerAccountId')::bigint,
+          (r.full_data->>'costTypeId')::bigint,
+          r.full_data->>'budgetCostCode',
+          r.full_data->>'budgetCostType',
+          -- Vendors
           r.primary_vendor,
-          r.other_vendors,
+          COALESCE(r.other_vendors, '[]'::jsonb),
+          -- Assets
+          COALESCE(r.full_data->'assets', '[]'::jsonb),
+          r.full_data->>'defaultAssetUrl',
+          -- Business
+          (r.full_data->>'businessUnitId')::bigint,
+          -- External
+          r.full_data->>'externalId',
+          r.full_data->>'source',
+          -- Timestamps
           r.created_on,
           r.modified_on,
+          (r.full_data->>'createdById')::bigint,
           NOW()
         FROM raw.st_pricebook_materials r
         WHERE r.tenant_id = $1
@@ -414,16 +610,38 @@ router.post(
           price = EXCLUDED.price,
           member_price = EXCLUDED.member_price,
           add_on_price = EXCLUDED.add_on_price,
-          unit_of_measure = EXCLUDED.unit_of_measure,
-          taxable = EXCLUDED.taxable,
+          add_on_member_price = EXCLUDED.add_on_member_price,
+          hours = EXCLUDED.hours,
+          bonus = EXCLUDED.bonus,
+          commission_bonus = EXCLUDED.commission_bonus,
+          pays_commission = EXCLUDED.pays_commission,
           active = EXCLUDED.active,
-          account = EXCLUDED.account,
+          taxable = EXCLUDED.taxable,
+          deduct_as_job_cost = EXCLUDED.deduct_as_job_cost,
+          is_inventory = EXCLUDED.is_inventory,
+          is_configurable_material = EXCLUDED.is_configurable_material,
+          chargeable_by_default = EXCLUDED.chargeable_by_default,
+          display_in_amount = EXCLUDED.display_in_amount,
+          is_other_direct_cost = EXCLUDED.is_other_direct_cost,
           categories = EXCLUDED.categories,
-          assets = EXCLUDED.assets,
+          unit_of_measure = EXCLUDED.unit_of_measure,
+          account = EXCLUDED.account,
+          cost_of_sale_account = EXCLUDED.cost_of_sale_account,
+          asset_account = EXCLUDED.asset_account,
+          general_ledger_account_id = EXCLUDED.general_ledger_account_id,
+          cost_type_id = EXCLUDED.cost_type_id,
+          budget_cost_code = EXCLUDED.budget_cost_code,
+          budget_cost_type = EXCLUDED.budget_cost_type,
           primary_vendor = EXCLUDED.primary_vendor,
           other_vendors = EXCLUDED.other_vendors,
+          assets = EXCLUDED.assets,
+          default_asset_url = EXCLUDED.default_asset_url,
+          business_unit_id = EXCLUDED.business_unit_id,
+          external_id = EXCLUDED.external_id,
+          source = EXCLUDED.source,
           st_created_on = EXCLUDED.st_created_on,
           st_modified_on = EXCLUDED.st_modified_on,
+          created_by_id = EXCLUDED.created_by_id,
           updated_at = NOW(),
           last_synced_at = NOW()
       `, [tenantId]);
@@ -574,6 +792,7 @@ router.post(
       }
 
       // Insert new material
+      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
       const result = await pool.query(`
         INSERT INTO crm.pricebook_new_materials (
           tenant_id, code, display_name, description,
@@ -665,7 +884,8 @@ router.put(
       if (isNewMaterial) {
         // Update the new material directly
         const id = stId.replace('new_', '');
-        const result = await pool.query(`
+        console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
+      const result = await pool.query(`
           UPDATE crm.pricebook_new_materials SET
             display_name = COALESCE($3, display_name),
             description = COALESCE($4, description),
@@ -732,6 +952,7 @@ router.put(
       }
 
       // Create/update override for existing material
+      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
       const result = await pool.query(`
         INSERT INTO crm.pricebook_overrides (
           st_pricebook_id, tenant_id, item_type,
@@ -887,7 +1108,9 @@ router.post(
           const payload = buildUpdatePayload(override);
           
           // Call ST API to update material
-          await updateMaterialInServiceTitan(override.st_pricebook_id, payload, tenantId);
+          console.log("[PUSH] Calling ST API for", override.st_pricebook_id, "with payload:", JSON.stringify(payload));
+          const stResult = await updateMaterialInServiceTitan(override.st_pricebook_id, payload, tenantId);
+          console.log("[PUSH] ST API result:", JSON.stringify(stResult));
           
           // Clear override (changes now in ST)
           await pool.query(`
@@ -1048,7 +1271,7 @@ async function createMaterialInServiceTitan(payload, tenantId) {
     `https://api.servicetitan.io/pricebook/v2/tenant/${tenantId}/materials`,
     {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: payload,
     }
   );
 
@@ -1064,7 +1287,7 @@ async function updateMaterialInServiceTitan(stId, payload, tenantId) {
     `https://api.servicetitan.io/pricebook/v2/tenant/${tenantId}/materials/${stId}`,
     {
       method: 'PATCH',
-      body: JSON.stringify(payload),
+      body: payload,
     }
   );
 

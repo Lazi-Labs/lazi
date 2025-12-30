@@ -114,19 +114,32 @@ const server = httpServer.listen(PORT, () => {
             logger.info({ options, tenantId }, '[SCHEDULER] Running pricebook sync');
             
             try {
-              // Use internal fetch to trigger sync
-              const response = await fetch(`http://localhost:${PORT}/api/pricebook/categories/sync`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'x-tenant-id': tenantId,
-                },
+              // Sync categories
+              const catResponse = await fetch(`http://localhost:${PORT}/api/pricebook/categories/sync`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
                 body: JSON.stringify({ incremental: !options.fullSync }),
               });
-              
-              const result = await response.json();
-              logger.info({ result }, '[SCHEDULER] Pricebook sync completed');
-              return { status: 'completed', stats: result };
+              const catResult = await catResponse.json();
+              logger.info({ catResult }, "[SCHEDULER] Categories sync completed");
+
+              // Sync materials from ST
+              const matFromStResponse = await fetch(`http://localhost:${PORT}/api/pricebook/materials/sync-from-st`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
+              });
+              const matFromStResult = await matFromStResponse.json();
+              logger.info({ matFromStResult }, "[SCHEDULER] Materials sync-from-st completed");
+
+              // Sync materials to master
+              const matToMasterResponse = await fetch(`http://localhost:${PORT}/api/pricebook/materials/sync-to-master`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
+              });
+              const matToMasterResult = await matToMasterResponse.json();
+              logger.info({ matToMasterResult }, "[SCHEDULER] Materials sync-to-master completed");
+
+              return { status: "completed", stats: { categories: catResult, materials: matToMasterResult } };
             } catch (error) {
               logger.error({ error: error.message }, '[SCHEDULER] Pricebook sync failed');
               throw error;

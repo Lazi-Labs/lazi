@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -198,6 +198,7 @@ export function MaterialDetailPage({
   });
 
   useEffect(() => {
+    console.log("[MaterialDetailPage] useEffect triggered, material:", material ? { code: material.code, name: material.name, description: material.description } : null);
     if (material) {
       form.reset({
         code: material.code || '',
@@ -232,11 +233,16 @@ export function MaterialDetailPage({
         isOtherDirectCost: material.isOtherDirectCost ?? false,
         unitOfMeasure: material.unitOfMeasure || '',
         account: material.account || '',
-        vendors: material.vendors || [],
+        // Combine primaryVendor and otherVendors into vendors array
+        vendors: [
+          ...(material.primaryVendor ? [{ ...material.primaryVendor, preferred: true }] : []),
+          ...(material.vendors || []).map((v: any) => ({ ...v, preferred: false })),
+        ],
       });
+      // Use imageUrl or s3ImageUrl for preview
       setImagePreview(material.defaultImageUrl || null);
     }
-  }, [material, form]);
+  }, [material]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: Partial<Material>) => {
@@ -356,6 +362,7 @@ export function MaterialDetailPage({
 
   // Set initial category from material
   useEffect(() => {
+    console.log("[MaterialDetailPage] useEffect triggered, material:", material ? { code: material.code, name: material.name, description: material.description } : null);
     if (material?.categories?.length > 0) {
       setSelectedCategoryId(String(material.categories[0]));
     }
@@ -569,30 +576,54 @@ export function MaterialDetailPage({
               {/* CODE */}
               <div className="flex items-center gap-4">
                 <Label className="w-20 text-right text-xs text-muted-foreground">CODE</Label>
-                <Input 
-                  {...form.register('code')} 
-                  className="flex-1 h-8 text-sm"
-                  placeholder="C40-0014"
+                <Controller
+                  name="code"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input 
+                      {...field}
+                      value={field.value || ''}
+                      onChange={(e) => { field.onChange(e); setHasChanges(true); }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="C40-0014"
+                    />
+                  )}
                 />
               </div>
 
               {/* NAME */}
               <div className="flex items-center gap-4">
                 <Label className="w-20 text-right text-xs text-muted-foreground">NAME</Label>
-                <Input 
-                  {...form.register('name')} 
-                  className="flex-1 h-8 text-sm"
-                  placeholder="Pipe Conduit Sch40 .75"
+                <Controller
+                  name="name"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input 
+                      {...field}
+                      value={field.value || ''}
+                      onChange={(e) => { field.onChange(e); setHasChanges(true); }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="Pipe Conduit Sch40 .75"
+                    />
+                  )}
                 />
               </div>
 
               {/* DESC */}
               <div className="flex items-center gap-4">
                 <Label className="w-20 text-right text-xs text-muted-foreground">DESC</Label>
-                <Input 
-                  {...form.register('description')} 
-                  className="flex-1 h-8 text-sm"
-                  placeholder="Sch 40 Conduit Pipe 3/4&quot;"
+                <Controller
+                  name="description"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input 
+                      {...field}
+                      value={field.value || ''}
+                      onChange={(e) => { field.onChange(e); setHasChanges(true); }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="Sch 40 Conduit Pipe 3/4&quot;"
+                    />
+                  )}
                 />
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Settings className="h-4 w-4" />
@@ -742,57 +773,6 @@ export function MaterialDetailPage({
                 {/* Scrollable Vendor Rows */}
                 <div className="max-h-[200px] overflow-y-auto">
                   {/* Primary Vendor Row */}
-                  {material?.primaryVendor && (
-                    <>
-                      <div className="grid grid-cols-[180px_70px_100px_100px_70px_50px_32px] gap-2 py-2 items-center border-b hover:bg-muted/30">
-                        <div className="flex items-center gap-2">
-                          <Settings className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                          <span className="text-sm font-medium">{material.primaryVendor.vendorName}</span>
-                        </div>
-                        <div className="flex justify-center items-center gap-2">
-                          <Settings className="h-3 w-3 text-muted-foreground" />
-                          <div className="w-5 h-5 rounded-full bg-[#00c853] flex items-center justify-center">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <Input 
-                            defaultValue={material.primaryVendor.upcCode || ''} 
-                            className="h-7 text-xs"
-                            placeholder="UPC Code"
-                          />
-                        </div>
-                        <div>
-                          <Input 
-                            defaultValue={material.primaryVendor.vendorPart || ''} 
-                            className="h-7 text-xs"
-                            placeholder=""
-                          />
-                        </div>
-                        <div className="flex items-center justify-end gap-1">
-                          <Checkbox checked={true} className="h-4 w-4" />
-                          <span className="text-sm font-medium">${material.primaryVendor.cost?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="flex justify-center">
-                          <div className="w-5 h-5 rounded-full bg-[#00c853] flex items-center justify-center">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      {/* Vendor's part description row */}
-                      <div className="py-2 flex items-center gap-2 text-sm text-muted-foreground border-b bg-muted/10">
-                        <Settings className="h-4 w-4 ml-6" />
-                        <span>Vendor's part description</span>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Additional Vendors */}
                   {vendors.length > 0 ? (
                     vendors.map((vendor: any, index: number) => (
                       <div key={vendor.id || index}>
@@ -849,7 +829,7 @@ export function MaterialDetailPage({
                         </div>
                       </div>
                     ))
-                  ) : !material?.primaryVendor && (
+                  ) : (
                     <div className="py-3 text-sm text-muted-foreground">
                       No vendors added yet
                     </div>
