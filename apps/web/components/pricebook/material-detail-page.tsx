@@ -116,6 +116,9 @@ export function MaterialDetailPage({
   const [hasChanges, setHasChanges] = useState(false);
   const [pushing, setPushing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pushSuccess, setPushSuccess] = useState<string | null>(null);
+  const [pushProgress, setPushProgress] = useState(0);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [showAccountsPanel, setShowAccountsPanel] = useState(false);
@@ -283,20 +286,28 @@ export function MaterialDetailPage({
       const res = await fetch(apiUrl('/api/pricebook/materials/push'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          stIds: material?.isNew ? [material.id] : [material?.stId] 
+        body: JSON.stringify({
+          stIds: material?.isNew ? [material.id] : [material?.stId]
         }),
       });
-      
+
       const result = await res.json();
       if (!res.ok || result.failed?.length > 0) {
         throw new Error(result.failed?.[0]?.error || result.error || 'Push failed');
       }
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['pricebook-materials'] });
       queryClient.invalidateQueries({ queryKey: ['material', materialId] });
+
+      // If we pushed a new material, redirect to the new ST ID URL
+      if (result.results?.created?.length > 0) {
+        const newStId = result.results.created[0].stId;
+        if (newStId && window.location.pathname.includes('new_')) {
+          window.location.href = `/dashboard/pricebook/materials/${newStId}`;
+        }
+      }
     },
   });
 
@@ -371,21 +382,25 @@ export function MaterialDetailPage({
   // Handle save
   const handleSave = async () => {
     setError(null);
+    setSaveSuccess(null);
     const data = form.getValues();
-    
+
     // Transform vendors array to primaryVendor and otherVendors for backend
     const vendors = data.vendors || [];
     const primaryVendor = vendors.find((v: Vendor) => v.preferred) || vendors[0] || null;
     const otherVendors = vendors.filter((v: Vendor) => v !== primaryVendor);
-    
+
     const payload = {
       ...data,
       primaryVendor,
       otherVendors,
     };
-    
+
     try {
       await saveMutation.mutateAsync(payload);
+      setSaveSuccess('Changes saved successfully!');
+      // Clear success after 3 seconds
+      setTimeout(() => setSaveSuccess(null), 3000);
     } catch (err: any) {
       setError(err.message);
     }
@@ -394,19 +409,44 @@ export function MaterialDetailPage({
   // Handle push to ServiceTitan
   const handlePush = async () => {
     setError(null);
+    setPushSuccess(null);
     setPushing(true);
+    setPushProgress(0);
+
+    // Simulate progress while pushing
+    const progressInterval = setInterval(() => {
+      setPushProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + 10;
+      });
+    }, 200);
+
     try {
       // Save first if there are changes
       if (hasChanges) {
         await handleSave();
       }
+      setPushProgress(50);
       await pushMutation.mutateAsync();
+      setPushProgress(100);
+
+      // Show success message
+      setPushSuccess('Successfully pushed to ServiceTitan!');
+
       // Reload to get updated state
       queryClient.invalidateQueries({ queryKey: ['material', materialId] });
+
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setPushSuccess(null);
+      }, 5000);
     } catch (err: any) {
       setError(err.message);
     } finally {
+      clearInterval(progressInterval);
       setPushing(false);
+      // Reset progress after animation
+      setTimeout(() => setPushProgress(0), 500);
     }
   };
 
@@ -529,15 +569,36 @@ export function MaterialDetailPage({
           <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 h-7 px-2 text-xs">
             PULL
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-white hover:bg-white/10 h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
-            onClick={handlePush}
-            disabled={pushing}
-          >
-            {pushing ? 'PUSHING...' : 'PUSH'}
-          </Button>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10 h-7 px-2 text-xs bg-green-600 hover:bg-green-700 relative overflow-hidden"
+              onClick={handlePush}
+              disabled={pushing}
+            >
+              {pushing ? (
+                <span className="flex items-center gap-1">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  PUSHING...
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Upload className="h-3 w-3" />
+                  PUSH
+                </span>
+              )}
+            </Button>
+            {/* Progress bar overlay */}
+            {pushing && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-800 rounded-b overflow-hidden">
+                <div
+                  className="h-full bg-green-300 transition-all duration-200 ease-out"
+                  style={{ width: `${pushProgress}%` }}
+                />
+              </div>
+            )}
+          </div>
           <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 h-7 px-2 text-xs">
             <Settings className="h-3 w-3" />
           </Button>
@@ -1258,16 +1319,60 @@ export function MaterialDetailPage({
                   disabled={saveMutation.isPending || !hasChanges}
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                 >
-                  {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  {saveMutation.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </span>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </Button>
+
+                {/* Save Success Message */}
+                {saveSuccess && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700 flex items-center gap-2">
+                    <Check className="h-4 w-4 text-blue-600" />
+                    {saveSuccess}
+                  </div>
+                )}
                 
-                <Button
-                  onClick={handlePush}
-                  disabled={pushing || pushMutation.isPending}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                >
-                  {pushing || pushMutation.isPending ? 'Pushing...' : 'Push to ServiceTitan'}
-                </Button>
+                <div className="relative">
+                  <Button
+                    onClick={handlePush}
+                    disabled={pushing || pushMutation.isPending}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white relative overflow-hidden"
+                  >
+                    {pushing || pushMutation.isPending ? (
+                      <span className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Pushing to ServiceTitan...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Push to ServiceTitan
+                      </span>
+                    )}
+                  </Button>
+                  {/* Progress bar overlay */}
+                  {pushing && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-800 rounded-b overflow-hidden">
+                      <div
+                        className="h-full bg-green-300 transition-all duration-200 ease-out"
+                        style={{ width: `${pushProgress}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Push Success Message */}
+                {pushSuccess && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded text-sm text-green-700 flex items-center gap-2">
+                    <Check className="h-4 w-4 text-green-600" />
+                    {pushSuccess}
+                  </div>
+                )}
               </div>
 
               {/* Status Messages */}

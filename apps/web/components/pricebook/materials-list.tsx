@@ -9,20 +9,22 @@ import { Package, ChevronRight } from 'lucide-react';
 
 interface Material {
   id: string;
-  stId: string;
+  st_id: string;
   code: string;
   name: string;
-  displayName: string;
+  display_name: string;
   description: string;
   cost: number;
   price: number;
-  memberPrice: number;
+  member_price: number;
   active: boolean;
-  defaultImageUrl: string | null;
-  primaryVendor: {
+  image_url: string | null;
+  primary_vendor: {
     vendorName?: string;
     cost?: number;
   } | null;
+  is_new?: boolean;
+  push_error?: string | null;
 }
 
 interface MaterialsListProps {
@@ -76,9 +78,9 @@ export function MaterialsList({ categoryId, searchQuery, selectedId, onSelect }:
         >
           <Checkbox onClick={(e) => e.stopPropagation()} />
 
-          {material.defaultImageUrl && (
-            <img 
-              src={material.defaultImageUrl} 
+          {material.image_url && (
+            <img
+              src={material.image_url}
               alt={material.name}
               className="w-10 h-10 rounded object-cover"
             />
@@ -89,14 +91,20 @@ export function MaterialsList({ categoryId, searchQuery, selectedId, onSelect }:
               <span className="font-mono text-sm text-muted-foreground">
                 {material.code}
               </span>
+              {material.is_new && (
+                <Badge className="bg-blue-500 hover:bg-blue-600 text-white text-xs">New</Badge>
+              )}
               {!material.active && (
                 <Badge variant="secondary">Inactive</Badge>
               )}
+              {material.push_error && (
+                <Badge variant="destructive" className="text-xs">Push Error</Badge>
+              )}
             </div>
-            <h4 className="font-medium truncate">{material.displayName || material.name}</h4>
-            {material.primaryVendor?.vendorName && (
+            <h4 className="font-medium truncate">{material.display_name || material.name}</h4>
+            {material.primary_vendor?.vendorName && (
               <p className="text-sm text-muted-foreground">
-                Vendor: {material.primaryVendor.vendorName}
+                Vendor: {material.primary_vendor.vendorName}
               </p>
             )}
           </div>
@@ -119,10 +127,12 @@ export function MaterialsList({ categoryId, searchQuery, selectedId, onSelect }:
 
 async function fetchMaterials(categoryId: string | null, search: string): Promise<Material[]> {
   const params = new URLSearchParams();
-  if (categoryId) params.set('category', categoryId);
+  if (categoryId) params.set('category_id', categoryId);
   if (search) params.set('search', search);
-  
+
   const res = await fetch(apiUrl(`/api/pricebook/materials?${params}`));
   if (!res.ok) return [];
-  return res.json();
+  const json = await res.json();
+  // API returns { data: [...], total, page, ... }
+  return json.data || [];
 }

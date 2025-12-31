@@ -53,12 +53,15 @@ router.get(
       // Build query with CRM override support
       const params = [tenantId];
       let whereConditions = ['m.tenant_id = $1'];
+      let newMaterialsWhereConditions = ['n.tenant_id = $1', 'n.pushed_to_st = false'];
 
       // Active filter with CRM override (default: show only active)
       if (active === 'true') {
         whereConditions.push('COALESCE(o.override_active, m.active) = true');
+        newMaterialsWhereConditions.push('n.active = true');
       } else if (active === 'false') {
         whereConditions.push('COALESCE(o.override_active, m.active) = false');
+        newMaterialsWhereConditions.push('n.active = false');
       }
       // If active === 'all', don't filter by active status
 
@@ -66,9 +69,14 @@ router.get(
       if (search) {
         params.push(`%${search}%`);
         whereConditions.push(`(
-          COALESCE(o.override_name, m.name) ILIKE $${params.length} OR 
-          m.code ILIKE $${params.length} OR 
+          COALESCE(o.override_name, m.name) ILIKE $${params.length} OR
+          m.code ILIKE $${params.length} OR
           m.display_name ILIKE $${params.length}
+        )`);
+        newMaterialsWhereConditions.push(`(
+          n.display_name ILIKE $${params.length} OR
+          n.code ILIKE $${params.length} OR
+          n.description ILIKE $${params.length}
         )`);
       }
 
@@ -76,7 +84,7 @@ router.get(
       // Supports comma-separated category IDs for hierarchical filtering
       if (category_id) {
         const categoryIds = category_id.toString().split(',').map(id => id.trim()).filter(id => id);
-        
+
         if (categoryIds.length > 1) {
           // Build OR condition for multiple categories - check if any category ID is in the array
           const categoryConditions = categoryIds.map((id) => {
@@ -84,32 +92,41 @@ router.get(
             return `m.categories @> $${params.length}::jsonb`;
           });
           whereConditions.push(`(${categoryConditions.join(' OR ')})`);
+          // Also filter new materials by category
+          const newCategoryConditions = categoryIds.map((_, idx) => {
+            return `n.categories @> $${params.length - categoryIds.length + idx + 1}::jsonb`;
+          });
+          newMaterialsWhereConditions.push(`(${newCategoryConditions.join(' OR ')})`);
         } else {
           // Single category - check if the ID is in the categories array
           params.push(parseInt(categoryIds[0], 10));
           whereConditions.push(`m.categories @> $${params.length}::jsonb`);
+          newMaterialsWhereConditions.push(`n.categories @> $${params.length}::jsonb`);
         }
       }
 
       const whereClause = whereConditions.join(' AND ');
+      const newMaterialsWhereClause = newMaterialsWhereConditions.join(' AND ');
 
       // Validate sort
       const allowedSorts = ['name', 'code', 'price', 'cost', 'created_at', 'updated_at'];
       const safeSort = allowedSorts.includes(sort_by) ? sort_by : 'name';
       const safeOrder = sort_order.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
 
-      // Get total count with CRM override join
+      // Get total count from both tables
       const countResult = await pool.query(
-        `SELECT COUNT(*) 
-         FROM master.pricebook_materials m
-         LEFT JOIN crm.pricebook_overrides o 
-           ON o.st_pricebook_id = m.st_id 
-           AND o.tenant_id = m.tenant_id
-           AND o.item_type = 'material'
-         WHERE ${whereClause}`,
+        `SELECT
+          (SELECT COUNT(*) FROM master.pricebook_materials m
+           LEFT JOIN crm.pricebook_overrides o
+             ON o.st_pricebook_id = m.st_id
+             AND o.tenant_id = m.tenant_id
+             AND o.item_type = 'material'
+           WHERE ${whereClause}) +
+          (SELECT COUNT(*) FROM crm.pricebook_new_materials n
+           WHERE ${newMaterialsWhereClause}) as total`,
         params
       );
-      const total = parseInt(countResult.rows[0].count, 10);
+      const total = parseInt(countResult.rows[0].total, 10);
 
       // Get materials with pagination and CRM overrides
       const pageNum = Math.max(1, parseInt(page, 10));
@@ -118,43 +135,86 @@ router.get(
 
       params.push(limitNum, offset);
 
+      // UNION query to include both existing and new materials
       const query = `
-        SELECT 
-          m.id,
-          m.st_id,
-          m.code,
-          COALESCE(o.override_name, m.name) as name,
-          m.display_name,
-          COALESCE(o.override_description, m.description) as description,
-          COALESCE(o.override_price, m.price) as price,
-          m.member_price,
-          m.add_on_price,
-          COALESCE(o.override_cost, m.cost) as cost,
-          COALESCE(o.override_active, m.active) as active,
-          m.taxable,
-          m.unit_of_measure,
-          m.account,
-          COALESCE(o.override_image_url, m.s3_image_url) as image_url,
-          m.categories,
-          m.primary_vendor,
-          m.other_vendors,
-          m.st_created_on,
-          m.st_modified_on,
-          m.created_at,
-          m.updated_at,
-          o.id as override_id,
-          o.pending_sync as has_pending_changes,
-          o.internal_notes,
-          o.preferred_vendor,
-          o.reorder_threshold,
-          o.custom_tags
-        FROM master.pricebook_materials m
-        LEFT JOIN crm.pricebook_overrides o 
-          ON o.st_pricebook_id = m.st_id 
-          AND o.tenant_id = m.tenant_id
-          AND o.item_type = 'material'
-        WHERE ${whereClause}
-        ORDER BY COALESCE(o.override_name, m.name) ${safeOrder}
+        SELECT * FROM (
+          -- Existing materials from master table
+          SELECT
+            m.id,
+            m.st_id::text as st_id,
+            m.code,
+            COALESCE(o.override_name, m.name) as name,
+            m.display_name,
+            COALESCE(o.override_description, m.description) as description,
+            COALESCE(o.override_price, m.price) as price,
+            m.member_price,
+            m.add_on_price,
+            COALESCE(o.override_cost, m.cost) as cost,
+            COALESCE(o.override_active, m.active) as active,
+            m.taxable,
+            m.unit_of_measure,
+            m.account,
+            COALESCE(o.override_image_url, m.s3_image_url) as image_url,
+            m.categories,
+            m.primary_vendor,
+            m.other_vendors,
+            m.st_created_on,
+            m.st_modified_on,
+            m.created_at,
+            m.updated_at,
+            o.id as override_id,
+            o.pending_sync as has_pending_changes,
+            o.internal_notes,
+            o.preferred_vendor,
+            o.reorder_threshold,
+            o.custom_tags,
+            false as is_new,
+            null as push_error
+          FROM master.pricebook_materials m
+          LEFT JOIN crm.pricebook_overrides o
+            ON o.st_pricebook_id = m.st_id
+            AND o.tenant_id = m.tenant_id
+            AND o.item_type = 'material'
+          WHERE ${whereClause}
+
+          UNION ALL
+
+          -- New materials not yet pushed to ST
+          SELECT
+            n.id,
+            ('new_' || n.id::text) as st_id,
+            n.code,
+            n.display_name as name,
+            n.display_name,
+            n.description,
+            n.price,
+            n.member_price,
+            n.add_on_price,
+            n.cost,
+            n.active,
+            n.taxable,
+            n.unit_of_measure,
+            n.account,
+            n.s3_image_url as image_url,
+            n.categories,
+            n.primary_vendor,
+            n.other_vendors,
+            null as st_created_on,
+            null as st_modified_on,
+            n.created_at,
+            n.updated_at,
+            null as override_id,
+            false as has_pending_changes,
+            null as internal_notes,
+            null as preferred_vendor,
+            null as reorder_threshold,
+            null as custom_tags,
+            true as is_new,
+            n.push_error
+          FROM crm.pricebook_new_materials n
+          WHERE ${newMaterialsWhereClause}
+        ) combined
+        ORDER BY name ${safeOrder}
         LIMIT $${params.length - 1} OFFSET $${params.length}
       `;
 
@@ -174,8 +234,145 @@ router.get(
 );
 
 // ============================================================================
+// POST /api/pricebook/materials/:stId/pull
+// Pull a single material from ServiceTitan and update local record
+// ============================================================================
+
+router.post(
+  '/:stId/pull',
+  asyncHandler(async (req, res) => {
+    const pool = getPool();
+    const tenantId = getTenantId(req);
+    const { stId } = req.params;
+
+    console.log(`[MATERIALS PULL] Pulling material ${stId} from ServiceTitan`);
+
+    try {
+      // Fetch material from ServiceTitan
+      const stApiUrl = `https://api.servicetitan.io/pricebook/v2/tenant/${tenantId}/materials/${stId}`;
+      const response = await stRequest(stApiUrl, { method: 'GET' });
+
+      if (!response.data) {
+        return res.status(404).json({ error: 'Material not found in ServiceTitan' });
+      }
+
+      const material = response.data;
+      console.log(`[MATERIALS PULL] Fetched material:`, material.code, material.displayName);
+
+      // Update master table
+      await pool.query(`
+        UPDATE master.pricebook_materials SET
+          code = $3,
+          name = $4,
+          display_name = $4,
+          description = $5,
+          cost = $6,
+          price = $7,
+          member_price = $8,
+          add_on_price = $9,
+          add_on_member_price = $10,
+          hours = $11,
+          bonus = $12,
+          commission_bonus = $13,
+          pays_commission = $14,
+          deduct_as_job_cost = $15,
+          is_inventory = $16,
+          is_configurable_material = $17,
+          display_in_amount = $18,
+          is_other_direct_cost = $19,
+          chargeable_by_default = $20,
+          active = $21,
+          taxable = $22,
+          unit_of_measure = $23,
+          account = $24,
+          categories = $25,
+          primary_vendor = $26,
+          other_vendors = $27,
+          st_modified_on = $28,
+          updated_at = NOW(),
+          last_synced_at = NOW()
+        WHERE st_id = $1 AND tenant_id = $2
+      `, [
+        parseInt(stId, 10),
+        tenantId,
+        material.code || null,
+        material.displayName || material.name || null,
+        material.description || null,
+        material.cost || 0,
+        material.price || 0,
+        material.memberPrice || 0,
+        material.addOnPrice || 0,
+        material.addOnMemberPrice || 0,
+        material.hours || 0,
+        material.bonus || 0,
+        material.commissionBonus || 0,
+        material.paysCommission || false,
+        material.deductAsJobCost || false,
+        material.isInventory || false,
+        material.isConfigurableMaterial || false,
+        material.displayInAmount || false,
+        material.isOtherDirectCost || false,
+        material.chargeableByDefault !== false,
+        material.active !== false,
+        material.taxable,
+        material.unitOfMeasure || null,
+        material.account || null,
+        JSON.stringify(material.categories || []),
+        JSON.stringify(material.primaryVendor || null),
+        JSON.stringify(material.otherVendors || []),
+        material.modifiedOn || null
+      ]);
+
+      // Clear any pending overrides since we just pulled fresh data
+      await pool.query(`
+        UPDATE crm.pricebook_overrides
+        SET pending_sync = false, last_synced_at = NOW()
+        WHERE st_pricebook_id = $1 AND tenant_id = $2 AND item_type = 'material'
+      `, [parseInt(stId, 10), tenantId]);
+
+      console.log(`[MATERIALS PULL] Updated local record for material ${stId}`);
+
+      res.json({
+        success: true,
+        message: `Material ${material.code} pulled from ServiceTitan`,
+        data: {
+          stId: material.id,
+          code: material.code,
+          name: material.displayName,
+          description: material.description,
+          cost: material.cost,
+          price: material.price,
+          memberPrice: material.memberPrice,
+          addOnPrice: material.addOnPrice,
+          addOnMemberPrice: material.addOnMemberPrice,
+          hours: material.hours,
+          bonus: material.bonus,
+          commissionBonus: material.commissionBonus,
+          paysCommission: material.paysCommission,
+          deductAsJobCost: material.deductAsJobCost,
+          isInventory: material.isInventory,
+          active: material.active,
+          taxable: material.taxable,
+          unitOfMeasure: material.unitOfMeasure,
+          categories: material.categories,
+          primaryVendor: material.primaryVendor,
+          modifiedOn: material.modifiedOn
+        }
+      });
+
+    } catch (error) {
+      console.error('[MATERIALS PULL] Error:', error);
+      res.status(500).json({ error: error.message });
+    } finally {
+      await pool.end();
+    }
+  })
+);
+
+// ============================================================================
 // GET /api/pricebook/materials/:stId
 // Get single material by ServiceTitan ID with CRM overrides
+// Also handles new materials (prefixed with 'new_')
 // ============================================================================
 
 router.get(
@@ -186,9 +383,146 @@ router.get(
     const { stId } = req.params;
 
     try {
-      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
+      // Check if this is a new material (not yet pushed to ST)
+      const isNewMaterial = stId.startsWith('new_');
+
+      if (isNewMaterial) {
+        // Query new materials table
+        const newId = stId.replace('new_', '');
+        const result = await pool.query(`
+          SELECT
+            n.id,
+            n.tenant_id,
+            n.code,
+            n.display_name,
+            n.description,
+            n.cost,
+            n.price,
+            n.member_price,
+            n.add_on_price,
+            n.add_on_member_price,
+            n.hours,
+            n.bonus,
+            n.commission_bonus,
+            n.pays_commission,
+            n.deduct_as_job_cost,
+            n.is_inventory,
+            n.is_configurable_material,
+            n.display_in_amount,
+            n.is_other_direct_cost,
+            n.chargeable_by_default,
+            n.active,
+            n.taxable,
+            n.unit_of_measure,
+            n.account,
+            n.cost_of_sale_account,
+            n.asset_account,
+            n.business_unit_id,
+            n.general_ledger_account_id,
+            n.cost_type_id,
+            n.budget_cost_code,
+            n.budget_cost_type,
+            n.categories,
+            n.primary_vendor,
+            n.other_vendors,
+            n.assets,
+            n.s3_image_url,
+            n.st_id,
+            n.pushed_to_st,
+            n.pushed_at,
+            n.push_error,
+            n.created_at,
+            n.updated_at,
+            n.created_by
+          FROM crm.pricebook_new_materials n
+          WHERE n.id = $1 AND n.tenant_id = $2
+        `, [parseInt(newId, 10), tenantId]);
+
+        if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Material not found' });
+        }
+
+        const row = result.rows[0];
+        return res.json({
+          id: `new_${row.id}`,
+          stId: row.st_id ? row.st_id.toString() : null,
+          code: row.code,
+          displayName: row.display_name,
+          name: row.display_name,
+          description: row.description,
+
+          // Pricing
+          cost: parseFloat(row.cost) || 0,
+          price: parseFloat(row.price) || 0,
+          memberPrice: parseFloat(row.member_price) || 0,
+          addOnPrice: parseFloat(row.add_on_price) || 0,
+          addOnMemberPrice: parseFloat(row.add_on_member_price) || 0,
+
+          // Labor & Commission
+          hours: parseFloat(row.hours) || 0,
+          bonus: parseFloat(row.bonus) || 0,
+          commissionBonus: parseFloat(row.commission_bonus) || 0,
+          paysCommission: row.pays_commission || false,
+
+          // Flags
+          active: row.active !== false,
+          taxable: row.taxable,
+          deductAsJobCost: row.deduct_as_job_cost || false,
+          isInventory: row.is_inventory || false,
+          isConfigurableMaterial: row.is_configurable_material || false,
+          chargeableByDefault: row.chargeable_by_default !== false,
+          displayInAmount: row.display_in_amount || false,
+          isOtherDirectCost: row.is_other_direct_cost || false,
+
+          // Categorization
+          categories: row.categories || [],
+          unitOfMeasure: row.unit_of_measure,
+
+          // Accounting
+          account: row.account,
+          costOfSaleAccount: row.cost_of_sale_account,
+          assetAccount: row.asset_account,
+          generalLedgerAccountId: row.general_ledger_account_id,
+          costTypeId: row.cost_type_id,
+          budgetCostCode: row.budget_cost_code,
+          budgetCostType: row.budget_cost_type,
+
+          // Vendors
+          primaryVendor: row.primary_vendor,
+          otherVendors: row.other_vendors || [],
+
+          // Assets
+          assets: row.assets || [],
+          imageUrl: row.s3_image_url,
+          s3ImageUrl: row.s3_image_url,
+
+          // Business
+          businessUnitId: row.business_unit_id,
+
+          // Timestamps
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+
+          // New material status
+          isNew: true,
+          pushedToSt: row.pushed_to_st || false,
+          pushedAt: row.pushed_at,
+          pushError: row.push_error,
+          createdBy: row.created_by,
+
+          // CRM (not applicable for new materials)
+          overrideId: null,
+          hasPendingChanges: false,
+          syncError: null,
+          internalNotes: null,
+          reorderThreshold: null,
+          customTags: null,
+        });
+      }
+
+      // Query existing material from master table
       const result = await pool.query(`
-        SELECT 
+        SELECT
           m.id,
           m.st_id,
           m.tenant_id,
@@ -196,20 +530,20 @@ router.get(
           COALESCE(o.override_name, m.display_name, m.name) as display_name,
           m.name,
           COALESCE(o.override_description, m.description) as description,
-          
+
           -- Pricing (with overrides)
           COALESCE(o.override_cost, m.cost) as cost,
           COALESCE(o.override_price, m.price) as price,
           COALESCE(o.override_member_price, m.member_price) as member_price,
           COALESCE(o.override_add_on_price, m.add_on_price) as add_on_price,
           COALESCE(o.override_add_on_member_price, m.add_on_member_price) as add_on_member_price,
-          
+
           -- Labor & Commission (with overrides)
           COALESCE(o.override_hours, m.hours) as hours,
           COALESCE(o.override_bonus, m.bonus) as bonus,
           COALESCE(o.override_commission_bonus, m.commission_bonus) as commission_bonus,
           COALESCE(o.override_pays_commission, m.pays_commission) as pays_commission,
-          
+
           -- Flags (with overrides)
           COALESCE(o.override_active, m.active) as active,
           COALESCE(o.override_taxable, m.taxable) as taxable,
@@ -219,11 +553,11 @@ router.get(
           COALESCE(o.override_chargeable_by_default, m.chargeable_by_default) as chargeable_by_default,
           m.display_in_amount,
           m.is_other_direct_cost,
-          
+
           -- Categorization
           m.categories,
           COALESCE(o.override_unit_of_measure, m.unit_of_measure) as unit_of_measure,
-          
+
           -- Accounting
           m.account,
           m.cost_of_sale_account,
@@ -232,24 +566,24 @@ router.get(
           m.cost_type_id,
           m.budget_cost_code,
           m.budget_cost_type,
-          
+
           -- Vendors (with overrides)
           COALESCE(o.override_primary_vendor, m.primary_vendor) as primary_vendor,
           COALESCE(o.override_other_vendors, m.other_vendors) as other_vendors,
-          
+
           -- Assets
           m.assets,
           m.default_asset_url,
           COALESCE(o.override_image_url, m.s3_image_url, m.default_asset_url) as image_url,
           m.s3_image_url,
-          
+
           -- Business
           COALESCE(o.override_business_unit_id, m.business_unit_id) as business_unit_id,
-          
+
           -- External
           m.external_id,
           m.source,
-          
+
           -- Timestamps
           m.st_created_on,
           m.st_modified_on,
@@ -257,7 +591,7 @@ router.get(
           m.created_at,
           m.updated_at,
           m.last_synced_at,
-          
+
           -- CRM status
           o.id as override_id,
           o.pending_sync as has_pending_changes,
@@ -266,10 +600,10 @@ router.get(
           o.preferred_vendor as override_preferred_vendor,
           o.reorder_threshold,
           o.custom_tags
-          
+
         FROM master.pricebook_materials m
-        LEFT JOIN crm.pricebook_overrides o 
-          ON o.st_pricebook_id = m.st_id 
+        LEFT JOIN crm.pricebook_overrides o
+          ON o.st_pricebook_id = m.st_id
           AND o.tenant_id = m.tenant_id
           AND o.item_type = 'material'
         WHERE m.st_id = $1 AND m.tenant_id = $2
@@ -288,20 +622,20 @@ router.get(
         displayName: row.display_name,
         name: row.name,
         description: row.description,
-        
+
         // Pricing
         cost: parseFloat(row.cost) || 0,
         price: parseFloat(row.price) || 0,
         memberPrice: parseFloat(row.member_price) || 0,
         addOnPrice: parseFloat(row.add_on_price) || 0,
         addOnMemberPrice: parseFloat(row.add_on_member_price) || 0,
-        
+
         // Labor & Commission
         hours: parseFloat(row.hours) || 0,
         bonus: parseFloat(row.bonus) || 0,
         commissionBonus: parseFloat(row.commission_bonus) || 0,
         paysCommission: row.pays_commission || false,
-        
+
         // Flags
         active: row.active !== false,
         taxable: row.taxable,
@@ -311,11 +645,11 @@ router.get(
         chargeableByDefault: row.chargeable_by_default !== false,
         displayInAmount: row.display_in_amount || false,
         isOtherDirectCost: row.is_other_direct_cost || false,
-        
+
         // Categorization
         categories: row.categories || [],
         unitOfMeasure: row.unit_of_measure,
-        
+
         // Accounting
         account: row.account,
         costOfSaleAccount: row.cost_of_sale_account,
@@ -324,24 +658,24 @@ router.get(
         costTypeId: row.cost_type_id,
         budgetCostCode: row.budget_cost_code,
         budgetCostType: row.budget_cost_type,
-        
+
         // Vendors
         primaryVendor: row.primary_vendor,
         otherVendors: row.other_vendors || [],
-        
+
         // Assets
         assets: row.assets || [],
         defaultAssetUrl: row.default_asset_url,
         imageUrl: row.image_url,
         s3ImageUrl: row.s3_image_url,
-        
+
         // Business
         businessUnitId: row.business_unit_id,
-        
+
         // External
         externalId: row.external_id,
         source: row.source,
-        
+
         // Timestamps
         createdOn: row.st_created_on,
         modifiedOn: row.st_modified_on,
@@ -349,7 +683,10 @@ router.get(
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         lastSyncedAt: row.last_synced_at,
-        
+
+        // Status
+        isNew: false,
+
         // CRM
         overrideId: row.override_id,
         hasPendingChanges: row.has_pending_changes || false,
@@ -424,8 +761,7 @@ router.post(
 
       // Insert/update each material in RAW table
       for (const material of allMaterials) {
-        console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
-      const result = await pool.query(`
+        const result = await pool.query(`
           INSERT INTO raw.st_pricebook_materials (
             st_id, tenant_id, code, display_name, description,
             cost, price, member_price, add_on_price, hours,
@@ -517,7 +853,6 @@ router.post(
     console.log(`[MATERIALS SYNC] Starting RAW → MASTER sync for tenant ${tenantId}`);
 
     try {
-      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
       const result = await pool.query(`
         INSERT INTO master.pricebook_materials (
           st_id, tenant_id, code, name, display_name, description,
@@ -792,7 +1127,7 @@ router.post(
       }
 
       // Insert new material
-      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
+      console.log("[MATERIALS CREATE] Creating new material with code:", material.code);
       const result = await pool.query(`
         INSERT INTO crm.pricebook_new_materials (
           tenant_id, code, display_name, description,
@@ -884,8 +1219,8 @@ router.put(
       if (isNewMaterial) {
         // Update the new material directly
         const id = stId.replace('new_', '');
-        console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
-      const result = await pool.query(`
+        console.log("[MATERIALS UPDATE] Updating new material:", id);
+        const result = await pool.query(`
           UPDATE crm.pricebook_new_materials SET
             display_name = COALESCE($3, display_name),
             description = COALESCE($4, description),
@@ -952,7 +1287,7 @@ router.put(
       }
 
       // Create/update override for existing material
-      console.log("[SAVE] Saving override for", parseInt(stId, 10), "with name:", changes.displayName || changes.name);
+      console.log("[MATERIALS UPDATE] Saving override for ST ID:", stId);
       const result = await pool.query(`
         INSERT INTO crm.pricebook_overrides (
           st_pricebook_id, tenant_id, item_type,
@@ -1052,38 +1387,43 @@ router.post(
         try {
           // Build ST API payload
           const payload = buildServiceTitanPayload(material);
-          
+
           // Call ST API to create material
           const stResponse = await createMaterialInServiceTitan(payload, tenantId);
-          
-          // Update local record with ST ID
+
+          // Verify we got a valid ST ID back
+          if (!stResponse.id) {
+            throw new Error('ServiceTitan did not return a valid material ID');
+          }
+
+          // Insert into master table FIRST (this validates the data)
+          await insertIntoMaster(pool, stResponse, tenantId);
+
+          // Only mark as pushed AFTER master insert succeeds
           await pool.query(`
             UPDATE crm.pricebook_new_materials
             SET st_id = $1, pushed_to_st = true, pushed_at = NOW(), push_error = NULL
             WHERE id = $2
           `, [stResponse.id, material.id]);
 
-          // Also insert into master table for future queries
-          await insertIntoMaster(pool, stResponse, tenantId);
-
-          results.created.push({ 
-            localId: material.id, 
-            stId: stResponse.id, 
-            code: material.code 
+          results.created.push({
+            localId: material.id,
+            stId: stResponse.id,
+            code: material.code
           });
 
         } catch (err) {
           console.error(`[MATERIALS PUSH] Failed to create material ${material.code}:`, err.message);
           await pool.query(`
             UPDATE crm.pricebook_new_materials
-            SET push_error = $1
+            SET push_error = $1, pushed_to_st = false
             WHERE id = $2
           `, [err.message, material.id]);
 
-          results.failed.push({ 
-            localId: material.id, 
-            code: material.code, 
-            error: err.message 
+          results.failed.push({
+            localId: material.id,
+            code: material.code,
+            error: err.message
           });
         }
       }
