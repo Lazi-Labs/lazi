@@ -82,6 +82,9 @@ import plaidRoutes from './plaid.routes.js';
 // Accounting transactions routes
 import accountingTransactionsRoutes from './accounting.transactions.routes.js';
 
+// Pricebook kits routes (Material Kits - LAZI-only feature)
+import pricebookKitsRoutes from './pricebook-kits.js';
+
 const router = Router();
 
 // ═══════════════════════════════════════════════════════════════
@@ -192,5 +195,10 @@ router.use('/plaid', plaidRoutes);
 // ACCOUNTING ROUTES (bank transactions and reconciliation)
 // ═══════════════════════════════════════════════════════════════
 router.use('/accounting', accountingTransactionsRoutes);
+
+// ═══════════════════════════════════════════════════════════════
+// PRICEBOOK KITS ROUTES (Material Kits - LAZI-only feature)
+// ═══════════════════════════════════════════════════════════════
+router.use('/pricebook/kits', pricebookKitsRoutes);
 
 export default router;

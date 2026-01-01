@@ -6,8 +6,9 @@ import { ServicesPanel } from '@/components/pricebook/services-panel';
 import { MaterialsPanel } from '@/components/pricebook/materials-panel';
 import { CategoriesPanel } from '@/components/pricebook/categories-panel';
 import { EquipmentPanel } from '@/components/pricebook/equipment-panel';
+import { KitsPage } from '@/components/pricebook/kits';
 
-type PricebookSection = 'services' | 'materials' | 'equipment' | 'other' | 'discounts' | 'categories' | 'price-setup' | 'history' | 'pricing-builder' | 'templates' | 'import-export' | 'vendors';
+type PricebookSection = 'services' | 'materials' | 'equipment' | 'other' | 'discounts' | 'categories' | 'price-setup' | 'history' | 'pricing-builder' | 'templates' | 'import-export' | 'vendors' | 'kits';
 
 export default function PricebookPage() {
   const searchParams = useSearchParams();
@@ -56,6 +57,8 @@ export default function PricebookPage() {
             </div>
           </div>
         );
+      case 'kits':
+        return <KitsPage />;
       default:
         return (
           <div className="flex items-center justify-center h-full text-muted-foreground">

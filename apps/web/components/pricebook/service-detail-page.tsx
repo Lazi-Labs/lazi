@@ -31,6 +31,7 @@ import {
 import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { KitSelectorModal } from './kits/KitSelectorModal';
 
 interface ServiceDetailPageProps {
   serviceId: string | null;
@@ -108,6 +109,7 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
   const [activeTab, setActiveTab] = useState<'materials' | 'equipment'>('materials');
   const [materialSearch, setMaterialSearch] = useState('');
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [isKitModalOpen, setIsKitModalOpen] = useState(false);
   
   // Local form state
   const [formData, setFormData] = useState<Partial<Service>>({});
@@ -296,6 +298,47 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
     } finally {
       setIsPulling(false);
     }
+  };
+
+  // Handle applying a kit - adds materials from the kit to this service
+  const handleApplyKit = (kitMaterials: MaterialLineItem[]) => {
+    setFormData(prev => {
+      const existingMaterials = prev.materials || [];
+
+      // Merge materials - if same materialId exists, add quantities
+      const materialsMap = new Map<string, MaterialLineItem>();
+
+      // Add existing materials first
+      existingMaterials.forEach(m => {
+        materialsMap.set(m.materialId, { ...m });
+      });
+
+      // Add or merge kit materials
+      kitMaterials.forEach(km => {
+        const existing = materialsMap.get(km.materialId);
+        if (existing) {
+          // Material already exists - add to quantity
+          existing.quantity += km.quantity;
+        } else {
+          // New material - add with unique ID
+          materialsMap.set(km.materialId, {
+            ...km,
+            id: `kit-${km.materialId}-${Date.now()}`,
+          });
+        }
+      });
+
+      return {
+        ...prev,
+        materials: Array.from(materialsMap.values()),
+      };
+    });
+
+    setSyncStatus('pending');
+    toast({
+      title: 'Kit applied',
+      description: `Added ${kitMaterials.length} materials from kit`,
+    });
   };
 
   const materialNet = formData.materials?.reduce((sum, m) => sum + (m.quantity * m.unitCost), 0) || 0;
@@ -542,8 +585,13 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                     <Save className="h-3 w-3 mr-1" />
                     SAVE AS...
                   </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-7">
-                    LOAD...
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setIsKitModalOpen(true)}
+                  >
+                    LOAD KIT...
                   </Button>
                   <div className="flex-1" />
                   <div className="relative">
@@ -797,6 +845,14 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
           </div>
         </div>
       </div>
+
+      {/* Kit Selector Modal */}
+      <KitSelectorModal
+        isOpen={isKitModalOpen}
+        onClose={() => setIsKitModalOpen(false)}
+        onApply={handleApplyKit}
+        existingMaterials={formData.materials}
+      />
     </div>
   );
 }

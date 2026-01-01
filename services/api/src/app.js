@@ -32,6 +32,7 @@ import pricebookCategoriesSyncRoutes from './routes/pricebook-categories-sync.js
 import pricebookHealthRoutes from './routes/pricebook-health.js';
 import pricebookImagesRoutes from './routes/pricebook-images.js';
 import pricebookImageManagerRoutes from './routes/pricebook-image-manager.js';
+import pricebookKitsRoutes from './routes/pricebook-kits.js';
 
 const logger = createLogger('app');
 
@@ -440,6 +441,9 @@ app.use('/api/pricebook/images/migrate', pricebookImagesRoutes);
 
 // Mount Pricebook Image Manager routes (SECOND - catches everything else)
 app.use('/api/pricebook/images', pricebookImageManagerRoutes);
+
+// Mount Pricebook Kits routes (Material Kits - LAZI-only feature)
+app.use('/api/pricebook/kits', pricebookKitsRoutes);
 
 // ---------------------------------------------------------------
 // RATE LIMITING

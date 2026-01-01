@@ -30,6 +30,7 @@ import {
   Mail,
   Package,
   Code,
+  Layers,
 } from 'lucide-react';
 
 interface NavItem {
@@ -99,6 +100,7 @@ const navItems: NavItem[] = [
     label: 'Pricebook', 
     icon: BookOpen,
     children: [
+      { href: '/pricebook?section=kits', label: 'Material Kits' },
       { href: '/pricebook?section=services', label: 'Services' },
       { href: '/pricebook?section=materials', label: 'Materials' },
       { href: '/pricebook?section=equipment', label: 'Equipment' },

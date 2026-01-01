@@ -392,6 +392,7 @@ export function DevModePanel() {
         {activeTab === 'windsurf' && (
           <WindsurfTab
             spec={currentSpec}
+            specs={specs}
             onCopy={handleCopyWindsurf}
             copied={copied}
           />
@@ -893,17 +894,70 @@ function ActionsTab({ spec, onUpdate }: TabProps) {
 
 function WindsurfTab({
   spec,
+  specs,
   onCopy,
   copied,
 }: {
   spec: ElementSpec | null;
+  specs: ElementSpec[];
   onCopy: () => void;
   copied: boolean;
 }) {
+  const [allCopied, setAllCopied] = useState(false);
+
+  const handleCopyAll = () => {
+    if (specs.length === 0) return;
+    const combinedPrompt = generateCombinedPrompt(specs);
+    navigator.clipboard.writeText(combinedPrompt);
+    setAllCopied(true);
+    setTimeout(() => setAllCopied(false), 2000);
+  };
+
   if (!spec) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6b7280' }}>
-        Select an element first
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
+          Select an element to see its prompt
+        </div>
+        {specs.length > 0 && (
+          <>
+            <div style={{ borderTop: '1px solid #374151', paddingTop: '16px' }}>
+              <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 12px 0' }}>
+                Or copy all {specs.length} spec{specs.length !== 1 ? 's' : ''} as a combined prompt:
+              </p>
+              <button
+                onClick={handleCopyAll}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: allCopied ? '#10b981' : '#8b5cf6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {allCopied ? (
+                  <>
+                    <Check style={{ width: '16px', height: '16px' }} />
+                    Copied All!
+                  </>
+                ) : (
+                  <>
+                    <Copy style={{ width: '16px', height: '16px' }} />
+                    Copy All Changes ({specs.length})
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -926,7 +980,7 @@ function WindsurfTab({
           fontFamily: 'monospace',
           whiteSpace: 'pre-wrap',
           overflow: 'auto',
-          maxHeight: '300px',
+          maxHeight: '200px',
           margin: 0,
         }}
       >
@@ -962,6 +1016,46 @@ function WindsurfTab({
           </>
         )}
       </button>
+
+      {specs.length > 1 && (
+        <>
+          <div style={{ borderTop: '1px solid #374151', paddingTop: '16px' }}>
+            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '0 0 12px 0' }}>
+              Copy all {specs.length} specs as a combined prompt:
+            </p>
+            <button
+              onClick={handleCopyAll}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: allCopied ? '#10b981' : '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              {allCopied ? (
+                <>
+                  <Check style={{ width: '16px', height: '16px' }} />
+                  Copied All!
+                </>
+              ) : (
+                <>
+                  <Copy style={{ width: '16px', height: '16px' }} />
+                  Copy All Changes ({specs.length})
+                </>
+              )}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -969,6 +1063,70 @@ function WindsurfTab({
 // =============================================================================
 // Helpers
 // =============================================================================
+
+function generateCombinedPrompt(specs: ElementSpec[]): string {
+  let prompt = `# Implementation Request - ${specs.length} Changes\n\n`;
+  prompt += `This prompt contains ${specs.length} element specifications that need to be implemented.\n\n`;
+  prompt += `---\n\n`;
+
+  specs.forEach((spec, index) => {
+    prompt += `## Change ${index + 1}: ${spec.elementInfo?.textContent.slice(0, 40) || 'Element'}\n\n`;
+    prompt += `**Page:** ${spec.page}\n`;
+    prompt += `**Priority:** ${spec.priority}\n`;
+    prompt += `**Status:** ${spec.status}\n\n`;
+
+    if (spec.elementInfo) {
+      prompt += `### Element Details\n`;
+      prompt += `- **Tag:** ${spec.elementInfo.tagName}\n`;
+      prompt += `- **Selector:** \`${spec.elementInfo.selector}\`\n`;
+      prompt += `- **Text:** "${spec.elementInfo.textContent.slice(0, 50)}"\n\n`;
+    }
+
+    prompt += `### Required Behavior\n`;
+    prompt += `**Type:** ${spec.behaviorType}\n\n`;
+
+    switch (spec.behaviorType) {
+      case 'api-call':
+        prompt += `When clicked:\n`;
+        prompt += `1. Call \`${spec.apiMethod || 'GET'} ${spec.apiEndpoint || '/api/...'}\`\n`;
+        if (spec.apiPayload) prompt += `2. Send payload: ${spec.apiPayload}\n`;
+        break;
+      case 'navigate':
+        prompt += `When clicked, navigate to: ${spec.navigateTo || '...'}\n`;
+        break;
+      case 'workflow':
+        prompt += `When clicked, trigger workflow: ${spec.workflowName || spec.workflowId || '...'}\n`;
+        break;
+      case 'sync-job':
+        prompt += `When clicked, run sync job: ${spec.syncJobType || '...'}\n`;
+        break;
+      case 'open-modal':
+        prompt += `When clicked, open a modal dialog\n`;
+        break;
+    }
+
+    if (spec.uiFeedback?.loadingState) {
+      prompt += `\n- Show loading spinner during operation\n`;
+    }
+    if (spec.uiFeedback?.refreshAfter) {
+      prompt += `- Refresh data after completion\n`;
+    }
+
+    if (spec.description) {
+      prompt += `\n### Additional Details\n${spec.description}\n`;
+    }
+
+    prompt += `\n---\n\n`;
+  });
+
+  prompt += `## Implementation Notes\n`;
+  prompt += `- Use existing API patterns from the codebase\n`;
+  prompt += `- Follow the established component structure\n`;
+  prompt += `- Add proper error handling and loading states\n`;
+  prompt += `- Implement all ${specs.length} changes in a cohesive manner\n`;
+
+  return prompt;
+}
 
 function generateWindsurfPrompt(spec: ElementSpec): string {
   let prompt = `## Implement: ${spec.elementInfo?.textContent.slice(0, 40) || 'Element'}\n\n`;

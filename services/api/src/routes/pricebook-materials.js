@@ -694,9 +694,11 @@ router.get(
         budgetCostCode: row.budget_cost_code,
         budgetCostType: row.budget_cost_type,
 
-        // Vendors
+        // Vendors - filter out primary vendor from otherVendors to avoid duplicates
         primaryVendor: row.primary_vendor,
-        otherVendors: row.other_vendors || [],
+        otherVendors: (row.other_vendors || []).filter(v =>
+          !row.primary_vendor || v.vendorId !== row.primary_vendor.vendorId
+        ),
 
         // Assets (filtered to exclude images marked for deletion)
         assets: filteredAssets,
