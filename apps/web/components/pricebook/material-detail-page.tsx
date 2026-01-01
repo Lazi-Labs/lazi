@@ -10,12 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Plus, 
-  Search, 
-  Copy, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Search,
+  Copy,
   Layers,
   RefreshCw,
   Download,
@@ -26,6 +26,7 @@ import {
   MoreHorizontal,
   Check,
   ImagePlus,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
@@ -35,6 +36,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+
+interface Asset {
+  url: string;
+  type: string;
+  alias?: string;
+  fileName?: string;
+  isDefault?: boolean;
+}
 
 interface Vendor {
   id: string;
@@ -75,6 +84,7 @@ interface Material {
   email?: string;
   primaryVendor?: Vendor | null;
   vendors?: Vendor[];
+  assets?: Asset[];
   // New ST fields
   hours?: number;
   bonus?: number;
@@ -127,7 +137,43 @@ export function MaterialDetailPage({
   const [vendorCost, setVendorCost] = useState<number>(0);
   const [vendorPart, setVendorPart] = useState<string>('');
   const [vendorUpc, setVendorUpc] = useState<string>('');
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState<string>('');
+  const [imageUploadTab, setImageUploadTab] = useState<'file' | 'url'>('file');
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [pulling, setPulling] = useState(false);
+  const [pullProgress, setPullProgress] = useState(0);
+  const [pullSuccess, setPullSuccess] = useState<string | null>(null);
+  const [materialAssets, setMaterialAssets] = useState<Asset[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [allImageUrls, setAllImageUrls] = useState<string[]>([]);
+  const [pendingImages, setPendingImages] = useState<string[]>([]); // New images to be pushed
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]); // ST images to delete on push
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [imageHovered, setImageHovered] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper to convert ST image path to full proxied URL
+  const getStImageUrl = (path: string): string => {
+    if (!path) return '';
+    // If it's a data URL, return as-is
+    if (path.startsWith('data:')) {
+      return path;
+    }
+    // If it's already using our API routes, return as-is
+    if (path.includes('/api/images/')) {
+      return path;
+    }
+    // If it's a full S3 or external URL, proxy it
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return apiUrl(`/api/images/proxy?url=${encodeURIComponent(path)}`);
+    }
+    // For ST paths like "Images/Material/xxx.jpg", use the ST image route
+    // This route uses authenticated ST API to fetch the image
+    return apiUrl(`/api/images/st/${path}`);
+  };
 
   // Fetch active material categories
   const { data: categoriesData } = useQuery({
@@ -151,7 +197,7 @@ export function MaterialDetailPage({
     },
   });
 
-  const { data: material, isLoading } = useQuery({
+  const { data: material, isLoading, refetch: refetchMaterial } = useQuery({
     queryKey: ['material', materialId],
     queryFn: async () => {
       if (!materialId) return null;
@@ -179,6 +225,7 @@ export function MaterialDetailPage({
       taxable: true,
       chargeableByDefault: true,
       trackStock: false,
+      defaultImageUrl: null,
       category: '',
       categoryPath: '',
       contact: '',
@@ -203,6 +250,9 @@ export function MaterialDetailPage({
   useEffect(() => {
     console.log("[MaterialDetailPage] useEffect triggered, material:", material ? { code: material.code, name: material.name, description: material.description } : null);
     if (material) {
+      // Get image URL from any of the possible fields
+      const materialImageUrl = material.imageUrl || material.s3ImageUrl || material.defaultImageUrl || null;
+
       form.reset({
         code: material.code || '',
         name: material.name || '',
@@ -219,6 +269,7 @@ export function MaterialDetailPage({
         taxable: material.taxable ?? true,
         chargeableByDefault: material.chargeableByDefault ?? true,
         trackStock: material.trackStock ?? false,
+        defaultImageUrl: materialImageUrl,
         category: material.category || '',
         categoryPath: material.categoryPath || '',
         contact: material.contact || '',
@@ -242,10 +293,59 @@ export function MaterialDetailPage({
           ...(material.vendors || []).map((v: any) => ({ ...v, preferred: false })),
         ],
       });
-      // Use imageUrl or s3ImageUrl for preview
-      setImagePreview(material.defaultImageUrl || null);
+      // Load assets from material (already filtered by backend)
+      const assets = material.assets || [];
+      setMaterialAssets(assets);
+
+      // Load images marked for deletion from API (for badge display)
+      const loadedImagesToDelete: string[] = material.imagesToDelete || [];
+      setImagesToDelete(loadedImagesToDelete);
+
+      // Build array of ST asset image URLs
+      const stImageUrls: string[] = [];
+      assets.filter((a: Asset) => a.type === 'Image').forEach((asset: Asset) => {
+        if (asset.url) {
+          stImageUrls.push(getStImageUrl(asset.url));
+        }
+      });
+
+      // Load pending images from API response (already parsed)
+      const loadedPendingImages: string[] = material.pendingImages || [];
+
+      // If there's a single image URL (not JSON array), add it
+      if (materialImageUrl && !materialImageUrl.startsWith('[')) {
+        const localUrl = getStImageUrl(materialImageUrl);
+        if (!stImageUrls.includes(localUrl) && !loadedPendingImages.includes(materialImageUrl)) {
+          stImageUrls.unshift(localUrl);
+        }
+      }
+
+      // Set pending images from loaded data (raw S3 URLs)
+      setPendingImages(loadedPendingImages);
+
+      // Combine all images: pending first, then ST assets
+      const allUrls = [...loadedPendingImages, ...stImageUrls];
+      setAllImageUrls(allUrls);
+      setCurrentImageIndex(0);
+
+      // Set preview to first image
+      if (allUrls.length > 0) {
+        setImagePreview(allUrls[0]);
+      } else {
+        setImagePreview(null);
+      }
     }
   }, [material]);
+
+  // Update allImageUrls when pending images change
+  useEffect(() => {
+    const stUrls = materialAssets.filter(a => a.type === 'Image').map(a => getStImageUrl(a.url));
+    const allUrls = [...pendingImages, ...stUrls];
+    setAllImageUrls(allUrls);
+    if (allUrls.length > 0 && currentImageIndex >= allUrls.length) {
+      setCurrentImageIndex(0);
+    }
+  }, [pendingImages, materialAssets]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: Partial<Material>) => {
@@ -394,10 +494,16 @@ export function MaterialDetailPage({
       ...data,
       primaryVendor,
       otherVendors,
+      // Send pending images as array for multi-image support
+      pendingImages: pendingImages.length > 0 ? pendingImages : undefined,
+      // Send images to delete (ST asset URLs marked for removal)
+      imagesToDelete: imagesToDelete.length > 0 ? imagesToDelete : undefined,
     };
 
     try {
       await saveMutation.mutateAsync(payload);
+      // Refetch material data to get updated state (hasPendingChanges, imagesToDelete, etc.)
+      await refetchMaterial();
       setSaveSuccess('Changes saved successfully!');
       // Clear success after 3 seconds
       setTimeout(() => setSaveSuccess(null), 3000);
@@ -430,16 +536,21 @@ export function MaterialDetailPage({
       await pushMutation.mutateAsync();
       setPushProgress(100);
 
-      // Show success message
-      setPushSuccess('Successfully pushed to ServiceTitan!');
+      // Clear pending images and images to delete after successful push
+      setPendingImages([]);
+      setImagesToDelete([]);
+
+      // Show centered success modal
+      setSuccessMessage('Successfully pushed to ServiceTitan!');
+      setShowSuccessModal(true);
 
       // Reload to get updated state
       queryClient.invalidateQueries({ queryKey: ['material', materialId] });
 
-      // Clear success message after 5 seconds
+      // Auto-hide modal after 3 seconds
       setTimeout(() => {
-        setPushSuccess(null);
-      }, 5000);
+        setShowSuccessModal(false);
+      }, 3000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -450,23 +561,184 @@ export function MaterialDetailPage({
     }
   };
 
+  // Handle pull from ServiceTitan
+  const handlePull = async () => {
+    if (!material?.stId || material?.isNew) {
+      setError('Cannot pull: Material does not exist in ServiceTitan');
+      return;
+    }
+
+    setError(null);
+    setPullSuccess(null);
+    setPulling(true);
+    setPullProgress(0);
+
+    // Simulate progress while pulling
+    const progressInterval = setInterval(() => {
+      setPullProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + 15;
+      });
+    }, 200);
+
+    try {
+      setPullProgress(30);
+      const res = await fetch(apiUrl(`/api/pricebook/materials/${material.stId}/pull`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      setPullProgress(70);
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Failed to pull from ServiceTitan');
+      }
+
+      setPullProgress(100);
+
+      // Refresh material data
+      queryClient.invalidateQueries({ queryKey: ['material', materialId] });
+      queryClient.invalidateQueries({ queryKey: ['pricebook-materials'] });
+
+      // Update assets if returned
+      if (result.data?.assets) {
+        setMaterialAssets(result.data.assets);
+      }
+
+      setPullSuccess(`Pulled latest data from ServiceTitan`);
+      setHasChanges(false);
+
+      // Clear success after 5 seconds
+      setTimeout(() => setPullSuccess(null), 5000);
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      clearInterval(progressInterval);
+      setPulling(false);
+      // Reset progress after animation
+      setTimeout(() => setPullProgress(0), 500);
+    }
+  };
+
   // Track form changes
   const handleFieldChange = (field: keyof Material, value: any) => {
     form.setValue(field, value);
     setHasChanges(true);
   };
 
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload from file - uploads to S3 and adds to pending images
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    setImageLoading(true);
+    setImageLoadError(false);
+
+    try {
+      // Read file as base64
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        setHasChanges(true);
-      };
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
       reader.readAsDataURL(file);
+      const base64Data = await base64Promise;
+
+      // Upload to S3 via backend
+      const response = await fetch(apiUrl('/api/pricebook/images/upload-file'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file: base64Data,
+          filename: file.name,
+          entityType: 'materials',
+          entityId: materialId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // ADD to pending images array (not replace)
+        setPendingImages(prev => [...prev, result.s3Url]);
+        setImagePreview(result.s3Url);
+        setHasChanges(true);
+        setShowImageModal(false);
+        console.log('[IMAGE UPLOAD] Successfully uploaded to S3:', result.s3Url);
+      } else {
+        console.error('[IMAGE UPLOAD] Failed:', result.error);
+        setImageLoadError(true);
+      }
+    } catch (err) {
+      console.error('[IMAGE UPLOAD] Error:', err);
+      setImageLoadError(true);
+    } finally {
+      setImageLoading(false);
+      // Reset file input
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
     }
+  };
+
+  // Handle image from URL - uploads to S3 and adds to pending images
+  const handleImageFromUrl = async () => {
+    const url = imageUrlInput.trim();
+    if (!url) return;
+
+    setImageLoading(true);
+    setImageLoadError(false);
+
+    try {
+      // Upload to S3 via backend (this fetches the URL and uploads to S3)
+      const response = await fetch(apiUrl('/api/pricebook/images/upload'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url,
+          entityType: 'materials',
+          entityId: materialId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // ADD to pending images array (not replace)
+        setPendingImages(prev => [...prev, result.s3Url]);
+        setImagePreview(result.s3Url);
+        setHasChanges(true);
+        setShowImageModal(false);
+        setImageUrlInput('');
+        setImageLoadError(false);
+        console.log('[IMAGE UPLOAD] Successfully uploaded to S3:', result.s3Url);
+      } else {
+        console.error('[IMAGE UPLOAD] Failed:', result.error);
+        setImageLoadError(true);
+      }
+    } catch (err) {
+      console.error('[IMAGE UPLOAD] Error:', err);
+      setImageLoadError(true);
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  // Get proxy URL for external images
+  const getProxyImageUrl = (url: string) => {
+    if (!url) return '';
+    // If it's already a data URL or relative URL, return as-is
+    if (url.startsWith('data:') || url.startsWith('/')) {
+      return url;
+    }
+    // If it's already proxied, return as-is
+    if (url.includes('/api/images/proxy')) {
+      return url;
+    }
+    // Otherwise, proxy external URLs
+    return apiUrl(`/api/images/proxy?url=${encodeURIComponent(url)}`);
   };
 
   // Handle add vendor from selection
@@ -555,10 +827,10 @@ export function MaterialDetailPage({
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          {/* Status badges */}
-          {material?.hasPendingChanges && (
+          {/* Status badges - show when DB has pending changes OR local unsaved changes */}
+          {(material?.hasPendingChanges || hasChanges || imagesToDelete.length > 0 || pendingImages.length > 0) && (
             <Badge variant="outline" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/50">
-              Pending Changes
+              {hasChanges ? 'Unsaved Changes' : 'Pending Changes'}
             </Badge>
           )}
           {material?.isNew && (
@@ -566,9 +838,36 @@ export function MaterialDetailPage({
               Not in ServiceTitan
             </Badge>
           )}
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 h-7 px-2 text-xs">
-            PULL
-          </Button>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10 h-7 px-2 text-xs bg-purple-600 hover:bg-purple-700 relative overflow-hidden"
+              onClick={handlePull}
+              disabled={pulling || !material?.stId || material?.isNew}
+            >
+              {pulling ? (
+                <span className="flex items-center gap-1">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  PULLING...
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Download className="h-3 w-3" />
+                  PULL
+                </span>
+              )}
+            </Button>
+            {/* Progress bar overlay */}
+            {pulling && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-800 rounded-b overflow-hidden">
+                <div
+                  className="h-full bg-purple-300 transition-all duration-200 ease-out"
+                  style={{ width: `${pullProgress}%` }}
+                />
+              </div>
+            )}
+          </div>
           <div className="relative">
             <Button
               variant="ghost"
@@ -599,6 +898,18 @@ export function MaterialDetailPage({
               </div>
             )}
           </div>
+          {/* View in ST button - only show for materials already pushed to ST */}
+          {material?.stId && !material?.isNew && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10 h-7 px-2 text-xs"
+              onClick={() => window.open(`https://go.servicetitan.com/#/new/pricebook/materials/${material.stId}`, '_blank')}
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />
+              VIEW IN ST
+            </Button>
+          )}
           <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 h-7 px-2 text-xs">
             <Settings className="h-3 w-3" />
           </Button>
@@ -983,7 +1294,7 @@ export function MaterialDetailPage({
                 </div>
               </div>
 
-              {/* ADD AN IMAGE button */}
+              {/* EDIT IMAGE button */}
               <input
                 type="file"
                 ref={imageInputRef}
@@ -991,22 +1302,293 @@ export function MaterialDetailPage({
                 accept="image/*"
                 className="hidden"
               />
-              <Button 
-                className="w-full bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => imageInputRef.current?.click()}
-              >
-                <ImagePlus className="h-4 w-4 mr-2" />
-                ADD AN IMAGE
-              </Button>
+              <div className="relative">
+                <Button
+                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                  onClick={() => setShowImageModal(!showImageModal)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Edit Image{(pendingImages.length + materialAssets.filter(a => a.type === 'Image').length) > 0 ? ` (${pendingImages.length + materialAssets.filter(a => a.type === 'Image').length})` : ''}
+                  {pendingImages.length > 0 && <span className="ml-1 text-yellow-200">*</span>}
+                </Button>
 
-              {/* Image Preview */}
-              <div className="border rounded-lg overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
-                {imagePreview ? (
-                  <img 
-                    src={imagePreview} 
-                    alt="Material" 
-                    className="w-full h-full object-cover"
-                  />
+                {/* Image Management Modal */}
+                {showImageModal && (
+                  <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-popover border rounded-lg shadow-lg z-50 max-h-[500px] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-sm">Manage Images</h4>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          setShowImageModal(false);
+                          setImageUrlInput('');
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Existing Images Grid */}
+                    {(materialAssets.length > 0 || pendingImages.length > 0) && (
+                      <div className="mb-4">
+                        <Label className="text-xs text-muted-foreground mb-2 block">Current Images</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Show pending images (to be pushed) */}
+                          {pendingImages.map((url, index) => (
+                            <div key={`pending-${index}`} className="relative border-2 border-yellow-400 rounded-lg overflow-hidden aspect-square bg-muted/30">
+                              <img
+                                src={url}
+                                alt={`Pending image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-1 left-1">
+                                <Badge className="text-[10px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPendingImages(prev => prev.filter((_, i) => i !== index));
+                                  setHasChanges(true);
+                                }}
+                                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {/* Show ST assets */}
+                          {materialAssets.filter(a => a.type === 'Image').map((asset, index) => (
+                            <div key={index} className="relative border rounded-lg overflow-hidden aspect-square bg-muted/30">
+                              <img
+                                src={getStImageUrl(asset.url)}
+                                alt={asset.alias || `Image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-1 left-1">
+                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-blue-500/20 text-blue-700 border-blue-500/50">ST</Badge>
+                              </div>
+                              {asset.isDefault && (
+                                <div className="absolute bottom-1 left-1">
+                                  <Badge className="text-[10px] px-1 py-0 bg-green-500">Default</Badge>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {pendingImages.length > 0 && (
+                          <p className="text-xs text-yellow-600 mt-2">
+                            {pendingImages.length} pending image{pendingImages.length > 1 ? 's' : ''} will be uploaded when you push to ServiceTitan.
+                          </p>
+                        )}
+                        {materialAssets.length > 0 && pendingImages.length === 0 && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            ST images are managed in ServiceTitan. Add images below to include in next push.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Divider */}
+                    <div className="border-t my-3" />
+
+                    {/* Add New Image Section */}
+                    <Label className="text-xs text-muted-foreground mb-2 block">Add New Image</Label>
+
+                    {/* Tab Buttons */}
+                    <div className="flex gap-1 mb-3 p-1 bg-muted rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setImageUploadTab('file')}
+                        className={cn(
+                          "flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors",
+                          imageUploadTab === 'file'
+                            ? "bg-background shadow text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Upload className="h-3 w-3 inline mr-1" />
+                        Upload File
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImageUploadTab('url')}
+                        className={cn(
+                          "flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors",
+                          imageUploadTab === 'url'
+                            ? "bg-background shadow text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Download className="h-3 w-3 inline mr-1" />
+                        From URL
+                      </button>
+                    </div>
+
+                    {/* File Upload Tab */}
+                    {imageUploadTab === 'file' && (
+                      <div className="space-y-3">
+                        <div
+                          onClick={() => imageInputRef.current?.click()}
+                          className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition-colors"
+                        >
+                          <Upload className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">
+                            Click to select an image
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* URL Tab */}
+                    {imageUploadTab === 'url' && (
+                      <div className="space-y-3">
+                        <div>
+                          <Input
+                            type="url"
+                            value={imageUrlInput}
+                            onChange={(e) => {
+                              setImageUrlInput(e.target.value);
+                              setImageLoadError(false);
+                            }}
+                            placeholder="https://example.com/image.jpg"
+                            className={cn("text-sm", imageLoadError && "border-red-500")}
+                          />
+                          {imageLoadError && (
+                            <p className="text-xs text-red-500 mt-1">Failed to load image</p>
+                          )}
+                        </div>
+                        {/* URL Preview */}
+                        {imageUrlInput.trim() && !imageLoadError && (
+                          <div className="border rounded-lg overflow-hidden bg-muted/30 h-24 flex items-center justify-center">
+                            <img
+                              src={getProxyImageUrl(imageUrlInput.trim())}
+                              alt="Preview"
+                              className="max-h-full max-w-full object-contain"
+                              onError={() => setImageLoadError(true)}
+                            />
+                          </div>
+                        )}
+                        <Button
+                          onClick={handleImageFromUrl}
+                          disabled={!imageUrlInput.trim() || imageLoading}
+                          className="w-full bg-green-500 hover:bg-green-600"
+                          size="sm"
+                        >
+                          {imageLoading ? (
+                            <span className="flex items-center gap-2">
+                              <RefreshCw className="h-3 w-3 animate-spin" />
+                              Uploading...
+                            </span>
+                          ) : (
+                            'Add Image'
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Image Preview with Carousel */}
+              <div
+                className="border rounded-lg overflow-hidden bg-muted/30 aspect-square flex items-center justify-center relative group"
+                onMouseEnter={() => setImageHovered(true)}
+                onMouseLeave={() => setImageHovered(false)}
+              >
+                {allImageUrls.length > 0 ? (
+                  <>
+                    <img
+                      src={allImageUrls[currentImageIndex]}
+                      alt={`Material image ${currentImageIndex + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide broken image and show fallback UI
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+
+                    {/* X button to remove image - appears on hover */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentUrl = allImageUrls[currentImageIndex];
+                        // Check if this is a pending image (S3 URL in pendingImages array)
+                        const pendingIndex = pendingImages.findIndex(url => url === currentUrl);
+                        if (pendingIndex >= 0) {
+                          // Remove from pending images
+                          setPendingImages(prev => prev.filter((_, i) => i !== pendingIndex));
+                          setHasChanges(true);
+                        } else {
+                          // It's an ST image - find and track for deletion
+                          const stAsset = materialAssets.find(a => a.type === 'Image' && getStImageUrl(a.url) === currentUrl);
+                          if (stAsset) {
+                            setImagesToDelete(prev => [...prev, stAsset.url]);
+                            // Remove from local assets display
+                            setMaterialAssets(prev => prev.filter(a => a !== stAsset));
+                            setHasChanges(true);
+                          }
+                        }
+                        // Adjust current index if needed
+                        if (currentImageIndex >= allImageUrls.length - 1) {
+                          setCurrentImageIndex(Math.max(0, allImageUrls.length - 2));
+                        }
+                      }}
+                      className={cn(
+                        "absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 rounded-full text-white transition-all duration-200 shadow-lg",
+                        imageHovered ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                      )}
+                      title="Remove image"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+
+                    {/* Pending badge for pending images */}
+                    {currentImageIndex < pendingImages.length && (
+                      <div className="absolute top-2 left-2">
+                        <Badge className="text-[10px] px-1.5 py-0.5 bg-yellow-500 text-black">Pending</Badge>
+                      </div>
+                    )}
+
+                    {/* ST badge for ST images */}
+                    {currentImageIndex >= pendingImages.length && (
+                      <div className="absolute top-2 left-2">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-blue-500/80 text-white border-blue-400">ST</Badge>
+                      </div>
+                    )}
+
+                    {/* Left Arrow - only show if multiple images */}
+                    {allImageUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setCurrentImageIndex(prev => prev === 0 ? allImageUrls.length - 1 : prev - 1)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                    )}
+
+                    {/* Right Arrow - only show if multiple images */}
+                    {allImageUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setCurrentImageIndex(prev => prev === allImageUrls.length - 1 ? 0 : prev + 1)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    )}
+
+                    {/* Image counter badge */}
+                    {allImageUrls.length > 1 && (
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-black/60 text-white text-xs px-2">
+                          {currentImageIndex + 1} / {allImageUrls.length}
+                        </Badge>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center text-muted-foreground text-sm p-4">
                     <ImagePlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -1014,10 +1596,6 @@ export function MaterialDetailPage({
                   </div>
                 )}
               </div>
-
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                View all images
-              </Button>
 
               {/* ACTIVE toggle */}
               <div className="flex items-center justify-between">
@@ -1373,6 +1951,14 @@ export function MaterialDetailPage({
                     {pushSuccess}
                   </div>
                 )}
+
+                {/* Pull Success Message */}
+                {pullSuccess && (
+                  <div className="p-3 bg-purple-50 border border-purple-200 rounded text-sm text-purple-700 flex items-center gap-2">
+                    <Download className="h-4 w-4 text-purple-600" />
+                    {pullSuccess}
+                  </div>
+                )}
               </div>
 
               {/* Status Messages */}
@@ -1398,6 +1984,27 @@ export function MaterialDetailPage({
 
         </div>
       </div>
+
+      {/* Success Modal Overlay - Centered on screen */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 transform animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Success!</h3>
+              <p className="text-gray-600 mb-6">{successMessage}</p>
+              <Button
+                onClick={() => setShowSuccessModal(false)}
+                className="bg-green-600 hover:bg-green-700 text-white px-8"
+              >
+                OK
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

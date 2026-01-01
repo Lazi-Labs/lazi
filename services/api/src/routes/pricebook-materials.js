@@ -259,7 +259,7 @@ router.post(
       const material = response.data;
       console.log(`[MATERIALS PULL] Fetched material:`, material.code, material.displayName);
 
-      // Update master table
+      // Update master table with ALL fields including assets
       await pool.query(`
         UPDATE master.pricebook_materials SET
           code = $3,
@@ -289,6 +289,8 @@ router.post(
           primary_vendor = $26,
           other_vendors = $27,
           st_modified_on = $28,
+          assets = $29,
+          default_asset_url = $30,
           updated_at = NOW(),
           last_synced_at = NOW()
         WHERE st_id = $1 AND tenant_id = $2
@@ -320,13 +322,21 @@ router.post(
         JSON.stringify(material.categories || []),
         JSON.stringify(material.primaryVendor || null),
         JSON.stringify(material.otherVendors || []),
-        material.modifiedOn || null
+        material.modifiedOn || null,
+        JSON.stringify(material.assets || []),
+        material.defaultAssetUrl || null
       ]);
 
-      // Clear any pending overrides since we just pulled fresh data
+      // Clear ALL pending overrides including image URL since we just pulled fresh data from ST
       await pool.query(`
         UPDATE crm.pricebook_overrides
-        SET pending_sync = false, last_synced_at = NOW()
+        SET pending_sync = false,
+            last_synced_at = NOW(),
+            override_image_url = NULL,
+            override_image_data = NULL,
+            override_image_mime_type = NULL,
+            override_image_filename = NULL,
+            delete_image = false
         WHERE st_pricebook_id = $1 AND tenant_id = $2 AND item_type = 'material'
       `, [parseInt(stId, 10), tenantId]);
 
@@ -356,7 +366,9 @@ router.post(
           unitOfMeasure: material.unitOfMeasure,
           categories: material.categories,
           primaryVendor: material.primaryVendor,
-          modifiedOn: material.modifiedOn
+          modifiedOn: material.modifiedOn,
+          assets: material.assets || [],
+          defaultAssetUrl: material.defaultAssetUrl
         }
       });
 
@@ -599,7 +611,8 @@ router.get(
           o.internal_notes,
           o.preferred_vendor as override_preferred_vendor,
           o.reorder_threshold,
-          o.custom_tags
+          o.custom_tags,
+          o.images_to_delete
 
         FROM master.pricebook_materials m
         LEFT JOIN crm.pricebook_overrides o
@@ -615,6 +628,28 @@ router.get(
 
       // Format response with camelCase keys
       const row = result.rows[0];
+
+      // Parse images_to_delete and filter assets
+      let imagesToDelete = [];
+      if (row.images_to_delete) {
+        try {
+          imagesToDelete = Array.isArray(row.images_to_delete)
+            ? row.images_to_delete
+            : JSON.parse(row.images_to_delete);
+        } catch { /* ignore parse errors */ }
+      }
+
+      // Filter out assets that are marked for deletion
+      let filteredAssets = row.assets || [];
+      if (imagesToDelete.length > 0 && filteredAssets.length > 0) {
+        filteredAssets = filteredAssets.filter(asset => {
+          const shouldDelete = imagesToDelete.some(delUrl =>
+            asset.url === delUrl || asset.url.includes(delUrl) || delUrl.includes(asset.url)
+          );
+          return !shouldDelete;
+        });
+      }
+
       res.json({
         id: row.st_id?.toString(),
         stId: row.st_id?.toString(),
@@ -663,11 +698,12 @@ router.get(
         primaryVendor: row.primary_vendor,
         otherVendors: row.other_vendors || [],
 
-        // Assets
-        assets: row.assets || [],
+        // Assets (filtered to exclude images marked for deletion)
+        assets: filteredAssets,
         defaultAssetUrl: row.default_asset_url,
         imageUrl: row.image_url,
         s3ImageUrl: row.s3_image_url,
+        imagesToDelete: imagesToDelete, // Include for frontend reference
 
         // Business
         businessUnitId: row.business_unit_id,
@@ -1245,6 +1281,8 @@ router.put(
             categories = COALESCE($23, categories),
             primary_vendor = COALESCE($24, primary_vendor),
             other_vendors = COALESCE($25, other_vendors),
+            s3_image_url = COALESCE($26, s3_image_url),
+            pending_images = COALESCE($27, pending_images),
             updated_at = NOW()
           WHERE id = $1 AND tenant_id = $2
           RETURNING *
@@ -1272,7 +1310,9 @@ router.put(
           changes.unitOfMeasure,
           changes.categories ? JSON.stringify(changes.categories) : null,
           changes.primaryVendor ? JSON.stringify(changes.primaryVendor) : null,
-          changes.otherVendors ? JSON.stringify(changes.otherVendors) : null
+          changes.otherVendors ? JSON.stringify(changes.otherVendors) : null,
+          changes.defaultImageUrl || changes.imageUrl || null,
+          changes.pendingImages ? JSON.stringify(changes.pendingImages) : null
         ]);
 
         if (result.rows.length === 0) {
@@ -1288,6 +1328,24 @@ router.put(
 
       // Create/update override for existing material
       console.log("[MATERIALS UPDATE] Saving override for ST ID:", stId);
+
+      // Handle pending images - store as JSON array if multiple, or as single URL for backward compat
+      let imageUrlValue = null;
+      if (changes.pendingImages && Array.isArray(changes.pendingImages) && changes.pendingImages.length > 0) {
+        // Store as JSON array string
+        imageUrlValue = JSON.stringify(changes.pendingImages);
+        console.log("[MATERIALS UPDATE] Storing pending images:", imageUrlValue);
+      } else if (changes.defaultImageUrl || changes.imageUrl) {
+        imageUrlValue = changes.defaultImageUrl || changes.imageUrl;
+      }
+
+      // Handle images to delete - store as JSON array
+      let imagesToDeleteValue = null;
+      if (changes.imagesToDelete && Array.isArray(changes.imagesToDelete) && changes.imagesToDelete.length > 0) {
+        imagesToDeleteValue = JSON.stringify(changes.imagesToDelete);
+        console.log("[MATERIALS UPDATE] Storing images to delete:", imagesToDeleteValue);
+      }
+
       const result = await pool.query(`
         INSERT INTO crm.pricebook_overrides (
           st_pricebook_id, tenant_id, item_type,
@@ -1296,9 +1354,9 @@ router.put(
           override_add_on_member_price, override_hours, override_bonus,
           override_commission_bonus, override_pays_commission, override_deduct_as_job_cost,
           override_is_inventory, override_unit_of_measure, override_chargeable_by_default,
-          override_primary_vendor, override_other_vendors,
+          override_primary_vendor, override_other_vendors, override_image_url, images_to_delete,
           pending_sync, updated_at
-        ) VALUES ($1, $2, 'material', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, true, NOW())
+        ) VALUES ($1, $2, 'material', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, true, NOW())
         ON CONFLICT (st_pricebook_id, tenant_id, item_type) DO UPDATE SET
           override_name = COALESCE($3, crm.pricebook_overrides.override_name),
           override_description = COALESCE($4, crm.pricebook_overrides.override_description),
@@ -1318,6 +1376,8 @@ router.put(
           override_chargeable_by_default = COALESCE($18, crm.pricebook_overrides.override_chargeable_by_default),
           override_primary_vendor = COALESCE($19, crm.pricebook_overrides.override_primary_vendor),
           override_other_vendors = COALESCE($20, crm.pricebook_overrides.override_other_vendors),
+          override_image_url = COALESCE($21, crm.pricebook_overrides.override_image_url),
+          images_to_delete = COALESCE($22, crm.pricebook_overrides.images_to_delete),
           pending_sync = true,
           updated_at = NOW()
         RETURNING *
@@ -1340,7 +1400,9 @@ router.put(
         changes.unitOfMeasure,
         changes.chargeableByDefault,
         changes.primaryVendor ? JSON.stringify(changes.primaryVendor) : null,
-        changes.otherVendors ? JSON.stringify(changes.otherVendors) : null
+        changes.otherVendors ? JSON.stringify(changes.otherVendors) : null,
+        imageUrlValue,
+        imagesToDeleteValue
       ]);
 
       res.json({
@@ -1387,6 +1449,54 @@ router.post(
         try {
           // Build ST API payload
           const payload = buildServiceTitanPayload(material);
+
+          // Collect all image URLs to upload (from pending_images and s3_image_url)
+          let imageUrls = [];
+
+          // Check for pending_images (stored as JSON array)
+          if (material.pending_images) {
+            try {
+              const parsed = JSON.parse(material.pending_images);
+              if (Array.isArray(parsed)) {
+                imageUrls = imageUrls.concat(parsed);
+              }
+            } catch {
+              // Not JSON, ignore
+            }
+          }
+
+          // Also check s3_image_url (backward compat)
+          if (material.s3_image_url && !imageUrls.includes(material.s3_image_url)) {
+            imageUrls.push(material.s3_image_url);
+          }
+
+          // Upload all images to ST
+          if (imageUrls.length > 0) {
+            console.log(`[PUSH] New material ${material.code} has ${imageUrls.length} images to upload`);
+            const stAssets = [];
+
+            for (let i = 0; i < imageUrls.length; i++) {
+              const url = imageUrls[i];
+              console.log(`[PUSH] Uploading image ${i + 1}/${imageUrls.length} for new material ${material.code}...`);
+              const stImagePath = await uploadImageToServiceTitan(
+                url,
+                tenantId,
+                `material_${material.code.replace(/[^a-zA-Z0-9]/g, '_')}_${i + 1}.jpg`
+              );
+
+              if (stImagePath) {
+                stAssets.push({ url: stImagePath, type: 'Image' });
+                console.log(`[PUSH] Image ${i + 1} uploaded to ST: ${stImagePath}`);
+              } else {
+                console.warn(`[PUSH] Failed to upload image ${i + 1} to ST`);
+              }
+            }
+
+            if (stAssets.length > 0) {
+              payload.assets = stAssets;
+              console.log(`[PUSH] Total ${stAssets.length} images uploaded for new material`);
+            }
+          }
 
           // Call ST API to create material
           const stResponse = await createMaterialInServiceTitan(payload, tenantId);
@@ -1446,22 +1556,132 @@ router.post(
         try {
           // Build update payload (only changed fields)
           const payload = buildUpdatePayload(override);
-          
+
+          // Get existing assets from master table to preserve them
+          const existingAssetsResult = await pool.query(`
+            SELECT assets FROM master.pricebook_materials
+            WHERE st_id = $1 AND tenant_id = $2
+          `, [override.st_pricebook_id, tenantId]);
+
+          let existingAssets = [];
+          if (existingAssetsResult.rows.length > 0 && existingAssetsResult.rows[0].assets) {
+            existingAssets = existingAssetsResult.rows[0].assets;
+            console.log(`[PUSH] Material ${override.st_pricebook_id} has ${existingAssets.length} existing assets`);
+          }
+
+          // Parse images to delete (if any)
+          let imagesToDelete = [];
+          if (override.images_to_delete) {
+            try {
+              imagesToDelete = Array.isArray(override.images_to_delete)
+                ? override.images_to_delete
+                : JSON.parse(override.images_to_delete);
+              console.log(`[PUSH] Material ${override.st_pricebook_id} has ${imagesToDelete.length} images marked for deletion`);
+            } catch {
+              console.warn(`[PUSH] Failed to parse images_to_delete for ${override.st_pricebook_id}`);
+            }
+          }
+
+          // Filter out deleted images from existing assets
+          if (imagesToDelete.length > 0 && existingAssets.length > 0) {
+            const beforeCount = existingAssets.length;
+            existingAssets = existingAssets.filter(a => {
+              // Check if this asset's URL is in the delete list
+              const shouldDelete = imagesToDelete.some(delUrl => a.url === delUrl || a.url.includes(delUrl) || delUrl.includes(a.url));
+              if (shouldDelete) {
+                console.log(`[PUSH] Removing image from assets: ${a.url}`);
+              }
+              return !shouldDelete;
+            });
+            console.log(`[PUSH] Filtered existing assets: ${beforeCount} -> ${existingAssets.length}`);
+          }
+
+          // If there's an image URL, upload to ST first and get the ST path
+          // Handle both single URL and JSON array of URLs
+          let newStAssets = [];
+          if (override.override_image_url) {
+            let imageUrls = [];
+
+            // Try to parse as JSON array
+            try {
+              const parsed = JSON.parse(override.override_image_url);
+              if (Array.isArray(parsed)) {
+                imageUrls = parsed;
+                console.log(`[PUSH] Material ${override.st_pricebook_id} has ${imageUrls.length} NEW images to upload`);
+              } else {
+                imageUrls = [override.override_image_url];
+              }
+            } catch {
+              // Not JSON, treat as single URL
+              imageUrls = [override.override_image_url];
+            }
+
+            // Upload all NEW images to ST
+            for (let i = 0; i < imageUrls.length; i++) {
+              const url = imageUrls[i];
+              console.log(`[PUSH] Uploading image ${i + 1}/${imageUrls.length} for material ${override.st_pricebook_id}...`);
+              const stImagePath = await uploadImageToServiceTitan(
+                url,
+                tenantId,
+                `material_${override.st_pricebook_id}_${Date.now()}_${i + 1}.jpg`
+              );
+
+              if (stImagePath) {
+                newStAssets.push({ url: stImagePath, type: 'Image' });
+                console.log(`[PUSH] Image ${i + 1} uploaded to ST: ${stImagePath}`);
+              } else {
+                console.warn(`[PUSH] Failed to upload image ${i + 1} to ST`);
+              }
+            }
+          }
+
+          // MERGE existing assets with new assets (new ones first, then existing)
+          // This also handles the case where we only deleted images (no new ones)
+          if (newStAssets.length > 0 || existingAssets.length > 0 || imagesToDelete.length > 0) {
+            // Convert existing assets to the format ST expects
+            const existingForPayload = existingAssets
+              .filter(a => a.type === 'Image')
+              .map(a => ({ url: a.url, type: 'Image' }));
+
+            // New assets first (they become default), then existing
+            payload.assets = [...newStAssets, ...existingForPayload];
+            console.log(`[PUSH] Combined assets (${newStAssets.length} new + ${existingForPayload.length} existing): ${JSON.stringify(payload.assets)}`);
+          }
+
           // Call ST API to update material
           console.log("[PUSH] Calling ST API for", override.st_pricebook_id, "with payload:", JSON.stringify(payload));
           const stResult = await updateMaterialInServiceTitan(override.st_pricebook_id, payload, tenantId);
           console.log("[PUSH] ST API result:", JSON.stringify(stResult));
-          
-          // Clear override (changes now in ST)
+
+          // Clear override completely (changes now in ST)
           await pool.query(`
             UPDATE crm.pricebook_overrides
-            SET pending_sync = false, 
+            SET pending_sync = false,
+                override_image_url = NULL,
+                images_to_delete = NULL,
                 last_synced_at = NOW(),
                 sync_error = NULL
             WHERE id = $1
           `, [override.id]);
 
-          // Update master table
+          // Update master table with new assets from ST response
+          if (stResult.assets) {
+            await pool.query(`
+              UPDATE master.pricebook_materials
+              SET assets = $1,
+                  default_asset_url = $2,
+                  updated_at = NOW()
+              WHERE st_id = $3 AND tenant_id = $4
+            `, [
+              JSON.stringify(stResult.assets),
+              stResult.defaultAssetUrl || null,
+              override.st_pricebook_id,
+              tenantId
+            ]);
+            console.log(`[PUSH] Updated master table with ${stResult.assets.length} assets`);
+          }
+
+          // Update master table with other fields
           await updateMasterFromOverride(pool, override);
 
           results.updated.push({ 
@@ -1556,7 +1776,7 @@ function parseJsonSafe(value, defaultValue) {
 }
 
 function buildServiceTitanPayload(material) {
-  return {
+  const payload = {
     code: material.code,
     displayName: material.display_name || '',
     description: material.description || '',
@@ -1583,6 +1803,10 @@ function buildServiceTitanPayload(material) {
     primaryVendor: parseJsonSafe(material.primary_vendor, null),
     otherVendors: parseJsonSafe(material.other_vendors, []),
   };
+
+  // Note: Image URL is handled separately in push flow - uploaded to ST first, then ST path is added
+
+  return payload;
 }
 
 function buildUpdatePayload(override) {
@@ -1603,6 +1827,7 @@ function buildUpdatePayload(override) {
   if (override.override_is_inventory !== null) payload.isInventory = override.override_is_inventory;
   if (override.override_unit_of_measure) payload.unitOfMeasure = override.override_unit_of_measure;
   if (override.override_chargeable_by_default !== null) payload.chargeableByDefault = override.override_chargeable_by_default;
+  // Note: Image URL is handled separately in push flow - uploaded to ST first, then ST path is added
   return payload;
 }
 
@@ -1636,6 +1861,86 @@ async function updateMaterialInServiceTitan(stId, payload, tenantId) {
   }
 
   return response.data;
+}
+
+/**
+ * Upload an image to ServiceTitan and return the ST image path
+ * Uses multipart/form-data as required by ST API
+ * @param {string} imageUrl - The S3 or external URL of the image
+ * @param {string} tenantId - The tenant ID
+ * @param {string} filename - Optional filename for the image
+ * @returns {Promise<string|null>} - The ServiceTitan image path (e.g., "Images/Materials/uuid.jpg") or null if failed
+ */
+async function uploadImageToServiceTitan(imageUrl, tenantId, filename = null) {
+  try {
+    console.log(`[ST IMAGE UPLOAD] Starting upload for: ${imageUrl}`);
+
+    // Fetch the image from the URL (S3 or external)
+    const imageResponse = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; LAZI-CRM/1.0)',
+        'Accept': 'image/*',
+      },
+    });
+
+    if (!imageResponse.ok) {
+      console.error(`[ST IMAGE UPLOAD] Failed to fetch image from ${imageUrl}: ${imageResponse.status}`);
+      return null;
+    }
+
+    // Get image as buffer
+    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+
+    // Determine content type and filename
+    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+    const ext = contentType.includes('png') ? 'png' :
+                contentType.includes('gif') ? 'gif' :
+                contentType.includes('webp') ? 'webp' : 'jpg';
+
+    // Generate filename if not provided
+    const finalFilename = filename || `material_${Date.now()}.${ext}`;
+
+    console.log(`[ST IMAGE UPLOAD] Uploading to ST: ${finalFilename} (${imageBuffer.length} bytes, ${contentType})`);
+
+    // Get ST access token
+    const { getAccessToken } = await import('../services/tokenManager.js');
+    const accessToken = await getAccessToken();
+
+    // Create FormData with the image (ST requires multipart/form-data)
+    const formData = new FormData();
+    const imageBlob = new Blob([imageBuffer], { type: contentType });
+    formData.append('file', imageBlob, finalFilename);
+
+    // Upload to ServiceTitan using multipart/form-data
+    const stResponse = await fetch(
+      `https://api.servicetitan.io/pricebook/v2/tenant/${tenantId}/images`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'ST-App-Key': process.env.SERVICE_TITAN_APP_KEY,
+          // Don't set Content-Type - fetch will set it automatically with boundary for FormData
+        },
+        body: formData,
+      }
+    );
+
+    if (!stResponse.ok) {
+      const errorText = await stResponse.text();
+      console.error(`[ST IMAGE UPLOAD] ST API error: ${stResponse.status} - ${errorText}`);
+      return null;
+    }
+
+    const stResult = await stResponse.json();
+    console.log(`[ST IMAGE UPLOAD] Success! ST response:`, JSON.stringify(stResult));
+
+    // ST returns the image path like "Images/Materials/uuid.jpg"
+    return stResult.path || stResult.url || stResult.imageUrl || stResult;
+
+  } catch (error) {
+    console.error(`[ST IMAGE UPLOAD] Error uploading image:`, error.message);
+    return null;
+  }
 }
 
 async function insertIntoMaster(pool, stResponse, tenantId) {

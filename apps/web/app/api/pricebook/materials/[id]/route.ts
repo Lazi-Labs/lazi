@@ -31,9 +31,48 @@ export async function GET(
     
     const transformImageUrl = (url: string | null): string | null => {
       if (!url) return null;
+      // If it's a JSON array string, return null (handled separately as pendingImages)
+      if (url.startsWith('[')) return null;
+      // Return full URLs as-is (S3, external URLs)
       if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      // Return ST image paths as-is (like "Images/Material/xxx.jpg")
+      // These will be processed by the frontend to use /api/images/st/ route
+      if (url.startsWith('Images/')) return url;
+      // For other relative paths, add dashboard prefix
       return `/dashboard/api${url}`;
     };
+
+    // Parse pending images from JSON array in imageUrl
+    const parsePendingImages = (url: string | null): string[] => {
+      if (!url || !url.startsWith('[')) return [];
+      try {
+        const parsed = JSON.parse(url);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    };
+
+    // Check all possible image URL sources for JSON array (pending images)
+    const allImageSources = [
+      data.imageUrl,
+      data.image_url,
+      data.s3ImageUrl,
+      data.s3_image_url,
+    ];
+
+    // Find pending images from any source that's a JSON array
+    let pendingImages: string[] = [];
+    for (const source of allImageSources) {
+      const parsed = parsePendingImages(source);
+      if (parsed.length > 0) {
+        pendingImages = parsed;
+        break;
+      }
+    }
+
+    // For display URL, prefer non-JSON array sources
+    const imageUrlSource = allImageSources.find(url => url && !url.startsWith('[')) || null;
 
     // Transform from snake_case backend to camelCase frontend
     const transformed = {
@@ -87,15 +126,18 @@ export async function GET(
         preferred: false,
         active: v.active ?? true,
       })),
-      defaultImageUrl: transformImageUrl(data.s3ImageUrl || data.s3_image_url || data.imageUrl || data.image_url),
-      overrideId: data.override_id,
-      hasPendingChanges: data.has_pending_changes || false,
+      defaultImageUrl: transformImageUrl(imageUrlSource),
+      pendingImages: pendingImages,
+      assets: data.assets || [],
+      imagesToDelete: data.imagesToDelete || data.images_to_delete || [],
+      overrideId: data.override_id || data.overrideId,
+      hasPendingChanges: data.hasPendingChanges || data.has_pending_changes || pendingImages.length > 0 || false,
       isNew: data.is_new || data.isNew || false,
       pushError: data.push_error || data.pushError,
-      internalNotes: data.internal_notes,
-      preferredVendor: data.override_preferred_vendor || data.preferred_vendor,
-      reorderThreshold: data.reorder_threshold,
-      customTags: data.custom_tags || [],
+      internalNotes: data.internal_notes || data.internalNotes,
+      preferredVendor: data.override_preferred_vendor || data.preferred_vendor || data.preferredVendor,
+      reorderThreshold: data.reorder_threshold || data.reorderThreshold,
+      customTags: data.custom_tags || data.customTags || [],
     };
     
     return NextResponse.json(transformed);

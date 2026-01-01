@@ -44,6 +44,7 @@ import pricebookChatRoutes from './pricebook-chat.routes.js';
 // Image proxy routes
 import imagesRoutes from './images.routes.js';
 import imageQueueRoutes from './image-queue.routes.js';
+import pricebookImagesRoutes from './pricebook-images.js';
 
 // Scraper routes
 import scrapersRoutes from './scrapers.routes.js';
@@ -130,6 +131,7 @@ router.use('/chat', pricebookChatRoutes);
 // ═══════════════════════════════════════════════════════════════
 router.use('/images', imagesRoutes);
 router.use('/images', imageQueueRoutes);
+router.use('/pricebook/images', pricebookImagesRoutes);
 
 // ═══════════════════════════════════════════════════════════════
 // SCRAPER ROUTES (vendor price scraping)

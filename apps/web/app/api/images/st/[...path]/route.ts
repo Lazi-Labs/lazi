@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ST_AUTOMATION_URL = process.env.ST_AUTOMATION_URL || 'http://localhost:3001';
+const ST_AUTOMATION_URL = process.env.NEXT_INTERNAL_API_URL || process.env.ST_AUTOMATION_URL || 'http://lazi-api:3001';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
   const imagePath = params.path.join('/');
-  
+
   if (!imagePath) {
     return new NextResponse(null, { status: 400 });
   }
-  
+
   try {
-    // Proxy to backend image service
+    // Proxy to backend image service - path is /images/st/ (not /api/images/st/)
     const res = await fetch(`${ST_AUTOMATION_URL}/images/st/${imagePath}`, {
       headers: { 'Accept': 'image/*' },
     });

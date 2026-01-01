@@ -335,6 +335,213 @@ router.get('/db/:type/:id', async (req, res) => {
 });
 
 /**
+ * HEAD /images/proxy
+ * Check if an external image URL is valid (for validation)
+ * Example: /images/proxy?url=https://example.com/image.jpg
+ */
+router.head('/proxy', async (req, res) => {
+  try {
+    const { url } = req.query;
+
+    if (!url) {
+      return res.status(400).end();
+    }
+
+    // Validate URL
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return res.status(400).end();
+    }
+
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return res.status(400).end();
+    }
+
+    // Check cache first
+    const cacheKey = `proxy:${url}`;
+    const cached = imageCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      res.set('Content-Type', cached.contentType);
+      res.set('Cache-Control', 'public, max-age=86400');
+      res.set('X-Cache', 'HIT');
+      return res.status(200).end();
+    }
+
+    // Make a HEAD request to check if image exists
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; LAZI-CRM/1.0)',
+        'Accept': 'image/*,*/*',
+      },
+      redirect: 'follow',
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return res.status(response.status).end();
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      return res.status(400).end();
+    }
+
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.status(200).end();
+
+  } catch (error) {
+    console.error('Image proxy HEAD error:', error.message);
+    res.status(500).end();
+  }
+});
+
+/**
+ * GET /images/proxy
+ * Proxy any external image URL to bypass CORS restrictions
+ * Example: /images/proxy?url=https://example.com/image.jpg
+ */
+router.get('/proxy', async (req, res) => {
+  try {
+    const { url } = req.query;
+
+    if (!url) {
+      return res.status(400).json({ error: 'URL parameter is required' });
+    }
+
+    // Validate URL
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return res.status(400).json({ error: 'Invalid URL format' });
+    }
+
+    // Only allow http and https
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return res.status(400).json({ error: 'Only HTTP and HTTPS URLs are allowed' });
+    }
+
+    // Check cache first
+    const cacheKey = `proxy:${url}`;
+    const cached = imageCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      res.set('Content-Type', cached.contentType);
+      res.set('Cache-Control', 'public, max-age=86400');
+      res.set('X-Cache', 'HIT');
+      res.set('Access-Control-Allow-Origin', '*');
+      return res.send(cached.data);
+    }
+
+    // Fetch the image with timeout and follow redirects
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; LAZI-CRM/1.0)',
+        'Accept': 'image/*,*/*',
+      },
+      redirect: 'follow',
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: response.status === 404
+          ? 'Image not found at this URL'
+          : 'Failed to fetch image',
+        status: response.status,
+        statusText: response.statusText,
+        hint: response.status === 404
+          ? 'The image may have been moved or deleted. Try a different URL.'
+          : undefined,
+      });
+    }
+
+    // Check content type - be lenient for some servers
+    const contentType = response.headers.get('content-type') || '';
+    const isLikelyImage = contentType.startsWith('image/') ||
+                          contentType.includes('octet-stream') ||
+                          url.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?.*)?$/i);
+
+    if (!isLikelyImage) {
+      return res.status(400).json({
+        error: 'URL does not point to an image',
+        contentType,
+        hint: 'Make sure the URL ends with an image extension like .jpg, .png, etc.',
+      });
+    }
+
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+
+    // If content type is octet-stream, try to determine from URL extension
+    let finalContentType = contentType;
+    if (!contentType.startsWith('image/')) {
+      const extMatch = url.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?.*)?$/i);
+      if (extMatch) {
+        const ext = extMatch[1].toLowerCase();
+        const extMap = {
+          jpg: 'image/jpeg',
+          jpeg: 'image/jpeg',
+          png: 'image/png',
+          gif: 'image/gif',
+          webp: 'image/webp',
+          svg: 'image/svg+xml',
+          bmp: 'image/bmp',
+          ico: 'image/x-icon',
+        };
+        finalContentType = extMap[ext] || 'image/jpeg';
+      } else {
+        finalContentType = 'image/jpeg'; // Default fallback
+      }
+    }
+
+    // Cache the image
+    imageCache.set(cacheKey, {
+      data: imageBuffer,
+      contentType: finalContentType,
+      timestamp: Date.now(),
+    });
+
+    // Limit cache size
+    if (imageCache.size > 1000) {
+      const firstKey = imageCache.keys().next().value;
+      imageCache.delete(firstKey);
+    }
+
+    // Send the image with CORS headers
+    res.set('Content-Type', finalContentType);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.set('X-Cache', 'MISS');
+    res.set('Access-Control-Allow-Origin', '*');
+    res.send(imageBuffer);
+
+  } catch (error) {
+    console.error('Image proxy error:', error.message);
+
+    if (error.name === 'AbortError') {
+      return res.status(504).json({ error: 'Request timed out' });
+    }
+
+    res.status(500).json({
+      error: 'Failed to fetch image',
+      message: error.message,
+    });
+  }
+});
+
+/**
  * GET /images/info
  * Get cache statistics
  */
