@@ -358,6 +358,40 @@ export default function KanbanBoard({
 
   const [isNewColumnModalOpen, setIsNewColumnModalOpen] = React.useState(false);
   const [newColumnTitle, setNewColumnTitle] = React.useState("");
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
+  const [isAddTaskDialogOpen, setIsAddTaskDialogOpen] = React.useState(false);
+  const [addTaskColumnId, setAddTaskColumnId] = React.useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = React.useState("");
+  const [newTaskDescription, setNewTaskDescription] = React.useState("");
+  const [newTaskPriority, setNewTaskPriority] = React.useState<"low" | "medium" | "high">("medium");
+
+  const handleAddTask = () => {
+    if (!addTaskColumnId || !newTaskTitle.trim()) return;
+    
+    const newTask: Task = {
+      id: `task-${Date.now()}`,
+      title: newTaskTitle.trim(),
+      description: newTaskDescription.trim() || undefined,
+      priority: newTaskPriority,
+      progress: 0,
+      attachments: 0,
+      comments: 0,
+      users: [],
+    };
+
+    setColumns((prev) => ({
+      ...prev,
+      [addTaskColumnId]: [...(prev[addTaskColumnId] || []), newTask],
+    }));
+
+    // Reset form
+    setNewTaskTitle("");
+    setNewTaskDescription("");
+    setNewTaskPriority("medium");
+    setIsAddTaskDialogOpen(false);
+    setAddTaskColumnId(null);
+  };
 
   const getActiveFilters = () => {
     const filters = [];
@@ -668,7 +702,17 @@ export default function KanbanBoard({
                       <span className="text-sm font-semibold">{columnTitles[columnValue]}</span>
                       <Badge variant="outline">{tasks.length}</Badge>
                     </div>
-                    <div className="flex">
+                    <div className="flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setAddTaskColumnId(columnValue);
+                          setIsAddTaskDialogOpen(true);
+                        }}
+                      >
+                        <PlusCircleIcon className="h-4 w-4" />
+                      </Button>
                       <Kanban.ColumnHandle asChild>
                         <Button variant="ghost" size="icon">
                           <GripVertical className="h-4 w-4" />
@@ -680,7 +724,13 @@ export default function KanbanBoard({
                     <div className="flex flex-col gap-2 p-0.5">
                       {tasks.map((task) => (
                         <Kanban.Item key={task.id} value={task.id} asHandle asChild>
-                          <Card className="border-0">
+                          <Card 
+                            className="border-0 cursor-pointer hover:shadow-md transition-shadow"
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setIsTaskDialogOpen(true);
+                            }}
+                          >
                             <CardHeader>
                               <CardTitle className="text-base font-semibold">
                                 {task.title}
@@ -725,7 +775,7 @@ export default function KanbanBoard({
                                           "text-orange-500!":
                                             task.progress > 50 && task.progress < 100
                                         })}
-                                        stroke-width="2"
+                                        strokeWidth="2"
                                         strokeDasharray={2 * Math.PI * 16}
                                         strokeDashoffset={
                                           2 * Math.PI * 16 -
@@ -761,7 +811,15 @@ export default function KanbanBoard({
                   ) : (
                     <div className="flex flex-col justify-center gap-4 pt-4">
                       <div className="text-muted-foreground text-sm">No task added here.</div>
-                      <Button variant="outline">Add Task</Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setAddTaskColumnId(columnValue);
+                          setIsAddTaskDialogOpen(true);
+                        }}
+                      >
+                        Add Task
+                      </Button>
                     </div>
                   )}
                 </Kanban.Column>
@@ -796,7 +854,17 @@ export default function KanbanBoard({
                         <span className="text-sm font-semibold">{columnTitles[columnValue]}</span>
                         <Badge variant="outline">{tasks.length}</Badge>
                       </div>
-                      <div className="flex">
+                      <div className="flex gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => {
+                            setAddTaskColumnId(columnValue);
+                            setIsAddTaskDialogOpen(true);
+                          }}
+                        >
+                          <PlusCircleIcon className="h-4 w-4" />
+                        </Button>
                         <Kanban.ColumnHandle asChild>
                           <Button variant="ghost" size="icon">
                             <GripVertical className="h-4 w-4" />
@@ -809,7 +877,13 @@ export default function KanbanBoard({
                     <div className="flex flex-col gap-2 p-0.5">
                       {tasks.map((task) => (
                         <Kanban.Item key={task.id} value={task.id} asHandle asChild>
-                          <Card className="border-0">
+                          <Card 
+                            className="border-0 cursor-pointer hover:shadow-md transition-shadow"
+                            onClick={() => {
+                              setSelectedTask(task);
+                              setIsTaskDialogOpen(true);
+                            }}
+                          >
                             <CardHeader>
                               <CardTitle className="text-base font-semibold">
                                 {task.title}
@@ -890,6 +964,15 @@ export default function KanbanBoard({
                   ) : (
                     <div className="flex flex-col justify-center gap-4 pt-4">
                       <div className="text-muted-foreground text-sm">No opportunities here.</div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setAddTaskColumnId(columnValue);
+                          setIsAddTaskDialogOpen(true);
+                        }}
+                      >
+                        Add Task
+                      </Button>
                     </div>
                   )}
                 </Kanban.Column>
@@ -901,6 +984,127 @@ export default function KanbanBoard({
           </Kanban.Overlay>
         </Kanban.Root>
       )}
+
+      {/* Task Detail Dialog */}
+      <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{selectedTask?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
+                <p className="text-sm">{selectedTask.description || "No description"}</p>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Priority</h4>
+                  <Badge className="capitalize" variant="outline">{selectedTask.priority}</Badge>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Progress</h4>
+                  <span className="text-sm">{selectedTask.progress}%</span>
+                </div>
+              </div>
+              {selectedTask.dueDate && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Due Date</h4>
+                  <span className="text-sm">{selectedTask.dueDate}</span>
+                </div>
+              )}
+              {selectedTask.users.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Assigned To</h4>
+                  <div className="flex -space-x-2 overflow-hidden">
+                    {selectedTask.users.map((user, index) => (
+                      <Avatar key={index} className="border-background border-2">
+                        <AvatarImage src={user.src || "/placeholder.svg"} alt={user.alt} />
+                        <AvatarFallback>{user.fallback}</AvatarFallback>
+                      </Avatar>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Paperclip className="h-4 w-4" />
+                  <span>{selectedTask.attachments || 0} attachments</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>{selectedTask.comments || 0} comments</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Task Dialog */}
+      <Dialog open={isAddTaskDialogOpen} onOpenChange={setIsAddTaskDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                placeholder="Enter task title..."
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Input
+                placeholder="Enter task description..."
+                value={newTaskDescription}
+                onChange={(e) => setNewTaskDescription(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Priority</label>
+              <div className="flex gap-2">
+                {(["low", "medium", "high"] as const).map((priority) => (
+                  <Button
+                    key={priority}
+                    type="button"
+                    variant={newTaskPriority === priority ? "default" : "outline"}
+                    size="sm"
+                    className="capitalize"
+                    onClick={() => setNewTaskPriority(priority)}
+                  >
+                    {priority}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAddTaskDialogOpen(false);
+                  setNewTaskTitle("");
+                  setNewTaskDescription("");
+                  setNewTaskPriority("medium");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddTask}
+                disabled={!newTaskTitle.trim()}
+              >
+                Add Task
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

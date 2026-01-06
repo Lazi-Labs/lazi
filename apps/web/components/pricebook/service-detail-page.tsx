@@ -701,11 +701,11 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                 </label>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-muted-foreground">SOLD HRS</span>
-                  <Input 
+                  <Input
                     type="number"
-                    value={formData.durationHours || ''} 
+                    value={formData.durationHours || ''}
                     onChange={(e) => updateField('durationHours', parseFloat(e.target.value))}
-                    className="w-16 h-7 text-xs text-right"
+                    className="w-16 h-7 text-xs text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
@@ -732,17 +732,17 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">MARGIN %</span>
                 <div className="flex gap-1">
-                  <Input 
+                  <Input
                     placeholder="LAB"
-                    value={formData.laborCost || ''} 
+                    value={formData.laborCost || ''}
                     onChange={(e) => updateField('laborCost', parseFloat(e.target.value))}
-                    className="w-12 h-7 text-xs"
+                    className="w-20 h-7 text-xs"
                   />
-                  <Input 
+                  <Input
                     placeholder="MAT"
-                    value={formData.materialCost || ''} 
+                    value={formData.materialCost || ''}
                     onChange={(e) => updateField('materialCost', parseFloat(e.target.value))}
-                    className="w-12 h-7 text-xs"
+                    className="w-20 h-7 text-xs"
                   />
                 </div>
               </div>

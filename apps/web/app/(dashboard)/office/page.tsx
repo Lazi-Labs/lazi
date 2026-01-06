@@ -2,7 +2,7 @@
 
 import KanbanBoard from "@/components/pipeline/kanban-board";
 
-export default function PipelinePage() {
+export default function OfficePage() {
   return (
     <div className="space-y-4">
       <KanbanBoard 

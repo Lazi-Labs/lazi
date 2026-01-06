@@ -32,6 +32,7 @@ import {
   Code,
   Layers,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface NavItem {
   href?: string;
@@ -53,6 +54,7 @@ const navItems: NavItem[] = [
   { href: '/schedule', label: 'Schedule', icon: Calendar },
   { href: '/dispatch', label: 'Dispatch', icon: Truck },
   { href: '/pipeline', label: 'Pipeline', icon: Kanban },
+  { href: '/office', label: 'Office', icon: Layers },
   { href: '/contacts', label: 'Contacts', icon: Users },
   { 
     label: 'Communication', 
@@ -155,24 +157,24 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-[#1e2a3a] text-white transition-all duration-300 overflow-y-auto',
+        'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 overflow-y-auto border-r border-sidebar-border',
         sidebarCollapsed ? 'w-16' : 'w-56'
       )}
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-14 items-center px-4 border-b border-gray-700">
+        <div className="flex h-14 items-center px-4 border-b border-sidebar-border">
           {!sidebarCollapsed && (
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded bg-blue-500 flex items-center justify-center">
-                <span className="text-white font-bold text-xs">PC</span>
+              <div className="h-7 w-7 rounded bg-sidebar-primary flex items-center justify-center">
+                <span className="text-sidebar-primary-foreground font-bold text-xs">PC</span>
               </div>
               <span className="font-semibold text-sm">Perfect Catch</span>
             </Link>
           )}
           {sidebarCollapsed && (
-            <div className="h-7 w-7 rounded bg-blue-500 flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-xs">PC</span>
+            <div className="h-7 w-7 rounded bg-sidebar-primary flex items-center justify-center mx-auto">
+              <span className="text-sidebar-primary-foreground font-bold text-xs">PC</span>
             </div>
           )}
         </div>
@@ -193,8 +195,8 @@ export function Sidebar() {
                     className={cn(
                       'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
                       isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                        ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                       sidebarCollapsed && 'justify-center px-2'
                     )}
                     title={sidebarCollapsed ? item.label : undefined}
@@ -212,8 +214,8 @@ export function Sidebar() {
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors',
                       isActive
-                        ? 'bg-blue-600/50 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                       sidebarCollapsed && 'justify-center px-2'
                     )}
                     title={sidebarCollapsed ? item.label : undefined}
@@ -236,7 +238,7 @@ export function Sidebar() {
 
                 {/* Children */}
                 {!sidebarCollapsed && hasChildren && isExpanded && (
-                  <div className="bg-[#162230]">
+                  <div className="bg-sidebar-accent/50">
                     {item.children!.map((child) => {
                       // Check if this child link is active
                       const childHrefBase = child.href.split('?')[0];
@@ -253,8 +255,8 @@ export function Sidebar() {
                           className={cn(
                             'block pl-11 pr-4 py-1.5 text-sm transition-colors',
                             childActive
-                              ? 'text-blue-400'
-                              : 'text-gray-400 hover:text-white'
+                              ? 'text-sidebar-primary font-medium'
+                              : 'text-sidebar-foreground/60 hover:text-sidebar-foreground'
                           )}
                         >
                           {child.label}
@@ -269,14 +271,20 @@ export function Sidebar() {
         </nav>
 
         {/* Settings at bottom */}
-        <div className="border-t border-gray-700 py-2">
+        <div className="border-t border-sidebar-border py-2">
+          <div className={cn(
+            'flex items-center gap-2 px-4 py-2',
+            sidebarCollapsed && 'justify-center px-2'
+          )}>
+            <ThemeToggle />
+          </div>
           <Link
             href="/settings"
             className={cn(
               'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
               pathname === '/settings'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
               sidebarCollapsed && 'justify-center px-2'
             )}
           >
