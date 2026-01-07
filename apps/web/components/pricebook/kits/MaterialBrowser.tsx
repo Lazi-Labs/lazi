@@ -4,6 +4,8 @@ import React, { useState, useMemo } from 'react';
 import { Search, X, Plus, ChevronRight, ChevronDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiUrl } from '@/lib/api';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface Material {
   id: string;
@@ -118,10 +120,10 @@ function TreeNode({ category, level, selectedId, expandedIds, onToggle, onSelect
   return (
     <div>
       <div
-        className={`
-          flex items-center gap-1 py-1.5 px-2 rounded cursor-pointer transition-colors
-          ${isSelected ? 'bg-blue-600/20 text-blue-400 font-medium' : 'text-zinc-300 hover:bg-zinc-800'}
-        `}
+        className={cn(
+          "flex items-center gap-1 py-1.5 px-2 rounded cursor-pointer transition-colors",
+          isSelected ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+        )}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(id)}
       >
@@ -131,12 +133,12 @@ function TreeNode({ category, level, selectedId, expandedIds, onToggle, onSelect
               e.stopPropagation();
               onToggle(id);
             }}
-            className="p-0.5 hover:bg-zinc-700 rounded"
+            className="p-0.5 hover:bg-muted rounded"
           >
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-zinc-500" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <ChevronRight className="h-4 w-4 text-zinc-500" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
         ) : (
@@ -144,7 +146,7 @@ function TreeNode({ category, level, selectedId, expandedIds, onToggle, onSelect
         )}
         <span className="text-sm truncate">{category.name}</span>
         {hasChildren && (
-          <span className="text-xs text-zinc-500 ml-auto">({children.length})</span>
+          <span className="text-xs text-muted-foreground ml-auto">({children.length})</span>
         )}
       </div>
 
@@ -179,63 +181,31 @@ export function MaterialBrowser({ onSelect, excludeIds = [] }: MaterialBrowserPr
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch categories with subcategories
+  // Fetch categories - API already returns nested children
   const { data: categoriesData } = useQuery({
     queryKey: ['pricebook-categories-tree', 'materials'],
     queryFn: async () => {
-      // First get root categories
       const res = await fetch(apiUrl('/api/pricebook/categories?type=materials&active=true'));
       if (!res.ok) return [];
       const data = await res.json();
       const allCategories = Array.isArray(data) ? data : (data.data || []);
 
-      // Filter to only Materials type root categories
+      // Filter to only Materials type root categories and map to our format
       const rootMaterialsCategories = allCategories.filter(
-        (c: any) => c.category_type === 'Materials' && !c.parent_st_id
+        (c: any) => c.categoryType === 'Materials' && !c.parentId
       );
 
-      // Fetch subcategories for each root category
-      const categoriesWithChildren: Category[] = [];
-      for (const rootCat of rootMaterialsCategories) {
-        try {
-          const subRes = await fetch(apiUrl(`/api/pricebook/categories/${rootCat.st_id}/subcategories/tree`));
-          if (subRes.ok) {
-            const subcategories = await subRes.json();
-            categoriesWithChildren.push({
-              id: String(rootCat.st_id),
-              stId: rootCat.st_id,
-              name: rootCat.name,
-              children: (subcategories || []).map((sub: any) => mapSubcategory(sub)),
-            });
-          } else {
-            categoriesWithChildren.push({
-              id: String(rootCat.st_id),
-              stId: rootCat.st_id,
-              name: rootCat.name,
-              children: [],
-            });
-          }
-        } catch {
-          categoriesWithChildren.push({
-            id: String(rootCat.st_id),
-            stId: rootCat.st_id,
-            name: rootCat.name,
-            children: [],
-          });
-        }
-      }
-
-      return categoriesWithChildren;
+      return rootMaterialsCategories.map((cat: any) => mapCategory(cat));
     },
   });
 
-  // Helper to recursively map subcategories
-  function mapSubcategory(sub: any): Category {
+  // Helper to recursively map categories with their children
+  function mapCategory(cat: any): Category {
     return {
-      id: String(sub.st_id || sub.id),
-      stId: sub.st_id,
-      name: sub.name,
-      children: (sub.children || []).map((child: any) => mapSubcategory(child)),
+      id: String(cat.stId || cat.id),
+      stId: cat.stId,
+      name: cat.name,
+      children: (cat.children || []).map((child: any) => mapCategory(child)),
     };
   }
 
@@ -307,19 +277,18 @@ export function MaterialBrowser({ onSelect, excludeIds = [] }: MaterialBrowserPr
   return (
     <div className="space-y-3">
       {/* Search Input */}
-      <div className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
-        <Search size={16} className="text-zinc-500" />
-        <input
-          type="text"
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
           placeholder="Search materials by code, name, or description..."
-          className="bg-transparent flex-1 outline-none text-sm text-white placeholder-zinc-500"
+          className="pl-8 pr-8 h-8"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
         {(search || selectedCategoryId) && (
           <button
             onClick={() => { setSearch(''); setSelectedCategoryId(''); }}
-            className="text-zinc-500 hover:text-white"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X size={14} />
           </button>
@@ -327,16 +296,16 @@ export function MaterialBrowser({ onSelect, excludeIds = [] }: MaterialBrowserPr
       </div>
 
       {/* Two-panel layout: Categories on left, Materials on right */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-        <div className="flex divide-x divide-zinc-800" style={{ height: '320px' }}>
+      <div className="border rounded-lg bg-card overflow-hidden">
+        <div className="flex divide-x" style={{ height: '320px' }}>
           {/* Categories Panel */}
           <div className="w-1/3 flex flex-col">
-            <div className="px-3 py-2 bg-zinc-800/50 border-b border-zinc-800 flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-400">Categories</span>
+            <div className="px-3 py-2 bg-muted/30 border-b flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Categories</span>
               {selectedCategory && (
                 <button
                   onClick={() => setSelectedCategoryId('')}
-                  className="text-xs text-zinc-500 hover:text-white flex items-center gap-1"
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
                   <X size={10} /> Clear
                 </button>
@@ -345,10 +314,10 @@ export function MaterialBrowser({ onSelect, excludeIds = [] }: MaterialBrowserPr
             <div className="flex-1 overflow-y-auto p-2">
               {/* All Categories option */}
               <div
-                className={`
-                  flex items-center gap-1 py-1.5 px-2 rounded cursor-pointer transition-colors mb-1
-                  ${!selectedCategoryId ? 'bg-blue-600/20 text-blue-400 font-medium' : 'text-zinc-300 hover:bg-zinc-800'}
-                `}
+                className={cn(
+                  "flex items-center gap-1 py-1.5 px-2 rounded cursor-pointer transition-colors mb-1",
+                  !selectedCategoryId ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+                )}
                 onClick={() => setSelectedCategoryId('')}
               >
                 <span className="w-5" />
@@ -371,41 +340,41 @@ export function MaterialBrowser({ onSelect, excludeIds = [] }: MaterialBrowserPr
 
           {/* Materials Panel */}
           <div className="w-2/3 flex flex-col">
-            <div className="px-3 py-2 bg-zinc-800/50 border-b border-zinc-800 flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-400">
+            <div className="px-3 py-2 bg-muted/30 border-b flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
                 {selectedCategory ? selectedCategory.name : 'All Materials'}
                 {materialsData?.total !== undefined && (
-                  <span className="ml-2 text-zinc-500">({materialsData.total})</span>
+                  <span className="ml-2">({materialsData.total})</span>
                 )}
               </span>
             </div>
             <div className="flex-1 overflow-y-auto">
               {isLoading ? (
-                <div className="p-4 text-center text-zinc-500 text-sm">Loading materials...</div>
+                <div className="p-4 text-center text-muted-foreground text-sm">Loading materials...</div>
               ) : filtered.length === 0 ? (
-                <div className="p-8 text-center text-zinc-500">
+                <div className="p-8 text-center text-muted-foreground">
                   <div className="text-sm">No materials found</div>
                   {selectedCategoryId && (
                     <button
                       onClick={() => setSelectedCategoryId('')}
-                      className="mt-2 text-xs text-blue-400 hover:text-blue-300"
+                      className="mt-2 text-xs text-primary hover:underline"
                     >
                       Clear category filter
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="divide-y divide-zinc-800">
+                <div className="divide-y">
                   {filtered.map((m: Material) => (
                     <button
                       key={m.id}
-                      className="w-full px-3 py-2 text-left hover:bg-zinc-800 flex items-center gap-3 text-sm transition-colors"
+                      className="w-full px-3 py-2 text-left hover:bg-muted/50 flex items-center gap-3 text-sm transition-colors"
                       onClick={() => onSelect(m)}
                     >
-                      <span className="font-mono text-blue-400 w-24 truncate">{m.code}</span>
-                      <span className="text-zinc-300 flex-1 truncate">{m.name}</span>
-                      <span className="text-zinc-500 w-20 text-right">${m.cost?.toFixed(2) || '0.00'}</span>
-                      <Plus size={14} className="text-green-400 flex-shrink-0" />
+                      <span className="font-mono text-primary w-24 truncate">{m.code}</span>
+                      <span className="flex-1 truncate">{m.name}</span>
+                      <span className="text-muted-foreground w-20 text-right">${m.cost?.toFixed(2) || '0.00'}</span>
+                      <Plus size={14} className="text-green-600 flex-shrink-0" />
                     </button>
                   ))}
                 </div>

@@ -356,7 +356,39 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
     <div className="flex flex-col h-full bg-background">
       {/* Global Header */}
       <div className="border-b bg-card">
-        <div className="flex items-center justify-between px-4 py-2">
+        {/* Mobile Header - simplified */}
+        <div className="flex md:hidden items-center justify-between px-3 py-2">
+          <Button variant="ghost" size="sm" className="gap-1 min-h-[44px]" onClick={onClose}>
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-1 bg-blue-600 hover:bg-blue-700 text-white min-h-[44px]"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={cn(
+                "gap-1 min-h-[44px]",
+                syncStatus === 'pending' && "bg-orange-600 hover:bg-orange-700 text-white"
+              )}
+              onClick={handlePush}
+              disabled={isPushing || syncStatus === 'synced'}
+            >
+              {isPushing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+        
+        {/* Desktop Header - full */}
+        <div className="hidden md:flex items-center justify-between px-4 py-2">
           {/* Left Actions */}
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" className="gap-1" onClick={onClose}>
@@ -436,9 +468,9 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="flex h-full">
-          {/* Left Navigation */}
-          <div className="w-16 border-r flex flex-col items-center py-4 gap-2">
+        <div className="flex flex-col md:flex-row h-full">
+          {/* Left Navigation - hidden on mobile */}
+          <div className="hidden md:flex w-16 border-r flex-col items-center py-4 gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -460,59 +492,61 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
           </div>
 
           {/* Center Content */}
-          <div className="flex-1 p-4 min-w-0">
+          <div className="flex-1 p-3 md:p-4 min-w-0">
             {/* Service Identity Section */}
-            <div className="grid grid-cols-[80px_1fr_auto] gap-2 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto] gap-2 mb-4">
               {/* CODE */}
               <div className="text-xs text-muted-foreground font-medium py-2">CODE</div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 md:col-span-2">
                 <Input 
                   value={formData.code || ''} 
                   onChange={(e) => updateField('code', e.target.value)}
-                  className="font-mono text-sm h-8"
+                  className="font-mono text-sm h-10 md:h-8 flex-1"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">NAME</span>
+              
+              {/* NAME */}
+              <div className="text-xs text-muted-foreground font-medium py-2">NAME</div>
+              <div className="flex items-center gap-2 md:col-span-2">
                 <Input 
                   value={formData.name || ''} 
                   onChange={(e) => updateField('name', e.target.value)}
-                  className="text-sm h-8 flex-1"
+                  className="text-sm h-10 md:h-8 flex-1"
                 />
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Pencil className="h-3 w-3" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                  <Pencil className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
 
               {/* DESC */}
               <div className="text-xs text-muted-foreground font-medium py-2">DESC</div>
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <Textarea 
                   value={formData.description || ''} 
                   onChange={(e) => updateField('description', e.target.value)}
-                  className="text-sm min-h-[60px] resize-none"
+                  className="text-sm min-h-[80px] md:min-h-[60px] resize-none"
                   placeholder="Service description..."
                 />
               </div>
 
               {/* WARR */}
               <div className="text-xs text-muted-foreground font-medium py-2">WARR</div>
-              <div className="col-span-2 flex items-center gap-2">
+              <div className="md:col-span-2 flex items-center gap-2">
                 <Input 
                   value={formData.warranty || ''} 
                   onChange={(e) => updateField('warranty', e.target.value)}
-                  className="text-sm h-8"
+                  className="text-sm h-10 md:h-8 flex-1"
                   placeholder="Warranty terms..."
                 />
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Pencil className="h-3 w-3" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                  <Pencil className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
 
               {/* UPGR */}
               <div className="text-xs text-muted-foreground font-medium py-2">UPGR</div>
-              <div className="col-span-2 flex items-center gap-2">
-                <div className="flex-1 border rounded-md p-2 min-h-[32px] flex items-center gap-2 flex-wrap">
+              <div className="md:col-span-2 flex items-center gap-2">
+                <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
                   {formData.upgrades?.map((u, i) => (
                     <Badge key={i} variant="secondary" className="gap-1">
                       {u}
@@ -520,15 +554,15 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                     </Badge>
                   ))}
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Plus className="h-3 w-3" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
 
               {/* REC */}
               <div className="text-xs text-muted-foreground font-medium py-2">REC</div>
-              <div className="col-span-2 flex items-center gap-2">
-                <div className="flex-1 border rounded-md p-2 min-h-[32px] flex items-center gap-2 flex-wrap">
+              <div className="md:col-span-2 flex items-center gap-2">
+                <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
                   {formData.recommendations?.map((r, i) => (
                     <Badge key={i} variant="secondary" className="gap-1">
                       {r}
@@ -536,15 +570,15 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                     </Badge>
                   ))}
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Plus className="h-3 w-3" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
 
               {/* CAT */}
               <div className="text-xs text-muted-foreground font-medium py-2">CAT</div>
-              <div className="col-span-2 flex items-center gap-2">
-                <div className="flex-1 border rounded-md p-2 min-h-[32px] flex items-center gap-2 flex-wrap">
+              <div className="md:col-span-2 flex items-center gap-2">
+                <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
                   {formData.categories?.map((cat) => (
                     <Badge key={cat.id} variant="outline" className="gap-1 text-xs">
                       {cat.path}
@@ -554,8 +588,8 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                     <span className="text-xs text-muted-foreground">No categories assigned</span>
                   )}
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Plus className="h-3 w-3" />
+                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
             </div>
@@ -569,44 +603,44 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
 
               <TabsContent value="materials" className="mt-0">
                 {/* Materials Toolbar */}
-                <div className="flex items-center gap-1 mb-2 p-2 bg-muted/30 rounded-md">
-                  <Button variant="secondary" size="sm" className="text-xs h-7">
+                <div className="flex flex-wrap items-center gap-1 mb-2 p-2 bg-muted/30 rounded-md">
+                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0">
                     <Search className="h-3 w-3 mr-1" />
                     SEARCH
                   </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-7">
+                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0 hidden sm:flex">
                     <Copy className="h-3 w-3 mr-1" />
                     COPY
                   </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-7">
+                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0 hidden sm:flex">
                     PASTE
                   </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-7">
+                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0 hidden md:flex">
                     <Save className="h-3 w-3 mr-1" />
                     SAVE AS...
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="text-xs h-7"
+                    className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0"
                     onClick={() => setIsKitModalOpen(true)}
                   >
                     LOAD KIT...
                   </Button>
-                  <div className="flex-1" />
-                  <div className="relative">
+                  <div className="flex-1 min-w-[100px]" />
+                  <div className="relative w-full sm:w-auto mt-2 sm:mt-0">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <Input 
                       placeholder="Search this list" 
                       value={materialSearch}
                       onChange={(e) => setMaterialSearch(e.target.value)}
-                      className="pl-7 h-7 text-xs w-48"
+                      className="pl-7 h-10 md:h-7 text-xs w-full sm:w-48"
                     />
                   </div>
                 </div>
 
-                {/* Materials Header */}
-                <div className="grid grid-cols-[auto_1fr_auto_80px_80px_auto_1fr_auto] gap-2 px-2 py-1 text-xs text-muted-foreground font-medium border-b">
+                {/* Materials Header - hidden on mobile, shown on desktop */}
+                <div className="hidden md:grid grid-cols-[auto_1fr_auto_80px_80px_auto_1fr_auto] gap-2 px-2 py-1 text-xs text-muted-foreground font-medium border-b">
                   <div className="w-10"></div>
                   <div>Item</div>
                   <div></div>
@@ -618,7 +652,7 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                 </div>
 
                 {/* Materials List */}
-                <div className="divide-y max-h-[300px] overflow-auto">
+                <div className="divide-y max-h-[400px] md:max-h-[300px] overflow-auto">
                   {formData.materials?.length ? (
                     formData.materials
                       .filter(m => !materialSearch || 
@@ -642,25 +676,25 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                 </div>
 
                 {/* Materials Footer */}
-                <div className="flex items-center justify-between p-2 bg-muted/30 rounded-md mt-2 text-sm">
-                  <Button variant="ghost" size="sm" className="text-xs text-destructive">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2 bg-muted/30 rounded-md mt-2 text-sm">
+                  <Button variant="ghost" size="sm" className="text-xs text-destructive min-h-[44px] md:min-h-0">
                     <Trash2 className="h-3 w-3 mr-1" />
-                    Remove All Materials
+                    Remove All
                   </Button>
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <label className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
                     <Checkbox />
-                    Hide linked materials for faster performance
+                    Hide linked materials
                   </label>
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-wrap items-center gap-3 md:gap-6">
                     <div className="text-right">
-                      <span className="text-xs text-muted-foreground mr-2">MATERIAL NET</span>
+                      <span className="text-xs text-muted-foreground mr-2">NET</span>
                       <span className="font-semibold">{formatCurrency(materialNet)}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-muted-foreground mr-2">MATERIAL LIST</span>
+                      <span className="text-xs text-muted-foreground mr-2">LIST</span>
                       <span className="font-semibold">{formatCurrency(materialList)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-1">
                       <Input className="w-16 h-7 text-xs text-right" placeholder="%" />
                       <span className="text-xs text-muted-foreground">override</span>
                     </div>
@@ -687,8 +721,8 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
             </div>
           </div>
 
-          {/* Right Sidebar - Pricing & Image */}
-          <div className="w-80 border-l p-4 space-y-3 flex-shrink-0">
+          {/* Right Sidebar - Pricing & Image - below content on mobile */}
+          <div className="w-full md:w-80 border-t md:border-t-0 md:border-l p-3 md:p-4 space-y-3 flex-shrink-0">
             {/* Status & Hours */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -891,59 +925,107 @@ function MaterialRow({ material, onNavigate }: { material: MaterialLineItem; onN
   };
 
   return (
-    <div className="grid grid-cols-[auto_1fr_auto_80px_80px_auto_1fr_auto] gap-2 px-2 py-2 items-center hover:bg-muted/30">
-      {/* Image */}
-      <div className="w-10 h-10 bg-muted rounded flex items-center justify-center overflow-hidden">
-        {material.imageUrl ? (
-          <img src={material.imageUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-xs text-muted-foreground">—</span>
-        )}
+    <>
+      {/* Mobile Layout */}
+      <div className="md:hidden flex items-start gap-3 px-2 py-3 hover:bg-muted/30">
+        {/* Image */}
+        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center overflow-hidden shrink-0">
+          {material.imageUrl ? (
+            <img src={material.imageUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-sm truncate">{material.code}</div>
+          <div className="text-xs text-muted-foreground truncate">{material.name}</div>
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground">Qty:</span>
+              <Input 
+                type="number"
+                value={material.quantity} 
+                className="h-8 w-16 text-xs text-center"
+              />
+            </div>
+            <div className="text-sm text-green-600 font-medium">
+              ${material.unitCost.toFixed(2)}
+            </div>
+          </div>
+        </div>
+        
+        {/* Actions */}
+        <div className="flex flex-col gap-1">
+          <button 
+            onClick={handleClick}
+            className="p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
+            title="View material details"
+          >
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </button>
+          <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive min-h-[44px] min-w-[44px]">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       
-      {/* Item Info */}
-      <div className="min-w-0">
-        <div className="font-medium text-sm truncate">{material.code}</div>
-        <div className="text-xs text-muted-foreground truncate">{material.name}</div>
-        <div className="text-xs text-muted-foreground truncate">{material.description}</div>
+      {/* Desktop Layout */}
+      <div className="hidden md:grid grid-cols-[auto_1fr_auto_80px_80px_auto_1fr_auto] gap-2 px-2 py-2 items-center hover:bg-muted/30">
+        {/* Image */}
+        <div className="w-10 h-10 bg-muted rounded flex items-center justify-center overflow-hidden">
+          {material.imageUrl ? (
+            <img src={material.imageUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+        </div>
+        
+        {/* Item Info */}
+        <div className="min-w-0">
+          <div className="font-medium text-sm truncate">{material.code}</div>
+          <div className="text-xs text-muted-foreground truncate">{material.name}</div>
+          <div className="text-xs text-muted-foreground truncate">{material.description}</div>
+        </div>
+
+        {/* Edit Icon */}
+        <Button variant="ghost" size="icon" className="h-6 w-6">
+          <Scissors className="h-3 w-3 text-yellow-500" />
+        </Button>
+
+        {/* Quantity */}
+        <Input 
+          type="number"
+          value={material.quantity} 
+          className="h-7 text-xs text-center"
+        />
+
+        {/* Cost */}
+        <div className="text-right text-sm text-green-600">
+          ${material.unitCost.toFixed(2)}
+        </div>
+
+        {/* Arrow - Clickable to navigate to material detail */}
+        <button 
+          onClick={handleClick}
+          className="p-1 rounded hover:bg-muted cursor-pointer"
+          title="View material details"
+        >
+          <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+        </button>
+
+        {/* Vendor */}
+        <div className="text-xs text-muted-foreground truncate">
+          {material.vendorName || 'Default Replenishment Vendor'}
+        </div>
+
+        {/* Delete */}
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive">
+          <Trash2 className="h-3 w-3" />
+        </Button>
       </div>
-
-      {/* Edit Icon */}
-      <Button variant="ghost" size="icon" className="h-6 w-6">
-        <Scissors className="h-3 w-3 text-yellow-500" />
-      </Button>
-
-      {/* Quantity */}
-      <Input 
-        type="number"
-        value={material.quantity} 
-        className="h-7 text-xs text-center"
-      />
-
-      {/* Cost */}
-      <div className="text-right text-sm text-green-600">
-        ${material.unitCost.toFixed(2)}
-      </div>
-
-      {/* Arrow - Clickable to navigate to material detail */}
-      <button 
-        onClick={handleClick}
-        className="p-1 rounded hover:bg-muted cursor-pointer"
-        title="View material details"
-      >
-        <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-      </button>
-
-      {/* Vendor */}
-      <div className="text-xs text-muted-foreground truncate">
-        {material.vendorName || 'Default Replenishment Vendor'}
-      </div>
-
-      {/* Delete */}
-      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive">
-        <Trash2 className="h-3 w-3" />
-      </Button>
-    </div>
+    </>
   );
 }
 

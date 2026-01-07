@@ -340,6 +340,241 @@ pnpm dev
 
 ---
 
+## 📦 Pricebook Module
+
+The Pricebook module is a comprehensive pricing and inventory management system integrated with ServiceTitan. It provides full CRUD operations for services, materials, and categories with bidirectional sync capabilities.
+
+### Architecture Overview
+
+```
+apps/web/
+├── app/
+│   ├── (dashboard)/pricebook/
+│   │   ├── page.tsx                    # Main pricebook page with section routing
+│   │   ├── layout.tsx                  # Pricebook layout wrapper
+│   │   ├── services/[id]/page.tsx      # Service detail page route
+│   │   └── materials/[id]/page.tsx     # Material detail page route
+│   └── api/pricebook/
+│       ├── services/route.ts           # GET/POST services
+│       ├── services/[id]/route.ts      # GET/PUT/DELETE single service
+│       ├── materials/route.ts          # GET/POST materials
+│       ├── materials/[id]/route.ts     # GET/PUT/DELETE single material
+│       ├── categories/route.ts         # GET/POST categories with tree structure
+│       ├── kits/route.ts               # GET/POST material kits
+│       └── kits/[id]/route.ts          # GET/PUT/DELETE single kit
+└── components/pricebook/
+    ├── pricebook-sidebar.tsx           # Section navigation sidebar
+    ├── services-panel.tsx              # Services list with filters
+    ├── materials-panel.tsx             # Materials list with filters
+    ├── categories-panel.tsx            # Categories management
+    ├── service-detail-page.tsx         # Full service editor (1042 lines)
+    ├── material-detail-page.tsx        # Full material editor (2011 lines)
+    ├── category-tree-filter.tsx        # Hierarchical category selector
+    └── kits/                           # Material Kits subsystem
+        ├── types.ts                    # TypeScript interfaces
+        ├── KitsPage.tsx                # Kits list with grid view
+        ├── KitCard.tsx                 # Kit preview card component
+        ├── KitEditor.tsx               # Kit creation/editing form
+        ├── KitMaterialList.tsx         # Drag-drop material list
+        ├── KitSelectorModal.tsx        # Load kit into service modal
+        ├── MaterialBrowser.tsx         # Two-panel material picker
+        ├── WaterfallCategoryFilter.tsx # Multi-level category picker
+        ├── GroupNameModal.tsx          # Material group editor
+        └── KeyboardShortcutsPanel.tsx  # Shortcuts reference panel
+```
+
+### Main Components
+
+#### Services Panel (`services-panel.tsx`)
+- **Purpose**: List view of all pricebook services with filtering and search
+- **Features**:
+  - Search by code, name, or description
+  - Category tree filter (hierarchical)
+  - Price range filter
+  - Duration (hours) filter
+  - Active/inactive toggle
+  - Has images filter
+  - Image thumbnails with S3 proxy
+  - Navigation to service detail page
+
+#### Materials Panel (`materials-panel.tsx`)
+- **Purpose**: List view of all pricebook materials with filtering
+- **Features**:
+  - Search by code, name, or description
+  - Category tree filter
+  - Cost/price range filters
+  - Vendor filter
+  - Active/inactive toggle
+  - Create new material
+  - Navigation to material detail page
+
+#### Service Detail Page (`service-detail-page.tsx`)
+- **Purpose**: Full CRUD editor for individual services
+- **Features**:
+  - Edit code, name, description, warranty
+  - Pricing: price, member price, add-on price, member add-on price
+  - Duration hours, taxable flag, active status
+  - Category assignment
+  - Upgrades and recommendations
+  - **Materials tab**: Add/remove materials with quantities
+  - **Equipment tab**: Add/remove equipment
+  - **Load Kit**: Apply material kits with multiplier
+  - Image management with S3 upload
+  - **SAVE**: Save locally to CRM database
+  - **PUSH**: Sync changes to ServiceTitan
+  - **PULL**: Fetch latest from ServiceTitan
+
+#### Material Detail Page (`material-detail-page.tsx`)
+- **Purpose**: Full CRUD editor for individual materials
+- **Features**:
+  - Edit code, name, description
+  - Pricing: cost, margin, sell price (calculated), member price, add-on prices
+  - Multi-vendor management with preferred vendor selection
+  - **Multi-image support**: Upload multiple images, carousel viewer
+  - Category assignment with tree picker
+  - Inventory tracking options
+  - Labor & commission settings (hours, bonus, commission %)
+  - Account assignment (income, asset, COGS)
+  - **SAVE**: Save to local CRM with pending changes flag
+  - **PUSH**: Create/update in ServiceTitan
+  - **PULL**: Refresh from ServiceTitan
+
+#### Material Kits System (`kits/`)
+- **Purpose**: Reusable bundles of materials for common service tasks
+- **Components**:
+  - `KitsPage`: Grid view of all kits with search
+  - `KitCard`: Preview card showing kit name, material count, total cost, expandable list
+  - `KitEditor`: Create/edit kits with name, description, category
+  - `KitMaterialList`: Drag-and-drop sortable list with groups
+  - `MaterialBrowser`: Two-panel browser (categories left, materials right)
+  - `KitSelectorModal`: Load kit into service with quantity multiplier
+- **Features**:
+  - Create material groups with custom colors
+  - Drag materials between groups
+  - Keyboard shortcuts (?, G, Delete, etc.)
+  - Include materials from other kits
+  - Duplicate kits
+
+### API Routes
+
+| Route | Methods | Description |
+|-------|---------|-------------|
+| `/api/pricebook/services` | GET, POST | List services with filters, create new |
+| `/api/pricebook/services/[id]` | GET, PUT, DELETE | Single service CRUD |
+| `/api/pricebook/materials` | GET, POST | List materials with filters, create new |
+| `/api/pricebook/materials/[id]` | GET, PUT, DELETE | Single material CRUD |
+| `/api/pricebook/materials/[id]/pull` | POST | Pull latest from ServiceTitan |
+| `/api/pricebook/materials/push` | POST | Push changes to ServiceTitan |
+| `/api/pricebook/categories` | GET, POST | List categories with nested children |
+| `/api/pricebook/categories/[id]` | GET | Single category with subcategories |
+| `/api/pricebook/kits` | GET, POST | List/create material kits |
+| `/api/pricebook/kits/[id]` | GET, PUT, DELETE | Single kit CRUD |
+| `/api/pricebook/kits/[id]/duplicate` | POST | Duplicate a kit |
+
+### Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Frontend (Next.js)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  Services Panel  │  Materials Panel  │  Categories  │  Kits     │
+│        ↓                  ↓                 ↓             ↓      │
+│  /api/pricebook/* routes (Next.js API proxy)                    │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    Backend API (Express.js)                      │
+│                    lazi-api:3001                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  /api/pricebook/services   → services table + st_services       │
+│  /api/pricebook/materials  → materials table + st_materials     │
+│  /api/pricebook/categories → pb_categories + pb_subcategories   │
+│  /api/pricebook/kits       → material_kits + kit_items + groups │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    Database (PostgreSQL)                         │
+│                    + ServiceTitan API                            │
+├─────────────────────────────────────────────────────────────────┤
+│  Local CRM Tables:                                               │
+│  • pb_services (local overrides)                                 │
+│  • pb_materials (local overrides)                                │
+│  • pb_categories, pb_subcategories                               │
+│  • material_kits, kit_items, kit_groups                          │
+│                                                                  │
+│  ServiceTitan Sync:                                              │
+│  • PUSH: Create/update items in ST via API                       │
+│  • PULL: Fetch latest from ST and update local                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key TypeScript Interfaces
+
+```typescript
+// Service
+interface Service {
+  id: string;
+  stId?: string;          // ServiceTitan ID
+  code: string;
+  name: string;
+  description?: string;
+  price: number;
+  memberPrice?: number;
+  addOnPrice?: number;
+  durationHours?: number;
+  active: boolean;
+  materials?: MaterialLineItem[];
+  equipment?: EquipmentLineItem[];
+  categories?: CategoryTag[];
+}
+
+// Material
+interface Material {
+  id: string;
+  stId?: string;
+  code: string;
+  name: string;
+  cost: number;
+  price: number;
+  margin?: number;
+  active: boolean;
+  vendors?: Vendor[];
+  assets?: Asset[];       // Multi-image support
+  hasPendingChanges?: boolean;
+  isNew?: boolean;        // Not yet in ServiceTitan
+}
+
+// Kit
+interface Kit {
+  id?: string;
+  name: string;
+  description?: string;
+  categoryPath: string[];
+  items?: KitMaterialItem[];
+  groups?: KitGroup[];
+}
+```
+
+### Image Handling
+
+Images are stored in AWS S3 and proxied through the API:
+- **S3 Bucket**: `lazi-pricebook-images`
+- **Path Pattern**: `/{tenant_id}/materials/{st_id}.png`
+- **Proxy Route**: `/api/images/proxy?url={encoded_url}`
+- **ST Images**: `/api/images/st/{path}` (authenticated)
+
+### Keyboard Shortcuts (Kit Editor)
+
+| Key | Action |
+|-----|--------|
+| `?` | Show shortcuts panel |
+| `G` | Create new group |
+| `Delete` | Delete selected item |
+| `↑/↓` | Navigate items |
+| `Ctrl+S` | Save kit |
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository

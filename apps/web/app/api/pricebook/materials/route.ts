@@ -4,7 +4,7 @@ const ST_AUTOMATION_URL = process.env.NEXT_INTERNAL_API_URL || process.env.ST_AU
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category');
+  const category = searchParams.get('category') || searchParams.get('category_id');
   const search = searchParams.get('search');
   const page = searchParams.get('page') || '1';
   const pageSize = searchParams.get('pageSize') || '25';
@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
   const priceMax = searchParams.get('priceMax');
   const hasImages = searchParams.get('hasImages');
   const vendor = searchParams.get('vendor');
-  
+
   try {
     const params = new URLSearchParams({ page, pageSize });
-    
+
     if (search) params.set('search', search);
     if (category) params.set('category_id', category);
     if (active) params.set('active', active);
@@ -83,9 +83,11 @@ export async function GET(request: NextRequest) {
       };
     });
     
+    const totalCount = result.total || transformed.length;
     return NextResponse.json({
       data: transformed,
-      totalCount: result.total || transformed.length,
+      total: totalCount,
+      totalCount: totalCount,
       page: result.page || parseInt(page),
       pageSize: result.limit || parseInt(pageSize),
       hasMore: (result.page || 1) < (result.totalPages || 1),

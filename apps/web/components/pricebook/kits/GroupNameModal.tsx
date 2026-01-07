@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 interface GroupNameModalProps {
   isOpen: boolean;
@@ -41,35 +45,40 @@ export function GroupNameModal({
   };
   
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-zinc-900 rounded-xl w-full max-w-md p-4" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-card border rounded-lg shadow-lg w-full max-w-md p-4" onClick={e => e.stopPropagation()}>
         <h3 className="font-semibold text-lg mb-4">{title}</h3>
         <form onSubmit={handleSubmit}>
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Group name..."
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white mb-3"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
+          <div className="space-y-2 mb-3">
+            <Label htmlFor="group-name">Group Name</Label>
+            <Input
+              ref={inputRef}
+              id="group-name"
+              placeholder="Group name..."
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
+          </div>
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-sm text-zinc-400">Color:</span>
+            <Label>Color:</Label>
             {colors.map(c => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
-                className={`w-6 h-6 rounded-full ${color === c ? 'ring-2 ring-offset-2 ring-offset-zinc-900 ring-white' : ''}`}
+                className={cn(
+                  "w-6 h-6 rounded-full transition-all",
+                  color === c && "ring-2 ring-offset-2 ring-offset-background ring-primary"
+                )}
                 style={{ backgroundColor: c }}
               />
             ))}
           </div>
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-zinc-400 hover:text-white">Cancel</button>
-            <button type="submit" disabled={!name.trim()} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg font-medium">
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={!name.trim()}>
               {initialName ? 'Update' : 'Create'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

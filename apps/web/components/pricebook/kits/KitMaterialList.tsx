@@ -2,7 +2,11 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Package, Trash2, Edit3, ChevronRight, ChevronDown, X, FolderPlus, GripVertical } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import { GroupNameModal } from './GroupNameModal';
+import { KeyboardShortcutsPanel } from './KeyboardShortcutsPanel';
 import { KitMaterialItem, KitGroup } from './types';
 
 interface KitMaterialListProps {
@@ -24,6 +28,7 @@ export function KitMaterialList({ materials, setMaterials, groups, setGroups }: 
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Build ordered list with groups
@@ -234,9 +239,14 @@ export function KitMaterialList({ materials, setMaterials, groups, setGroups }: 
           }
           break;
         }
+        case '?': {
+          e.preventDefault();
+          setShowShortcuts(true);
+          break;
+        }
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [flatList, focusedIndex, focusedId, selectedIds, editingQtyId, materials, groups, clipboard, setMaterials, setGroups]);
@@ -355,44 +365,48 @@ export function KitMaterialList({ materials, setMaterials, groups, setGroups }: 
   return (
     <div ref={containerRef} tabIndex={0} className="outline-none">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 mb-3 p-2 bg-zinc-800/50 rounded-lg">
-        <button
+      <div className="flex items-center gap-2 mb-3 p-2 bg-muted/50 rounded-lg border">
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => selectedIds.size > 0 && setShowGroupModal(true)}
           disabled={selectedIds.size === 0}
-          className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 rounded text-sm flex items-center gap-2"
         >
-          <FolderPlus size={14} /> Group
-        </button>
-        <button
+          <FolderPlus className="h-4 w-4 mr-1" /> Group
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setMaterials(materials.map(m => selectedIds.has(m.id) ? { ...m, groupId: null } : m))}
           disabled={selectedIds.size === 0}
-          className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 rounded text-sm"
         >
           Ungroup
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => { setMaterials(materials.filter(m => !selectedIds.has(m.id))); setSelectedIds(new Set()); }}
           disabled={selectedIds.size === 0}
-          className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 rounded text-sm flex items-center gap-2 text-red-400"
+          className="text-destructive hover:text-destructive"
         >
-          <Trash2 size={14} /> Delete
-        </button>
+          <Trash2 className="h-4 w-4 mr-1" /> Delete
+        </Button>
         <div className="flex-1" />
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-muted-foreground">
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : `${materials.length} items`}
         </span>
-        <kbd className="px-2 py-0.5 bg-zinc-700 rounded text-xs">?</kbd>
+        <kbd className="px-2 py-0.5 bg-muted border rounded text-xs">?</kbd>
       </div>
       
       {/* List */}
-      <div className="border border-zinc-800 rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden">
         {materials.length === 0 ? (
-          <div className="p-8 text-center text-zinc-500">
-            <Package size={32} className="mx-auto mb-2 opacity-50" />
+          <div className="p-8 text-center text-muted-foreground">
+            <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p>No materials yet. Add some above!</p>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y">
             {orderedItems.map(item => {
               if (item.type === 'group') {
                 const group = item.group;
@@ -402,22 +416,26 @@ export function KitMaterialList({ materials, setMaterials, groups, setGroups }: 
                 return (
                   <div key={group.id}>
                     <div
-                      className={`flex items-center gap-2 px-3 py-2 bg-zinc-800/70 cursor-pointer select-none ${isGroupFocused ? 'ring-2 ring-inset ring-blue-500' : ''} ${isDropTarget ? 'bg-blue-900/30' : ''}`}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 bg-muted/50 cursor-pointer select-none",
+                        isGroupFocused && "ring-2 ring-inset ring-primary",
+                        isDropTarget && "bg-primary/10"
+                      )}
                       onClick={(e) => { setFocusedId(group.id); e.stopPropagation(); }}
                       onDragOver={(e) => handleDragOver(e, group.id, true)}
                       onDrop={(e) => handleDrop(e, null, group.id)}
                     >
                       <button onClick={() => setGroups(groups.map(g => g.id === group.id ? { ...g, collapsed: !g.collapsed } : g))}>
-                        {group.collapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                        {group.collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </button>
                       <span className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
                       <span className="font-medium flex-1">{group.name}</span>
-                      <span className="text-xs text-zinc-500">{item.materials.length} items</span>
-                      <button onClick={() => { setEditingGroup(group); setShowGroupModal(true); }} className="p-1 hover:bg-zinc-700 rounded">
-                        <Edit3 size={12} />
+                      <span className="text-xs text-muted-foreground">{item.materials.length} items</span>
+                      <button onClick={() => { setEditingGroup(group); setShowGroupModal(true); }} className="p-1 hover:bg-muted rounded">
+                        <Edit3 className="h-3 w-3" />
                       </button>
-                      <button onClick={() => handleDeleteGroup(group.id)} className="p-1 hover:bg-zinc-700 rounded text-red-400">
-                        <X size={12} />
+                      <button onClick={() => handleDeleteGroup(group.id)} className="p-1 hover:bg-muted rounded text-destructive">
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
                     
@@ -473,9 +491,9 @@ export function KitMaterialList({ materials, setMaterials, groups, setGroups }: 
         )}
         
         {materials.length > 0 && (
-          <div className="px-3 py-2 bg-zinc-800/50 flex justify-between text-sm">
-            <span className="text-zinc-400">Total Material Cost</span>
-            <span className="font-bold text-green-400">${totalCost.toFixed(2)}</span>
+          <div className="px-3 py-2 bg-muted/30 border-t flex justify-between text-sm">
+            <span className="text-muted-foreground">Total Material Cost</span>
+            <span className="font-bold text-green-600">${totalCost.toFixed(2)}</span>
           </div>
         )}
       </div>
@@ -486,6 +504,11 @@ export function KitMaterialList({ materials, setMaterials, groups, setGroups }: 
         onSubmit={handleCreateGroup}
         initialName={editingGroup?.name || ''}
         title={editingGroup ? 'Edit Group' : 'Create Group'}
+      />
+
+      <KeyboardShortcutsPanel
+        isOpen={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
       />
     </div>
   );
@@ -545,37 +568,37 @@ function MaterialRow({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
-      className={`
-        flex items-center gap-2 px-3 py-2 cursor-pointer select-none transition-colors
-        ${indent ? 'pl-8' : ''}
-        ${isSelected ? 'bg-blue-600/20' : 'hover:bg-zinc-800/50'}
-        ${isFocused ? 'ring-2 ring-inset ring-blue-500' : ''}
-        ${isDragging ? 'opacity-50' : ''}
-        ${isDragOver ? 'border-t-2 border-blue-500' : ''}
-      `}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 cursor-pointer select-none transition-colors",
+        indent && "pl-8",
+        isSelected ? "bg-primary/10" : "hover:bg-muted/50",
+        isFocused && "ring-2 ring-inset ring-primary",
+        isDragging && "opacity-50",
+        isDragOver && "border-t-2 border-primary"
+      )}
     >
-      <GripVertical size={14} className="text-zinc-600 cursor-grab" />
+      <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
       <input
         type="checkbox"
         checked={isSelected}
         onChange={() => {}}
-        className="rounded border-zinc-600"
+        className="rounded border-input"
       />
-      <span className="font-mono text-blue-400 text-xs w-28 truncate">{mat?.code || 'N/A'}</span>
-      <span className="text-zinc-300 flex-1 truncate text-sm">{mat?.name || 'Unknown Material'}</span>
-      <input
+      <span className="font-mono text-primary text-xs w-28 truncate">{mat?.code || 'N/A'}</span>
+      <span className="flex-1 truncate text-sm">{mat?.name || 'Unknown Material'}</span>
+      <Input
         ref={qtyRef}
         type="number"
-        min="1"
+        min={1}
         value={material.quantity}
         onChange={(e) => onQtyChange(e.target.value)}
         onFocus={onQtyFocus}
         onBlur={onQtyBlur}
-        className={`w-16 bg-zinc-800 border rounded px-2 py-1 text-center text-sm ${isEditing ? 'border-blue-500' : 'border-zinc-700'}`}
+        className={cn("w-16 h-8 text-center text-sm", isEditing && "ring-2 ring-primary")}
       />
-      <span className="text-zinc-500 text-sm w-20 text-right">${((mat?.cost || 0) * material.quantity).toFixed(2)}</span>
-      <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 text-zinc-500 hover:text-red-400">
-        <Trash2 size={14} />
+      <span className="text-muted-foreground text-sm w-20 text-right">${((mat?.cost || 0) * material.quantity).toFixed(2)}</span>
+      <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 text-muted-foreground hover:text-destructive">
+        <Trash2 className="h-4 w-4" />
       </button>
     </div>
   );

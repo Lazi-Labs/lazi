@@ -32,7 +32,7 @@ export async function GET(
       tenantId: kit.tenant_id,
       name: kit.name,
       description: kit.description,
-      categoryPath: kit.category_path || [],
+      categoryPath: kit.category_path ? kit.category_path.split('.') : [],
       createdAt: kit.created_at,
       updatedAt: kit.updated_at,
       groups: (kit.groups || []).map((g: any) => ({

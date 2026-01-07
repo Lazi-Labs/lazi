@@ -105,18 +105,27 @@ export async function PUT(
   try {
     const { id } = params;
     const body = await request.json();
-    
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
+
     // Forward to ST Automation service
     const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/services/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
       body: JSON.stringify(body),
     });
-    
+
     if (!res.ok) {
-      throw new Error('Failed to update service');
+      const errorText = await res.text();
+      console.error('Failed to update service:', res.status, errorText);
+      return NextResponse.json(
+        { error: 'Failed to update service', details: errorText },
+        { status: res.status }
+      );
     }
-    
+
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {

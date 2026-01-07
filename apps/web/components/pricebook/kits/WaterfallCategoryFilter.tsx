@@ -67,32 +67,32 @@ export function WaterfallCategoryFilter({
   const breadcrumbNames = selectedPath.map(id => findCategoryInTree(categoryTree, id)?.node?.name || id);
   
   return (
-    <div className={`bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden ${compact ? 'text-sm' : ''}`}>
-      <div className={`px-3 py-2 bg-zinc-800/50 border-b border-zinc-800 flex items-center gap-2 ${compact ? 'text-xs' : 'text-sm'}`}>
-        <FolderTree size={compact ? 12 : 14} className="text-zinc-500" />
-        <button onClick={() => onPathChange([])} className={`hover:text-white transition-colors ${selectedPath.length === 0 ? 'text-blue-400' : 'text-zinc-400'}`}>
+    <div className={`bg-card border rounded-xl overflow-hidden ${compact ? 'text-sm' : ''}`}>
+      <div className={`px-3 py-2 bg-muted/50 border-b flex items-center gap-2 ${compact ? 'text-xs' : 'text-sm'}`}>
+        <FolderTree size={compact ? 12 : 14} className="text-muted-foreground" />
+        <button onClick={() => onPathChange([])} className={`hover:text-foreground transition-colors ${selectedPath.length === 0 ? 'text-primary' : 'text-muted-foreground'}`}>
           <Home size={compact ? 12 : 14} />
         </button>
         {breadcrumbNames.map((name, idx) => (
           <React.Fragment key={idx}>
-            <ChevronRight size={compact ? 10 : 12} className="text-zinc-600" />
-            <button onClick={() => onPathChange(selectedPath.slice(0, idx + 1))} className={`hover:text-white truncate max-w-[100px] ${idx === breadcrumbNames.length - 1 ? 'text-blue-400 font-medium' : 'text-zinc-400'}`}>
+            <ChevronRight size={compact ? 10 : 12} className="text-muted-foreground/50" />
+            <button onClick={() => onPathChange(selectedPath.slice(0, idx + 1))} className={`hover:text-foreground truncate max-w-[100px] ${idx === breadcrumbNames.length - 1 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
               {name}
             </button>
           </React.Fragment>
         ))}
         {selectedPath.length > 0 && (
-          <button onClick={() => onPathChange([])} className="ml-auto text-zinc-500 hover:text-white text-xs flex items-center gap-1">
+          <button onClick={() => onPathChange([])} className="ml-auto text-muted-foreground hover:text-foreground text-xs flex items-center gap-1">
             <X size={12} /> Clear
           </button>
         )}
       </div>
-      <div className="flex divide-x divide-zinc-800 overflow-x-auto">
+      <div className="flex divide-x overflow-x-auto">
         {levels.map((level, levelIndex) => (
           <div key={levelIndex} className={`${compact ? 'min-w-[140px] max-w-[160px]' : 'min-w-[180px] max-w-[220px]'} flex-shrink-0`}>
             <div className={`p-2 ${compact ? 'max-h-[200px]' : 'max-h-[280px]'} overflow-y-auto`}>
               {levelIndex > 0 && (
-                <button onClick={() => handleSelect(levelIndex, null)} className={`w-full px-2 py-1 rounded text-left text-sm mb-1 ${!level.selected ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:bg-zinc-800'}`}>
+                <button onClick={() => handleSelect(levelIndex, null)} className={`w-full px-2 py-1 rounded text-left text-sm mb-1 ${!level.selected ? 'bg-muted font-medium' : 'text-muted-foreground hover:bg-muted'}`}>
                   All
                 </button>
               )}
@@ -100,11 +100,11 @@ export function WaterfallCategoryFilter({
                 <button
                   key={cat.id}
                   onClick={() => handleSelect(levelIndex, cat.id)}
-                  className={`w-full px-2 py-1 rounded text-left text-sm flex items-center gap-2 ${level.selected === cat.id ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'text-zinc-300 hover:bg-zinc-800'}`}
+                  className={`w-full px-2 py-1 rounded text-left text-sm flex items-center gap-2 ${level.selected === cat.id ? 'bg-primary/10 text-primary border border-primary/30' : 'text-foreground hover:bg-muted'}`}
                 >
                   {cat.color && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />}
                   <span className="flex-1 truncate">{cat.name}</span>
-                  {cat.children && cat.children.length > 0 && <ChevronRight size={12} className={level.selected === cat.id ? 'text-blue-400' : 'text-zinc-600'} />}
+                  {cat.children && cat.children.length > 0 && <ChevronRight size={12} className={level.selected === cat.id ? 'text-primary' : 'text-muted-foreground'} />}
                 </button>
               ))}
             </div>

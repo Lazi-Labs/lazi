@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { X, Keyboard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface KeyboardShortcutsPanelProps {
   isOpen: boolean;
@@ -45,30 +46,30 @@ export function KeyboardShortcutsPanel({ isOpen, onClose }: KeyboardShortcutsPan
   ];
   
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-zinc-900 rounded-xl w-full max-w-2xl max-h-[80vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-card border rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Keyboard size={20} className="text-blue-400" />
+            <Keyboard className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-lg">Keyboard Shortcuts</h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-zinc-800 rounded"><X size={20} /></button>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
         </div>
         <div className="p-4 overflow-auto max-h-[60vh] grid grid-cols-2 gap-6">
           {shortcuts.map(section => (
             <div key={section.category}>
-              <h3 className="text-sm font-semibold text-zinc-400 mb-2">{section.category}</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">{section.category}</h3>
               <div className="space-y-1">
                 {section.items.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm py-1">
-                    <span className="text-zinc-300">{item.desc}</span>
+                    <span>{item.desc}</span>
                     <div className="flex items-center gap-1">
                       {item.keys.map((key, kidx) => (
                         <React.Fragment key={kidx}>
-                          <kbd className="px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-xs font-mono">
+                          <kbd className="px-2 py-0.5 bg-muted border rounded text-xs font-mono">
                             {key}
                           </kbd>
-                          {kidx < item.keys.length - 1 && <span className="text-zinc-600 text-xs">+</span>}
+                          {kidx < item.keys.length - 1 && <span className="text-muted-foreground text-xs">+</span>}
                         </React.Fragment>
                       ))}
                     </div>
