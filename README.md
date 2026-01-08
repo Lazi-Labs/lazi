@@ -46,6 +46,17 @@ See **[Local Development Setup Guide](local-dev-backup/LOCAL_DEVELOPMENT_SETUP.m
 lazi/
 ├── apps/
 │   └── web/                    # Next.js Frontend (React, TailwindCSS)
+│       ├── app/
+│       │   ├── (dashboard)/
+│       │   │   ├── pricebook/  # Pricebook management pages
+│       │   │   ├── office/     # Office tools (calendar, mail, tasks, etc.)
+│       │   │   ├── pipeline/   # Sales pipeline with Kanban
+│       │   │   └── contacts/   # Contact management
+│       │   └── api/            # Next.js API routes (proxy to backend)
+│       └── components/
+│           ├── pricebook/      # Pricebook components
+│           ├── layout/         # Layout & navigation
+│           └── ui/             # Reusable UI components
 ├── services/
 │   ├── api/                    # Express.js API Server
 │   │   ├── src/
@@ -93,7 +104,7 @@ lazi/
 - **Framework**: Next.js 14 (React 18)
 - **Styling**: TailwindCSS
 - **UI Components**: shadcn/ui
-- **State Management**: React Context + Hooks
+- **State Management**: React Context + Hooks + TanStack Query
 - **Real-time**: Socket.io Client
 
 ### Backend
@@ -102,6 +113,7 @@ lazi/
 - **Database**: PostgreSQL (Supabase)
 - **Cache/Queue**: Redis + BullMQ
 - **Real-time**: Socket.io
+- **Storage**: AWS S3 (images)
 - **API Integration**: ServiceTitan REST API
 
 ### Infrastructure
@@ -111,6 +123,7 @@ lazi/
 - **Monitoring**: Grafana + Prometheus
 - **Analytics**: Metabase
 - **Workflows**: Temporal (optional)
+- **Reverse Proxy**: Traefik
 
 ---
 
@@ -127,8 +140,8 @@ lazi/
 | **Metabase** | http://localhost:3030 | 3030 | Business analytics |
 
 **Production URLs:**
-- **Web**: https://app.lazilabs.com
-- **API**: https://api.lazilabs.com
+- **Web**: https://lazilabs.com/dashboard
+- **API**: https://lazilabs.com/api (via Traefik)
 
 ---
 
@@ -218,6 +231,12 @@ SERVICE_TITAN_CLIENT_SECRET=your_client_secret
 SERVICE_TITAN_APP_KEY=your_app_key
 DEFAULT_TENANT_ID=your_tenant_id
 
+# AWS S3 (for image storage)
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=us-east-2
+S3_BUCKET=lazi-pricebook-images
+
 # API URLs (local)
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -262,18 +281,36 @@ See **[env.local.template](local-dev-backup/env.local.template)** for complete c
 ### ServiceTitan Integration
 - ✅ **Real-time Sync** - Bidirectional data synchronization
 - ✅ **92% API Coverage** - 35+ validated endpoints
-- ✅ **OAuth Authentication** - Secure token management
+- ✅ **OAuth Authentication** - Secure token management with auto-refresh
 - ✅ **Webhook Support** - Real-time event processing
+- ✅ **Image Sync** - Upload images to ST via multipart form-data
+
+### Pricebook Management
+- ✅ **Services** - Full CRUD with materials, equipment, images
+- ✅ **Materials** - Multi-image support, vendor management, pricing
+- ✅ **Equipment** - Equipment catalog with ST sync
+- ✅ **Categories** - Hierarchical category tree with filtering
+- ✅ **Material Kits** - Reusable bundles with drag-drop editing
+- ✅ **CRM Edits** - Local changes before pushing to ST
+
+### Image Management
+- ✅ **Multi-Image Upload** - Upload multiple images per item
+- ✅ **S3 Storage** - Images stored in AWS S3
+- ✅ **ST Image Proxy** - Serve ServiceTitan images via authenticated proxy
+- ✅ **Image Carousel** - Navigate through multiple images
+- ✅ **Pending Images** - Save locally, push to ST on sync
 
 ### Data Management
-- ✅ **24 Database Tables** - Comprehensive data model
-- ✅ **Automated Migrations** - Prisma ORM
+- ✅ **3-Layer Architecture** - RAW → MASTER → CRM database design
+- ✅ **24+ Database Tables** - Comprehensive data model
+- ✅ **Automated Migrations** - PostgreSQL migrations
 - ✅ **Data Validation** - Input sanitization & validation
 - ✅ **Audit Logging** - Complete change tracking
 
 ### Background Processing
 - ✅ **BullMQ Queues** - Reliable job processing
 - ✅ **Scheduled Sync** - Automated data updates
+- ✅ **Parallel Processing** - Concurrent image uploads
 - ✅ **Error Handling** - Retry logic & dead letter queues
 - ✅ **Job Monitoring** - Real-time queue dashboard
 
@@ -302,11 +339,12 @@ See **[env.local.template](local-dev-backup/env.local.template)** for complete c
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **API Server** | ✅ Running | Port 3001, 35+ endpoints |
+| **API Server** | ✅ Running | Port 3001, 50+ endpoints |
 | **ServiceTitan Integration** | ✅ Active | 92% API test success |
-| **Database** | ✅ Stable | Supabase, 24 tables |
+| **Database** | ✅ Stable | Supabase, 30+ tables |
 | **Background Jobs** | ✅ Processing | BullMQ + Redis |
 | **Real-time Sync** | ✅ Active | Socket.io WebSockets |
+| **Image Management** | ✅ Active | S3 + ST image sync |
 | **Security** | ✅ Hardened | Rate limiting, CORS, validation |
 | **Monitoring** | ✅ Deployed | Grafana + Prometheus |
 
@@ -357,6 +395,8 @@ apps/web/
 │   └── api/pricebook/
 │       ├── services/route.ts           # GET/POST services
 │       ├── services/[id]/route.ts      # GET/PUT/DELETE single service
+│       ├── services/[id]/push/route.ts # Push service to ServiceTitan
+│       ├── services/[id]/pull/route.ts # Pull service from ServiceTitan
 │       ├── materials/route.ts          # GET/POST materials
 │       ├── materials/[id]/route.ts     # GET/PUT/DELETE single material
 │       ├── categories/route.ts         # GET/POST categories with tree structure
@@ -367,8 +407,8 @@ apps/web/
     ├── services-panel.tsx              # Services list with filters
     ├── materials-panel.tsx             # Materials list with filters
     ├── categories-panel.tsx            # Categories management
-    ├── service-detail-page.tsx         # Full service editor (1042 lines)
-    ├── material-detail-page.tsx        # Full material editor (2011 lines)
+    ├── service-detail-page.tsx         # Full service editor (1600+ lines)
+    ├── material-detail-page.tsx        # Full material editor (2000+ lines)
     ├── category-tree-filter.tsx        # Hierarchical category selector
     └── kits/                           # Material Kits subsystem
         ├── types.ts                    # TypeScript interfaces
@@ -415,13 +455,18 @@ apps/web/
   - Pricing: price, member price, add-on price, member add-on price
   - Duration hours, taxable flag, active status
   - Category assignment
+  - Account assignment (Income, COGS, Asset)
   - Upgrades and recommendations
-  - **Materials tab**: Add/remove materials with quantities
+  - **Materials tab**: Add/remove materials with quantities from Material Kits
   - **Equipment tab**: Add/remove equipment
-  - **Load Kit**: Apply material kits with multiplier
-  - Image management with S3 upload
-  - **SAVE**: Save locally to CRM database
-  - **PUSH**: Sync changes to ServiceTitan
+  - **Load Kit**: Apply material kits with quantity multiplier
+  - **Multi-Image Management**:
+    - Upload images via file picker or URL
+    - Image carousel with navigation
+    - Delete existing images
+    - Pending images saved to S3, pushed to ST on sync
+  - **SAVE**: Save locally to CRM database (tracks pending changes)
+  - **PUSH**: Sync changes to ServiceTitan (parallel image uploads)
   - **PULL**: Fetch latest from ServiceTitan
 
 #### Material Detail Page (`material-detail-page.tsx`)
@@ -430,7 +475,7 @@ apps/web/
   - Edit code, name, description
   - Pricing: cost, margin, sell price (calculated), member price, add-on prices
   - Multi-vendor management with preferred vendor selection
-  - **Multi-image support**: Upload multiple images, carousel viewer
+  - **Multi-image support**: Upload multiple images, carousel viewer, delete images
   - Category assignment with tree picker
   - Inventory tracking options
   - Labor & commission settings (hours, bonus, commission %)
@@ -447,7 +492,7 @@ apps/web/
   - `KitEditor`: Create/edit kits with name, description, category
   - `KitMaterialList`: Drag-and-drop sortable list with groups
   - `MaterialBrowser`: Two-panel browser (categories left, materials right)
-  - `KitSelectorModal`: Load kit into service with quantity multiplier
+  - `KitSelectorModal`: Load kit into service with quantity multiplier (includes ST ID mapping)
 - **Features**:
   - Create material groups with custom colors
   - Drag materials between groups
@@ -460,16 +505,52 @@ apps/web/
 | Route | Methods | Description |
 |-------|---------|-------------|
 | `/api/pricebook/services` | GET, POST | List services with filters, create new |
-| `/api/pricebook/services/[id]` | GET, PUT, DELETE | Single service CRUD |
+| `/api/pricebook/services/[id]` | GET, PUT, PATCH, DELETE | Single service CRUD |
+| `/api/pricebook/services/[id]/push` | POST | Push service changes to ServiceTitan |
+| `/api/pricebook/services/[id]/pull` | POST | Pull latest from ServiceTitan |
 | `/api/pricebook/materials` | GET, POST | List materials with filters, create new |
 | `/api/pricebook/materials/[id]` | GET, PUT, DELETE | Single material CRUD |
+| `/api/pricebook/materials/[id]/push` | POST | Push material to ServiceTitan |
 | `/api/pricebook/materials/[id]/pull` | POST | Pull latest from ServiceTitan |
-| `/api/pricebook/materials/push` | POST | Push changes to ServiceTitan |
 | `/api/pricebook/categories` | GET, POST | List categories with nested children |
 | `/api/pricebook/categories/[id]` | GET | Single category with subcategories |
 | `/api/pricebook/kits` | GET, POST | List/create material kits |
 | `/api/pricebook/kits/[id]` | GET, PUT, DELETE | Single kit CRUD |
 | `/api/pricebook/kits/[id]/duplicate` | POST | Duplicate a kit |
+| `/api/images/st/*` | GET | Proxy ServiceTitan images (authenticated) |
+| `/api/images/proxy` | GET | Proxy external image URLs |
+| `/api/images/db/:entity/:id` | GET | Serve database-stored images |
+
+### Database Schema (3-Layer Architecture)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     RAW Schema (st_raw.*)                        │
+│  Direct copies of ServiceTitan API responses                     │
+│  • st_raw.pricebook_services                                     │
+│  • st_raw.pricebook_materials                                    │
+│  • st_raw.pricebook_equipment                                    │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓ Normalized
+┌─────────────────────────────────────────────────────────────────┐
+│                    MASTER Schema (master.*)                      │
+│  Normalized, indexed data for fast queries                       │
+│  • master.pricebook_services (st_id, code, name, price, assets)  │
+│  • master.pricebook_materials (st_id, code, cost, vendors)       │
+│  • master.pricebook_categories (hierarchical tree)               │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓ Local Edits
+┌─────────────────────────────────────────────────────────────────┐
+│                     CRM Schema (crm.*)                           │
+│  Local edits before pushing to ServiceTitan                      │
+│  • crm.pricebook_service_edits (pending changes)                 │
+│  • crm.pricebook_material_edits (pending changes)                │
+│  • crm.pricebook_new_services (not yet in ST)                    │
+│  • crm.pricebook_new_materials (not yet in ST)                   │
+│  • crm.material_kits (LAZI-only feature)                         │
+│  • crm.kit_items, crm.kit_groups                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ### Data Flow
 
@@ -486,25 +567,19 @@ apps/web/
 │                    Backend API (Express.js)                      │
 │                    lazi-api:3001                                 │
 ├─────────────────────────────────────────────────────────────────┤
-│  /api/pricebook/services   → services table + st_services       │
-│  /api/pricebook/materials  → materials table + st_materials     │
-│  /api/pricebook/categories → pb_categories + pb_subcategories   │
-│  /api/pricebook/kits       → material_kits + kit_items + groups │
+│  GET  → Read from MASTER + merge CRM edits                       │
+│  PUT  → Save to CRM edits table (pending state)                  │
+│  PUSH → Upload images to ST → PATCH ST API → Update MASTER       │
+│  PULL → Fetch from ST API → Update MASTER                        │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Database (PostgreSQL)                         │
-│                    + ServiceTitan API                            │
+│                    External Services                             │
 ├─────────────────────────────────────────────────────────────────┤
-│  Local CRM Tables:                                               │
-│  • pb_services (local overrides)                                 │
-│  • pb_materials (local overrides)                                │
-│  • pb_categories, pb_subcategories                               │
-│  • material_kits, kit_items, kit_groups                          │
-│                                                                  │
-│  ServiceTitan Sync:                                              │
-│  • PUSH: Create/update items in ST via API                       │
-│  • PULL: Fetch latest from ST and update local                   │
+│  ServiceTitan API     │  AWS S3              │  PostgreSQL       │
+│  - Pricebook v2       │  - Image storage     │  - Supabase       │
+│  - Image upload       │  - lazi-pricebook-   │  - RAW/MASTER/CRM │
+│  - OAuth tokens       │    images bucket     │  - 30+ tables     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -517,15 +592,34 @@ interface Service {
   stId?: string;          // ServiceTitan ID
   code: string;
   name: string;
+  displayName?: string;
   description?: string;
   price: number;
   memberPrice?: number;
   addOnPrice?: number;
+  memberAddOnPrice?: number;
   durationHours?: number;
   active: boolean;
+  taxable: boolean;
   materials?: MaterialLineItem[];
   equipment?: EquipmentLineItem[];
   categories?: CategoryTag[];
+  assets?: Asset[];           // Multi-image support
+  pendingImages?: string[];   // Images pending upload to ST
+  imagesToDelete?: string[];  // Images to remove from ST
+  _hasLocalEdits?: boolean;   // Has unsaved CRM changes
+  _syncStatus?: 'synced' | 'pending' | 'error';
+}
+
+// Material Line Item (for services)
+interface MaterialLineItem {
+  id: string;
+  materialId: string;         // Internal DB ID
+  stId?: string;              // ServiceTitan ID (required for push)
+  code: string;
+  name: string;
+  quantity: number;
+  unitCost: number;
 }
 
 // Material
@@ -539,9 +633,10 @@ interface Material {
   margin?: number;
   active: boolean;
   vendors?: Vendor[];
-  assets?: Asset[];       // Multi-image support
+  assets?: Asset[];           // Multi-image support
+  pendingImages?: string[];
   hasPendingChanges?: boolean;
-  isNew?: boolean;        // Not yet in ServiceTitan
+  isNew?: boolean;            // Not yet in ServiceTitan
 }
 
 // Kit
@@ -553,6 +648,15 @@ interface Kit {
   items?: KitMaterialItem[];
   groups?: KitGroup[];
 }
+
+// Asset (Image)
+interface Asset {
+  url: string;
+  type: 'Image' | 'Video';
+  alias?: string;
+  fileName?: string;
+  isDefault?: boolean;
+}
 ```
 
 ### Image Handling
@@ -560,8 +664,19 @@ interface Kit {
 Images are stored in AWS S3 and proxied through the API:
 - **S3 Bucket**: `lazi-pricebook-images`
 - **Path Pattern**: `/{tenant_id}/materials/{st_id}.png`
-- **Proxy Route**: `/api/images/proxy?url={encoded_url}`
-- **ST Images**: `/api/images/st/{path}` (authenticated)
+- **Pending Images**: Saved to S3 immediately, pushed to ST on sync
+- **ST Image Upload**: Multipart form-data POST to `/pricebook/v2/tenant/{id}/images`
+- **Proxy Routes**:
+  - `/api/images/proxy?url={encoded_url}` - External images
+  - `/api/images/st/{path}` - ServiceTitan images (authenticated)
+  - `/api/images/db/{entity}/{id}` - Database images
+
+### Performance Optimizations
+
+- **Parallel Image Uploads**: Multiple images upload concurrently using `Promise.all()`
+- **Pre-fetched Auth Tokens**: ST access token fetched once per batch, not per image
+- **Parallel Database Updates**: CRM + MASTER + cache updates run concurrently
+- **Push Time**: Reduced from ~30s to ~5-7s for typical operations
 
 ### Keyboard Shortcuts (Kit Editor)
 
@@ -572,6 +687,42 @@ Images are stored in AWS S3 and proxied through the API:
 | `Delete` | Delete selected item |
 | `↑/↓` | Navigate items |
 | `Ctrl+S` | Save kit |
+
+---
+
+## 🏢 Office Module
+
+The Office module provides productivity tools for daily operations.
+
+### Available Pages
+
+| Page | Path | Status | Description |
+|------|------|--------|-------------|
+| **Calendar** | `/office/calendar` | 🚧 Placeholder | Scheduling & appointments |
+| **Mail** | `/office/mail` | 🚧 Basic UI | Email management |
+| **Tasks** | `/office/tasks` | 🚧 Placeholder | Task management |
+| **Notes** | `/office/notes` | 🚧 Placeholder | Note taking |
+| **Todo List** | `/office/todo-list` | 🚧 Placeholder | Personal todos |
+| **Chat** | `/office/chat` | 🚧 Placeholder | Team messaging |
+| **File Manager** | `/office/file-manager` | 🚧 Placeholder | Document storage |
+| **Social Media** | `/office/social-media` | 🚧 Placeholder | Social management |
+
+---
+
+## 📊 Pipeline Module
+
+Sales pipeline with Kanban board functionality.
+
+### Features
+- ✅ Kanban board view with drag-and-drop
+- ✅ Multiple pipelines/boards
+- ✅ Stage management
+- ✅ Deal tracking
+
+### Database Tables
+- `crm.kanban_boards` - Board definitions
+- `crm.kanban_stages` - Pipeline stages
+- `crm.kanban_cards` - Individual deals/cards
 
 ---
 
@@ -587,7 +738,7 @@ Images are stored in AWS S3 and proxied through the API:
 
 ## 📄 License
 
-Proprietary - Lazi Labs © 2024
+Proprietary - Lazi Labs © 2024-2025
 
 ---
 
@@ -601,11 +752,51 @@ Proprietary - Lazi Labs © 2024
 
 ## 🎯 Roadmap
 
+### Near-term (Q1 2025)
+- [ ] Customer/property management module
+- [ ] Basic job scheduling with calendar integration
+- [ ] Simple invoicing with payment integration
+- [ ] Technician mobile view
+
+### Mid-term (Q2-Q3 2025)
 - [ ] Enhanced AI-powered estimating
 - [ ] Mobile app (React Native)
 - [ ] Advanced analytics dashboards
+- [ ] Reporting module
+
+### Long-term
 - [ ] Multi-tenant support
+- [ ] Inventory management
+- [ ] Route optimization
 - [ ] Expanded ServiceTitan API coverage
+- [ ] Reduced ST dependency (standalone mode)
+
+---
+
+## 📈 Recent Updates (January 2025)
+
+### Service Image Upload & Materials Management
+- ✅ Full image upload workflow for services (upload → S3 → push to ST)
+- ✅ Multi-image carousel with navigation
+- ✅ Materials/equipment management with Material Kits integration
+- ✅ Fixed ST ID mapping for materials (was using internal IDs)
+- ✅ Parallel image uploads for 5x faster push times
+
+### Database Enhancements
+- ✅ Added `service_materials`, `service_equipment` columns to CRM edits
+- ✅ Added `pending_images`, `images_to_delete` columns for image tracking
+- ✅ Kanban boards migration for Pipeline module
+
+### Performance
+- ✅ Parallel image uploads using Promise.all()
+- ✅ Pre-fetched auth tokens for batch operations
+- ✅ Parallel database updates after push
+- ✅ Push time reduced from ~30s to ~5-7s
+
+### UI/UX
+- ✅ Office section with placeholder pages
+- ✅ Updated sidebar navigation
+- ✅ Accounts dropdown for services (Income, COGS, Asset)
 
 ---
 
