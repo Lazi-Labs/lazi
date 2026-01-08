@@ -54,7 +54,20 @@ const navItems: NavItem[] = [
   { href: '/schedule', label: 'Schedule', icon: Calendar },
   { href: '/dispatch', label: 'Dispatch', icon: Truck },
   { href: '/pipeline', label: 'Pipeline', icon: Kanban },
-  { href: '/office', label: 'Office', icon: Layers },
+  { 
+    label: 'Office', 
+    icon: Layers,
+    children: [
+      { href: '/office/mail', label: 'Mail' },
+      { href: '/office/chat', label: 'Chat' },
+      { href: '/office/social-media', label: 'Social Media' },
+      { href: '/office/notes', label: 'Notes' },
+      { href: '/office/todo-list', label: 'Todo List' },
+      { href: '/office/tasks', label: 'Tasks' },
+      { href: '/office/calendar', label: 'Calendar' },
+      { href: '/office/file-manager', label: 'File Manager' },
+    ]
+  },
   { href: '/contacts', label: 'Contacts', icon: Users },
   { 
     label: 'Communication', 
@@ -121,11 +134,19 @@ const navItems: NavItem[] = [
   { href: '/developer', label: 'Developer', icon: Code },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void;
+  isMobile?: boolean;
+}
+
+export function Sidebar({ onNavigate, isMobile }: SidebarProps = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { sidebarCollapsed } = useUIStore();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['Pricebook']));
+  
+  // On mobile, always show expanded sidebar (not collapsed)
+  const isCollapsed = isMobile ? false : sidebarCollapsed;
   
   // Memoize current section for pricebook
   const currentSection = useMemo(() => searchParams.get('section'), [searchParams]);
@@ -154,25 +175,34 @@ export function Sidebar() {
     return false;
   };
 
-  return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 overflow-y-auto border-r border-sidebar-border',
-        sidebarCollapsed ? 'w-16' : 'w-56'
-      )}
-    >
+  const handleNavigate = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
+
+  // Desktop sidebar - uses .desktop-sidebar class which is hidden on mobile via CSS media query
+  // The mobile sidebar is rendered inside Sheet in layout.tsx with isMobile=true
+  if (!isMobile) {
+    return (
+      <aside
+        className={cn(
+          'desktop-sidebar flex flex-col fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 overflow-y-auto border-r border-sidebar-border',
+          isCollapsed ? 'w-16' : 'w-56'
+        )}
+      >
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex h-14 items-center px-4 border-b border-sidebar-border">
-          {!sidebarCollapsed && (
-            <Link href="/dashboard" className="flex items-center gap-2">
+          {!isCollapsed && (
+            <Link href="/dashboard" className="flex items-center gap-2" onClick={handleNavigate}>
               <div className="h-7 w-7 rounded bg-sidebar-primary flex items-center justify-center">
                 <span className="text-sidebar-primary-foreground font-bold text-xs">PC</span>
               </div>
               <span className="font-semibold text-sm">Perfect Catch</span>
             </Link>
           )}
-          {sidebarCollapsed && (
+          {isCollapsed && (
             <div className="h-7 w-7 rounded bg-sidebar-primary flex items-center justify-center mx-auto">
               <span className="text-sidebar-primary-foreground font-bold text-xs">PC</span>
             </div>
@@ -192,17 +222,18 @@ export function Sidebar() {
                 {item.href && !hasChildren ? (
                   <Link
                     href={item.href}
+                    onClick={handleNavigate}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
+                      'flex items-center gap-3 px-4 py-2 text-sm transition-colors min-h-[44px]',
                       isActive
                         ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                         : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                      sidebarCollapsed && 'justify-center px-2'
+                      isCollapsed && 'justify-center px-2'
                     )}
-                    title={sidebarCollapsed ? item.label : undefined}
+                    title={isCollapsed ? item.label : undefined}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
-                    {!sidebarCollapsed && (
+                    {!isCollapsed && (
                       <>
                         <span className="flex-1">{item.label}</span>
                       </>
@@ -212,16 +243,16 @@ export function Sidebar() {
                   <button
                     onClick={() => toggleExpanded(item.label)}
                     className={cn(
-                      'w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors',
+                      'w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors min-h-[44px]',
                       isActive
                         ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                         : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                      sidebarCollapsed && 'justify-center px-2'
+                      isCollapsed && 'justify-center px-2'
                     )}
-                    title={sidebarCollapsed ? item.label : undefined}
+                    title={isCollapsed ? item.label : undefined}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
-                    {!sidebarCollapsed && (
+                    {!isCollapsed && (
                       <>
                         <span className="flex-1 text-left">{item.label}</span>
                         {hasChildren && (
@@ -237,7 +268,7 @@ export function Sidebar() {
                 )}
 
                 {/* Children */}
-                {!sidebarCollapsed && hasChildren && isExpanded && (
+                {!isCollapsed && hasChildren && isExpanded && (
                   <div className="bg-sidebar-accent/50">
                     {item.children!.map((child) => {
                       // Check if this child link is active
@@ -252,8 +283,9 @@ export function Sidebar() {
                         <Link
                           key={child.href}
                           href={child.href}
+                          onClick={handleNavigate}
                           className={cn(
-                            'block pl-11 pr-4 py-1.5 text-sm transition-colors',
+                            'block pl-11 pr-4 py-2 text-sm transition-colors min-h-[44px] flex items-center',
                             childActive
                               ? 'text-sidebar-primary font-medium'
                               : 'text-sidebar-foreground/60 hover:text-sidebar-foreground'
@@ -274,22 +306,139 @@ export function Sidebar() {
         <div className="border-t border-sidebar-border py-2">
           <div className={cn(
             'flex items-center gap-2 px-4 py-2',
-            sidebarCollapsed && 'justify-center px-2'
+            isCollapsed && 'justify-center px-2'
           )}>
             <ThemeToggle />
           </div>
           <Link
             href="/settings"
+            onClick={handleNavigate}
             className={cn(
-              'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
+              'flex items-center gap-3 px-4 py-2 text-sm transition-colors min-h-[44px]',
               pathname === '/settings'
                 ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-              sidebarCollapsed && 'justify-center px-2'
+              isCollapsed && 'justify-center px-2'
             )}
           >
             <Settings className="h-4 w-4 shrink-0" />
-            {!sidebarCollapsed && <span>Settings</span>}
+            {!isCollapsed && <span>Settings</span>}
+          </Link>
+        </div>
+      </div>
+    </aside>
+    );
+  }
+
+  // Mobile sidebar (rendered inside Sheet)
+  return (
+    <aside className="w-full h-full bg-sidebar text-sidebar-foreground overflow-y-auto">
+      <div className="flex h-full flex-col">
+        {/* Logo */}
+        <div className="flex h-14 items-center px-4 border-b border-sidebar-border">
+          <Link href="/dashboard" className="flex items-center gap-2" onClick={handleNavigate}>
+            <div className="h-7 w-7 rounded bg-sidebar-primary flex items-center justify-center">
+              <span className="text-sidebar-primary-foreground font-bold text-xs">PC</span>
+            </div>
+            <span className="font-semibold text-sm">Perfect Catch</span>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 py-2">
+          {navItems.map((item) => {
+            const isActive = isItemActive(item);
+            const isExpanded = expandedItems.has(item.label);
+            const hasChildren = item.children && item.children.length > 0;
+
+            return (
+              <div key={item.label}>
+                {item.href && !hasChildren ? (
+                  <Link
+                    href={item.href}
+                    onClick={handleNavigate}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-2 text-sm transition-colors min-h-[44px]',
+                      isActive
+                        ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">{item.label}</span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => toggleExpanded(item.label)}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors min-h-[44px]',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {hasChildren && (
+                      isExpanded ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )
+                    )}
+                  </button>
+                )}
+
+                {hasChildren && isExpanded && (
+                  <div className="bg-sidebar-accent/50">
+                    {item.children!.map((child) => {
+                      const childHrefBase = child.href.split('?')[0];
+                      const childSection = child.href.includes('section=') 
+                        ? child.href.split('section=')[1]?.split('&')[0] 
+                        : null;
+                      const childActive = pathname.includes(childHrefBase) && 
+                        (!childSection || childSection === currentSection);
+                      
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={handleNavigate}
+                          className={cn(
+                            'block pl-11 pr-4 py-2 text-sm transition-colors min-h-[44px] flex items-center',
+                            childActive
+                              ? 'text-sidebar-primary font-medium'
+                              : 'text-sidebar-foreground/60 hover:text-sidebar-foreground'
+                          )}
+                        >
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* Settings at bottom */}
+        <div className="border-t border-sidebar-border py-2">
+          <div className="flex items-center gap-2 px-4 py-2">
+            <ThemeToggle />
+          </div>
+          <Link
+            href="/settings"
+            onClick={handleNavigate}
+            className={cn(
+              'flex items-center gap-3 px-4 py-2 text-sm transition-colors min-h-[44px]',
+              pathname === '/settings'
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+            )}
+          >
+            <Settings className="h-4 w-4 shrink-0" />
+            <span>Settings</span>
           </Link>
         </div>
       </div>

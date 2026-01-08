@@ -107,6 +107,14 @@ interface Material {
   pushError?: string;
 }
 
+interface GLAccount {
+  id: number;
+  name: string;
+  number: string;
+  type: 'Asset' | 'Expense' | 'Income' | 'Liability';
+  active: boolean;
+}
+
 interface MaterialDetailPageProps {
   materialId?: string;
   onClose?: () => void;
@@ -196,6 +204,23 @@ export function MaterialDetailPage({
       return data.data || [];
     },
   });
+
+  // Fetch GL accounts for account dropdowns
+  const { data: glAccountsData } = useQuery({
+    queryKey: ['gl-accounts'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('/api/accounting/accounts'));
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.data || [];
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Filter accounts by type for dropdowns
+  const incomeAccounts = (glAccountsData as GLAccount[] || []).filter(a => a.type === 'Income' && a.active);
+  const assetAccounts = (glAccountsData as GLAccount[] || []).filter(a => a.type === 'Asset' && a.active);
+  const cogsAccounts = (glAccountsData as GLAccount[] || []).filter(a => a.type === 'Expense' && a.active);
 
   const { data: material, isLoading, refetch: refetchMaterial } = useQuery({
     queryKey: ['material', materialId],
@@ -1237,12 +1262,14 @@ export function MaterialDetailPage({
                         className="w-full h-8 text-sm border rounded px-2 bg-background"
                       >
                         <option value="">Select account...</option>
-                        <option value="4000">4000 - Sales Revenue</option>
-                        <option value="4100">4100 - Service Revenue</option>
-                        <option value="4200">4200 - Material Sales</option>
+                        {incomeAccounts.map((account) => (
+                          <option key={account.id} value={account.id.toString()}>
+                            {account.number} - {account.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
-                    
+
                     {/* Asset Account */}
                     <div>
                       <Label className="text-xs text-muted-foreground mb-1 block">Asset Account</Label>
@@ -1252,12 +1279,14 @@ export function MaterialDetailPage({
                         className="w-full h-8 text-sm border rounded px-2 bg-background"
                       >
                         <option value="">Select account...</option>
-                        <option value="1200">1200 - Inventory</option>
-                        <option value="1300">1300 - Materials on Hand</option>
-                        <option value="1400">1400 - Supplies</option>
+                        {assetAccounts.map((account) => (
+                          <option key={account.id} value={account.id.toString()}>
+                            {account.number} - {account.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
-                    
+
                     {/* COGS Account */}
                     <div>
                       <Label className="text-xs text-muted-foreground mb-1 block">COGS Account</Label>
@@ -1267,9 +1296,11 @@ export function MaterialDetailPage({
                         className="w-full h-8 text-sm border rounded px-2 bg-background"
                       >
                         <option value="">Select account...</option>
-                        <option value="5000">5000 - Cost of Goods Sold</option>
-                        <option value="5100">5100 - Material Costs</option>
-                        <option value="5200">5200 - Direct Costs</option>
+                        {cogsAccounts.map((account) => (
+                          <option key={account.id} value={account.id.toString()}>
+                            {account.number} - {account.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

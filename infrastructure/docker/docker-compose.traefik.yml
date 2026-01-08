@@ -33,3 +33,13 @@ services:
       - "traefik.http.routers.lazi-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.lazi-api.service=lazi-api"
       - "traefik.http.services.lazi-api.loadbalancer.server.url=http://host.docker.internal:3001"
+
+      # ============================================
+      # LAZI Dashboard (Next.js on port 3000)
+      # ============================================
+      - "traefik.http.routers.lazi-dashboard.rule=Host(`lazilabs.com`) && PathPrefix(`/dashboard`)"
+      - "traefik.http.routers.lazi-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.lazi-dashboard.tls=true"
+      - "traefik.http.routers.lazi-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lazi-dashboard.service=lazi-dashboard"
+      - "traefik.http.services.lazi-dashboard.loadbalancer.server.url=http://lazi-web:3000"

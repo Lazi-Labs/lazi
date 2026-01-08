@@ -102,16 +102,31 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    // Would integrate with ST Automation to create service
-    const service = {
-      id: crypto.randomUUID(),
-      ...body,
-    };
-    
-    return NextResponse.json(service);
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
+
+    // Forward to ST Automation to create new service in CRM
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/services`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Failed to create service:', res.status, errorText);
+      return NextResponse.json(
+        { success: false, error: 'Failed to create service', details: errorText },
+        { status: res.status }
+      );
+    }
+
+    const result = await res.json();
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error('Failed to create service:', error);
-    return NextResponse.json({ error: 'Failed to create service' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to create service' }, { status: 500 });
   }
 }

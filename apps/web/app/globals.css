@@ -8,6 +8,13 @@
   }
 }
 
+/* Hide desktop sidebar on mobile */
+@media (max-width: 767px) {
+  .desktop-sidebar {
+    display: none !important;
+  }
+}
+
 @layer base {
   :root {
     /* ShadcnUIKit Theme - Light Mode */

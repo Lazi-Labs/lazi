@@ -120,6 +120,7 @@ export function KitSelectorModal({ isOpen, onClose, onApply, existingMaterials =
       return {
         id: item.id,
         materialId: String(item.materialId || item.material?.id),
+        stId: String(item.material?.stId || ''),
         code: item.material?.code || 'Unknown',
         name: item.material?.name || 'Unknown Material',
         description: item.material?.description,
