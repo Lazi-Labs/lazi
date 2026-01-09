@@ -36,6 +36,8 @@ import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { KitSelectorModal } from './kits/KitSelectorModal';
+import { CategorySelectorModal } from './CategorySelectorModal';
+import { ServiceSelectorModal } from './ServiceSelectorModal';
 
 interface ServiceDetailPageProps {
   serviceId: string | null;
@@ -134,6 +136,9 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
   const [materialSearch, setMaterialSearch] = useState('');
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isKitModalOpen, setIsKitModalOpen] = useState(false);
+  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
+  const [isUpgradesModalOpen, setIsUpgradesModalOpen] = useState(false);
+  const [isRecommendationsModalOpen, setIsRecommendationsModalOpen] = useState(false);
   const [showAccountsPanel, setShowAccountsPanel] = useState(false);
 
   // Detect if this is a new service
@@ -941,14 +946,24 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
               <div className="text-xs text-muted-foreground font-medium py-2">UPGR</div>
               <div className="md:col-span-2 flex items-center gap-2">
                 <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
-                  {formData.upgrades?.map((u, i) => (
+                  {formData.upgrades?.length ? formData.upgrades.map((u, i) => (
                     <Badge key={i} variant="secondary" className="gap-1">
                       {u}
-                      <X className="h-3 w-3 cursor-pointer" />
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => updateField('upgrades', formData.upgrades?.filter((_, idx) => idx !== i))}
+                      />
                     </Badge>
-                  ))}
+                  )) : (
+                    <span className="text-xs text-muted-foreground">No upgrades assigned</span>
+                  )}
                 </div>
-                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
+                  onClick={() => setIsUpgradesModalOpen(true)}
+                >
                   <Plus className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
@@ -957,14 +972,24 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
               <div className="text-xs text-muted-foreground font-medium py-2">REC</div>
               <div className="md:col-span-2 flex items-center gap-2">
                 <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
-                  {formData.recommendations?.map((r, i) => (
+                  {formData.recommendations?.length ? formData.recommendations.map((r, i) => (
                     <Badge key={i} variant="secondary" className="gap-1">
                       {r}
-                      <X className="h-3 w-3 cursor-pointer" />
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => updateField('recommendations', formData.recommendations?.filter((_, idx) => idx !== i))}
+                      />
                     </Badge>
-                  ))}
+                  )) : (
+                    <span className="text-xs text-muted-foreground">No recommendations assigned</span>
+                  )}
                 </div>
-                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
+                  onClick={() => setIsRecommendationsModalOpen(true)}
+                >
                   <Plus className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
@@ -973,16 +998,24 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
               <div className="text-xs text-muted-foreground font-medium py-2">CAT</div>
               <div className="md:col-span-2 flex items-center gap-2">
                 <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
-                  {formData.categories?.map((cat) => (
+                  {formData.categories?.length ? formData.categories.map((cat) => (
                     <Badge key={cat.id} variant="outline" className="gap-1 text-xs">
-                      {cat.path}
-                      <X className="h-3 w-3 cursor-pointer" />
+                      {cat.path || cat.name}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => updateField('categories', formData.categories?.filter(c => c.id !== cat.id))}
+                      />
                     </Badge>
-                  )) || (
+                  )) : (
                     <span className="text-xs text-muted-foreground">No categories assigned</span>
                   )}
                 </div>
-                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
+                  onClick={() => setIsCategoriesModalOpen(true)}
+                >
                   <Plus className="h-4 w-4 md:h-3 md:w-3" />
                 </Button>
               </div>
@@ -1560,6 +1593,40 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
         onClose={() => setIsKitModalOpen(false)}
         onApply={handleApplyKit}
         existingMaterials={formData.materials}
+      />
+
+      {/* Category Selector Modal */}
+      <CategorySelectorModal
+        isOpen={isCategoriesModalOpen}
+        onClose={() => setIsCategoriesModalOpen(false)}
+        selectedCategories={formData.categories || []}
+        onCategoriesChange={(categories) => {
+          updateField('categories', categories);
+        }}
+      />
+
+      {/* Upgrades Selector Modal */}
+      <ServiceSelectorModal
+        isOpen={isUpgradesModalOpen}
+        onClose={() => setIsUpgradesModalOpen(false)}
+        title="Select Upgrade Services"
+        selectedServices={formData.upgrades || []}
+        onServicesChange={(services) => {
+          updateField('upgrades', services);
+        }}
+        excludeServiceId={effectiveId || undefined}
+      />
+
+      {/* Recommendations Selector Modal */}
+      <ServiceSelectorModal
+        isOpen={isRecommendationsModalOpen}
+        onClose={() => setIsRecommendationsModalOpen(false)}
+        title="Select Recommended Services"
+        selectedServices={formData.recommendations || []}
+        onServicesChange={(services) => {
+          updateField('recommendations', services);
+        }}
+        excludeServiceId={effectiveId || undefined}
       />
 
       {/* Notification Messages - Fixed position at bottom */}
