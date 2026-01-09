@@ -561,6 +561,8 @@ router.put(
             service_materials = COALESCE($14, service_materials),
             service_equipment = COALESCE($15, service_equipment),
             pending_images = COALESCE($16, pending_images),
+            upgrades = COALESCE($17, upgrades),
+            recommendations = COALESCE($18, recommendations),
             updated_at = NOW()
           WHERE id = $1 AND tenant_id = $2
           RETURNING *
@@ -579,7 +581,9 @@ router.put(
           edits.categories ? JSON.stringify(edits.categories) : null,
           edits.materials ? JSON.stringify(edits.materials) : null,
           edits.equipment ? JSON.stringify(edits.equipment) : null,
-          newServicePendingImages
+          newServicePendingImages,
+          edits.upgrades ? JSON.stringify(edits.upgrades) : null,
+          edits.recommendations ? JSON.stringify(edits.recommendations) : null
         ]);
 
         if (result.rows.length === 0) {

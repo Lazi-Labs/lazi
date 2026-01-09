@@ -110,11 +110,16 @@ export function ServiceSelectorModal({
     enabled: isOpen,
   });
 
-  const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
+  const { data: categories = [], isLoading: isLoadingCategories, error: categoriesError } = useQuery({
     queryKey: ['categories-selector'],
     queryFn: fetchCategories,
     enabled: isOpen,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
   });
+
+  // Debug logging
+  console.log('[ServiceSelectorModal] categories:', categories?.length, 'loading:', isLoadingCategories, 'error:', categoriesError);
 
   // Filter out excluded service
   const filteredServices = useMemo(() => {
@@ -267,7 +272,11 @@ export function ServiceSelectorModal({
               </button>
 
               {isLoadingCategories ? (
-                <div className="p-4 text-xs text-muted-foreground">Loading...</div>
+                <div className="p-4 text-xs text-muted-foreground">Loading categories...</div>
+              ) : categoriesError ? (
+                <div className="p-4 text-xs text-red-500">Error loading categories</div>
+              ) : categories.length === 0 ? (
+                <div className="p-4 text-xs text-muted-foreground">No categories found</div>
               ) : (
                 <div className="mt-2 space-y-0.5">
                   {categories.map((cat) => renderCategory(cat))}

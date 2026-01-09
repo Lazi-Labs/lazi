@@ -72,11 +72,16 @@ export function CategorySelectorModal({
   const [search, setSearch] = useState('');
   const [localSelected, setLocalSelected] = useState<CategoryTag[]>(selectedCategories);
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categories = [], isLoading, error } = useQuery({
     queryKey: ['pricebook-categories-service'],
     queryFn: fetchCategories,
     enabled: isOpen,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
   });
+
+  // Debug logging
+  console.log('[CategorySelectorModal] categories:', categories?.length, 'loading:', isLoading, 'error:', error);
 
   // Sync local state when selectedCategories changes
   useEffect(() => {
