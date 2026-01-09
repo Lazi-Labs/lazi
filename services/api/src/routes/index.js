@@ -85,6 +85,11 @@ import accountingTransactionsRoutes from './accounting.transactions.routes.js';
 // Pricebook kits routes (Material Kits - LAZI-only feature)
 import pricebookKitsRoutes from './pricebook-kits.js';
 
+// Pricebook organization routes (health metrics, bulk ops, duplicates, audit)
+import pricebookOrganizationRoutes from './pricebook-organization.js';
+
+// NOTE: pricebook services, materials, categories are mounted directly in app.js at /api/pricebook/*
+
 const router = Router();
 
 // ═══════════════════════════════════════════════════════════════
@@ -200,5 +205,13 @@ router.use('/accounting', accountingTransactionsRoutes);
 // PRICEBOOK KITS ROUTES (Material Kits - LAZI-only feature)
 // ═══════════════════════════════════════════════════════════════
 router.use('/pricebook/kits', pricebookKitsRoutes);
+
+// ═══════════════════════════════════════════════════════════════
+// PRICEBOOK ORGANIZATION ROUTES (health, bulk ops, duplicates, audit)
+// ═══════════════════════════════════════════════════════════════
+router.use('/pricebook/organization', pricebookOrganizationRoutes);
+
+// NOTE: pricebook/services, pricebook/materials, pricebook/categories
+// are mounted directly in app.js at /api/pricebook/* to avoid conflicts
 
 export default router;

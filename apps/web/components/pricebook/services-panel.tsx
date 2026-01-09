@@ -36,6 +36,17 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
+import { PricebookHealthDashboard } from './organization/PricebookHealthDashboard';
+import { QuickFilters } from './organization/QuickFilters';
+import { ReviewedBadge } from './organization/ReviewedToggle';
+import { PendingSyncBadge } from './organization/PendingSyncBadge';
+import { PendingSyncPanel } from './organization/PendingSyncPanel';
+import {
+  useIssueCounts,
+  usePendingSyncCounts,
+  useQuickFilters,
+  FilterType,
+} from '@/hooks/usePricebookOrganization';
 import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { ServiceDetailPage } from './service-detail-page';
@@ -171,8 +182,14 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
   const [savingServices, setSavingServices] = useState<Set<string>>(new Set());
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const [syncPanelOpen, setSyncPanelOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
+
+  // Organization hooks
+  const { activeFilters, toggleFilter, clearFilters } = useQuickFilters();
+  const { combined: issueCounts } = useIssueCounts();
+  const { data: syncCounts } = usePendingSyncCounts();
 
   // Load column preferences from localStorage
   useEffect(() => {
@@ -263,8 +280,9 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
   const categories = flattenCategories(categoriesData || []);
 
   const { data: servicesData, isLoading } = useQuery({
-    queryKey: ['pricebook-services', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData],
+    queryKey: ['pricebook-services', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage],
     queryFn: () => fetchServices(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData || []),
+    enabled: categoriesData !== undefined, // Wait for categories to load
   });
 
   const services = servicesData?.data || [];
@@ -377,7 +395,15 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
             />
           );
         }
-        return <span className="font-medium">{service.displayName || service.name}</span>;
+        return (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{service.displayName || service.name}</span>
+            <ReviewedBadge isReviewed={(service as any).is_reviewed} />
+            {(service as any).has_local_changes && (
+              <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" title="Pending sync" />
+            )}
+          </div>
+        );
       case 'code':
         return <span className="font-mono text-muted-foreground text-xs">{service.code}</span>;
       case 'category':
@@ -654,6 +680,7 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
 
         {/* Right side: Edit Columns and Edit Mode */}
         <div className="flex items-center gap-4">
+          <PendingSyncBadge onClick={() => setSyncPanelOpen(true)} />
           <Button variant="ghost" size="sm" onClick={() => setShowColumnsDrawer(true)}>
             <LayoutGrid className="h-4 w-4 mr-2" />
             Edit Columns
@@ -685,6 +712,19 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
             Import
           </Button>
         </div>
+      </div>
+
+      {/* Quick Filters */}
+      <div className="px-3 py-2 border-b bg-background">
+        <QuickFilters
+          activeFilters={activeFilters}
+          onFilterToggle={toggleFilter}
+          onClearAll={clearFilters}
+          counts={{
+            ...issueCounts,
+            pending_sync: syncCounts?.totalPending,
+          }}
+        />
       </div>
 
       {/* Services Table */}
@@ -880,6 +920,13 @@ export function ServicesPanel({ selectedCategory, onCategorySelect }: ServicesPa
         onOpenChange={setShowColumnsDrawer}
         visibleColumns={visibleColumns}
         onColumnsChange={handleColumnsChange}
+      />
+
+      {/* Pending Sync Panel */}
+      <PendingSyncPanel
+        open={syncPanelOpen}
+        onClose={() => setSyncPanelOpen(false)}
+        entityType="service"
       />
     </div>
   );

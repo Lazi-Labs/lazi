@@ -38,6 +38,9 @@ import { useToast } from '@/hooks/use-toast';
 import { KitSelectorModal } from './kits/KitSelectorModal';
 import { CategorySelectorModal } from './CategorySelectorModal';
 import { ServiceSelectorModal } from './ServiceSelectorModal';
+import { ReviewedToggle, PendingChangeDot } from './organization/ReviewedToggle';
+import { useBulkReview, usePushToServiceTitan } from '@/hooks/usePricebookOrganization';
+import { CheckCircle2 } from 'lucide-react';
 
 interface ServiceDetailPageProps {
   serviceId: string | null;
@@ -48,6 +51,7 @@ interface ServiceDetailPageProps {
 interface Service {
   id: string;
   stId?: string;
+  st_id?: number;
   code: string;
   name: string;
   displayName?: string;
@@ -80,6 +84,8 @@ interface Service {
   recommendations?: string[];
   materials?: MaterialLineItem[];
   equipment?: EquipmentLineItem[];
+  is_reviewed?: boolean;
+  has_local_changes?: boolean;
 }
 
 interface CategoryTag {
@@ -193,6 +199,11 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Review status state
+  const [isReviewed, setIsReviewed] = useState(false);
+  const bulkReviewMutation = useBulkReview();
+  const pushOrgMutation = usePushToServiceTitan();
 
   // Image state
   const [pendingImages, setPendingImages] = useState<string[]>([]);
@@ -342,8 +353,10 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
   useEffect(() => {
     if (service) {
       setFormData(service);
+      // Initialize reviewed status from service data
+      setIsReviewed(service.is_reviewed || false);
       // Initialize sync status from API response
-      if ((service as any).isNew || (service as any)._syncStatus === 'pending' || (service as any)._hasLocalEdits) {
+      if ((service as any).isNew || (service as any)._syncStatus === 'pending' || (service as any)._hasLocalEdits || service.has_local_changes) {
         setSyncStatus('pending');
       } else if ((service as any)._syncStatus === 'error') {
         setSyncStatus('error');
@@ -699,6 +712,36 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
     });
   };
 
+  // Handle review toggle using organization API
+  const handleReviewToggle = async (reviewed: boolean) => {
+    const serviceStId = service?.st_id || parseInt(effectiveId || '0');
+    if (!serviceStId) return;
+
+    try {
+      await bulkReviewMutation.mutateAsync({
+        entityType: 'service',
+        stIds: [serviceStId],
+        isReviewed: reviewed,
+      });
+      setIsReviewed(reviewed);
+      toast({
+        title: reviewed ? 'Marked as Field Ready' : 'Marked as Needs Review',
+        description: reviewed
+          ? 'This service has been marked as reviewed and ready for technicians.'
+          : 'This service has been marked as needing review.',
+      });
+      // Refresh service data
+      queryClient.invalidateQueries({ queryKey: ['service-detail', effectiveId] });
+    } catch (err) {
+      console.error('Review toggle error:', err);
+      toast({
+        title: 'Review update failed',
+        description: 'Failed to update review status',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const materialNet = formData.materials?.reduce((sum, m) => sum + (m.quantity * m.unitCost), 0) || 0;
   const materialList = materialNet * 3.15; // Example markup
 
@@ -820,7 +863,12 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/10 h-7 px-2 text-xs bg-green-600 hover:bg-green-700 relative overflow-hidden"
+              className={cn(
+                "text-white hover:bg-white/10 h-7 px-2 text-xs relative overflow-hidden",
+                (service?.has_local_changes || hasChanges || syncStatus === 'pending')
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-green-600 hover:bg-green-700"
+              )}
               onClick={handlePush}
               disabled={isPushing}
             >
@@ -833,6 +881,9 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                 <span className="flex items-center gap-1">
                   <Upload className="h-3 w-3" />
                   PUSH
+                  {(service?.has_local_changes || hasChanges || syncStatus === 'pending') && (
+                    <PendingChangeDot title="Pending changes to sync" />
+                  )}
                 </span>
               )}
             </Button>
@@ -864,6 +915,75 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
           </Button>
         </div>
       </div>
+
+      {/* Review Status Bar - Only show for existing services */}
+      {!isNewService && (
+        <div className="px-4 py-2 space-y-2">
+          {/* Review Status */}
+          <div
+            className={cn(
+              'rounded-lg p-3 flex items-center justify-between',
+              isReviewed
+                ? 'bg-green-50 border border-green-200 dark:bg-green-950 dark:border-green-800'
+                : 'bg-yellow-50 border border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800'
+            )}
+          >
+            <div className="flex items-center gap-3">
+              {isReviewed ? (
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              )}
+              <div>
+                <span className={cn('font-medium', isReviewed ? 'text-green-700 dark:text-green-400' : 'text-yellow-700 dark:text-yellow-400')}>
+                  {isReviewed ? 'Field Ready' : 'Needs Review'}
+                </span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                  {isReviewed
+                    ? 'This item has been reviewed and is ready for technicians'
+                    : 'Review pricing, description, and images before use'}
+                </span>
+              </div>
+            </div>
+            <ReviewedToggle
+              isReviewed={isReviewed}
+              onToggle={handleReviewToggle}
+              size="lg"
+              disabled={bulkReviewMutation.isPending}
+            />
+          </div>
+
+          {/* Pending Changes Warning */}
+          {(service?.has_local_changes || hasChanges || syncStatus === 'pending') && (
+            <div className="rounded-lg p-3 bg-orange-50 border border-orange-200 dark:bg-orange-950 dark:border-orange-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Upload className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <div>
+                  <span className="font-medium text-orange-700 dark:text-orange-400">Pending Changes</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                    Local edits not yet pushed to ServiceTitan
+                  </span>
+                </div>
+              </div>
+              <Button
+                onClick={handlePush}
+                disabled={isPushing}
+                size="sm"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {isPushing ? (
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Pushing...
+                  </span>
+                ) : (
+                  'Push Now'
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">

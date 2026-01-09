@@ -273,7 +273,6 @@ export function MaterialDetailPage({
   });
 
   useEffect(() => {
-    console.log("[MaterialDetailPage] useEffect triggered, material:", material ? { code: material.code, name: material.name, description: material.description } : null);
     if (material) {
       // Get image URL from any of the possible fields
       const materialImageUrl = material.imageUrl || material.s3ImageUrl || material.defaultImageUrl || null;
@@ -498,7 +497,6 @@ export function MaterialDetailPage({
 
   // Set initial category from material
   useEffect(() => {
-    console.log("[MaterialDetailPage] useEffect triggered, material:", material ? { code: material.code, name: material.name, description: material.description } : null);
     if (material?.categories?.length > 0) {
       setSelectedCategoryId(String(material.categories[0]));
     }
@@ -820,8 +818,8 @@ export function MaterialDetailPage({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Top Header Bar - Titanium Style */}
-      <div className="bg-[#2d2d2d] text-white px-4 py-2 flex items-center justify-between">
+      {/* Top Header Bar */}
+      <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 h-7 px-2 text-xs" onClick={onClose}>
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -944,102 +942,77 @@ export function MaterialDetailPage({
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Navigation */}
-        <div className="w-16 border-r flex flex-col items-center py-4 gap-2 bg-muted/30">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex items-center gap-1 text-xs"
-            onClick={() => onNavigate?.('prev')}
-          >
+        <div className="hidden md:flex w-16 border-r flex-col items-center py-4 gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onNavigate?.('prev')}>
             <ChevronLeft className="h-4 w-4" />
-            PREV
+            <span className="text-xs">PREV</span>
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex items-center gap-1 text-xs"
-            onClick={() => onNavigate?.('next')}
-          >
-            NEXT
+          <Button variant="ghost" size="sm" onClick={() => onNavigate?.('next')}>
+            <span className="text-xs">NEXT</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Form Content */}
-        <div className="flex-1 overflow-auto">
-          <div className="flex items-start">
-            {/* Left Form Fields */}
-            <div className="flex-1 p-4 space-y-3 min-w-0 flex-shrink-0">
-              {/* CODE */}
-              <div className="flex items-center gap-4">
-                <Label className="w-20 text-right text-xs text-muted-foreground">CODE</Label>
-                <Controller
-                  name="code"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Input 
-                      {...field}
-                      value={field.value || ''}
-                      onChange={(e) => { field.onChange(e); setHasChanges(true); }}
-                      className="flex-1 h-8 text-sm"
-                      placeholder="C40-0014"
-                    />
-                  )}
-                />
-              </div>
+        {/* Form Content - New Reorganized Layout */}
+        <div className="flex-1 overflow-auto p-4 space-y-4">
+          
+          {/* Hidden file input for image upload */}
+          <input
+            type="file"
+            ref={imageInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
 
-              {/* NAME */}
-              <div className="flex items-center gap-4">
-                <Label className="w-20 text-right text-xs text-muted-foreground">NAME</Label>
-                <Controller
-                  name="name"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Input 
-                      {...field}
-                      value={field.value || ''}
-                      onChange={(e) => { field.onChange(e); setHasChanges(true); }}
-                      className="flex-1 h-8 text-sm"
-                      placeholder="Pipe Conduit Sch40 .75"
-                    />
-                  )}
-                />
-              </div>
-
-              {/* DESC */}
-              <div className="flex items-center gap-4">
-                <Label className="w-20 text-right text-xs text-muted-foreground">DESC</Label>
-                <Controller
-                  name="description"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Input 
-                      {...field}
-                      value={field.value || ''}
-                      onChange={(e) => { field.onChange(e); setHasChanges(true); }}
-                      className="flex-1 h-8 text-sm"
-                      placeholder="Sch 40 Conduit Pipe 3/4&quot;"
-                    />
-                  )}
-                />
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* CAT (Category) */}
-              <div className="flex items-center gap-4">
-                <Label className="w-20 text-right text-xs text-muted-foreground">CAT</Label>
-                <div className="flex-1 flex items-center gap-2">
+          {/* ROW 1: IDENTITY + PRODUCT IMAGE */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Identity Section */}
+            <div className="flex-1 border rounded-lg p-4">
+              <div className="text-xs text-muted-foreground font-medium mb-3">IDENTITY</div>
+              <div className="grid grid-cols-12 gap-3">
+                {/* Code - 3 cols */}
+                <div className="col-span-12 md:col-span-3">
+                  <div className="text-xs text-muted-foreground font-medium py-2">CODE</div>
+                  <Controller
+                    name="code"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => { field.onChange(e); setHasChanges(true); }}
+                        className="font-mono text-sm h-8"
+                        placeholder="C40-0014"
+                      />
+                    )}
+                  />
+                </div>
+                {/* Name - 6 cols */}
+                <div className="col-span-12 md:col-span-6">
+                  <div className="text-xs text-muted-foreground font-medium py-2">NAME</div>
+                  <Controller
+                    name="name"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => { field.onChange(e); setHasChanges(true); }}
+                        className="text-sm h-8"
+                        placeholder="Pipe Conduit Sch40 .75"
+                      />
+                    )}
+                  />
+                </div>
+                {/* Category - 3 cols */}
+                <div className="col-span-12 md:col-span-3">
+                  <div className="text-xs text-muted-foreground font-medium py-2">CATEGORY</div>
                   <Popover open={showCategoryPicker} onOpenChange={setShowCategoryPicker}>
                     <PopoverTrigger asChild>
-                      <button 
-                        type="button"
-                        className="flex-1 border rounded px-2 py-1.5 text-sm bg-muted/30 flex items-center gap-1 text-left hover:bg-muted/50 transition-colors cursor-pointer"
-                      >
-                        <span className="text-muted-foreground">☐</span>
-                        <span className="truncate">{selectedCategoryPath || 'Select a category...'}</span>
-                      </button>
+                      <Button variant="outline" className="w-full h-8 text-sm justify-start truncate">
+                        {selectedCategoryPath || 'Select...'}
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[400px] p-3" align="start">
                       <CategoryTreeFilter
@@ -1050,481 +1023,45 @@ export function MaterialDetailPage({
                       />
                     </PopoverContent>
                   </Popover>
-                  {selectedCategoryId && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleCategorySelect('')}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
-              </div>
-
-              {/* Vendors Section - moved inside left column */}
-              <div className="border-t pt-3 mt-3">
-                {/* Add Vendor Button */}
-                <div className="pb-3">
-                  <div className="relative">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="bg-[#00c853] hover:bg-[#00a844] text-white font-medium"
-                      onClick={() => setShowAddVendorModal(!showAddVendorModal)}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      ADD A VENDOR...
-                    </Button>
-                    {showAddVendorModal && (
-                      <div className="absolute top-full left-0 mt-2 w-80 p-4 bg-popover border rounded-md shadow-lg z-50">
-                        <div className="space-y-3">
-                          <h4 className="font-medium text-sm">Add Vendor</h4>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Select Vendor *</Label>
-                            <select
-                              value={selectedVendorId}
-                              onChange={(e) => setSelectedVendorId(e.target.value)}
-                              className="w-full h-8 mt-1 text-sm border rounded px-2 bg-background"
-                            >
-                              <option value="">Choose a vendor...</option>
-                              {availableVendors?.map((v: any) => (
-                                <option key={v.id} value={v.id}>{v.vendorName}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Vendor Part #</Label>
-                            <Input
-                              value={vendorPart}
-                              onChange={(e) => setVendorPart(e.target.value)}
-                              placeholder="Part number"
-                              className="h-8 mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">UPC Code</Label>
-                            <Input
-                              value={vendorUpc}
-                              onChange={(e) => setVendorUpc(e.target.value)}
-                              placeholder="UPC code"
-                              className="h-8 mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Cost</Label>
-                            <div className="relative mt-1">
-                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={vendorCost || ''}
-                                onChange={(e) => setVendorCost(parseFloat(e.target.value) || 0)}
-                                placeholder="0.00"
-                                className="h-8 pl-6"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex gap-2 pt-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setShowAddVendorModal(false);
-                                setSelectedVendorId('');
-                                setVendorCost(0);
-                                setVendorPart('');
-                                setVendorUpc('');
-                              }}
-                              className="flex-1"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={handleAddVendor}
-                              disabled={!selectedVendorId}
-                              className="flex-1 bg-[#00c853] hover:bg-[#00a844]"
-                            >
-                              Add Vendor
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+                {/* Description - 10 cols */}
+                <div className="col-span-12 md:col-span-10">
+                  <div className="text-xs text-muted-foreground font-medium py-2">DESCRIPTION</div>
+                  <Controller
+                    name="description"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => { field.onChange(e); setHasChanges(true); }}
+                        className="text-sm h-8"
+                        placeholder="Sch 40 Conduit Pipe 3/4&quot;"
+                      />
                     )}
-                  </div>
+                  />
                 </div>
-
-                {/* Vendors Table Header */}
-                <div className="grid grid-cols-[180px_70px_100px_100px_70px_50px_32px] gap-2 py-2 text-xs text-muted-foreground border-b">
-                  <div></div>
-                  <div className="text-center">Preferred</div>
-                  <div>UPC Code</div>
-                  <div>Vendor part #</div>
-                  <div className="text-right">Pay</div>
-                  <div className="text-center">Active</div>
-                  <div></div>
-                </div>
-
-                {/* Scrollable Vendor Rows */}
-                <div className="max-h-[200px] overflow-y-auto">
-                  {/* Primary Vendor Row */}
-                  {vendors.length > 0 ? (
-                    vendors.map((vendor: any, index: number) => (
-                      <div key={vendor.id || index}>
-                        <div className="grid grid-cols-[180px_70px_100px_100px_70px_50px_32px] gap-2 py-2 items-center border-b hover:bg-muted/30">
-                          <div className="flex items-center gap-2">
-                            <Settings className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                            <span className="text-sm font-medium">{vendor.vendorName}</span>
-                          </div>
-                          <div className="flex justify-center items-center gap-2">
-                            <Settings className="h-3 w-3 text-muted-foreground" />
-                            <div className={cn(
-                              "w-5 h-5 rounded-full flex items-center justify-center",
-                              vendor.preferred ? "bg-[#00c853]" : "border-2 border-muted-foreground/30"
-                            )}>
-                              {vendor.preferred && <Check className="h-3 w-3 text-white" />}
-                            </div>
-                          </div>
-                          <div>
-                            <Input 
-                              defaultValue={vendor.upcCode || ''} 
-                              className="h-7 text-xs"
-                              placeholder="UPC Code"
-                            />
-                          </div>
-                          <div>
-                            <Input 
-                              defaultValue={vendor.vendorPart || ''} 
-                              className="h-7 text-xs"
-                              placeholder=""
-                            />
-                          </div>
-                          <div className="flex items-center justify-end gap-1">
-                            <Checkbox checked={!!vendor.useCost} className="h-4 w-4" />
-                            <span className="text-sm font-medium">${vendor.cost?.toFixed(2) || '0.00'}</span>
-                          </div>
-                          <div className="flex justify-center">
-                            <div className={cn(
-                              "w-5 h-5 rounded-full flex items-center justify-center",
-                              vendor.active ? "bg-[#00c853]" : "border-2 border-muted-foreground/30"
-                            )}>
-                              {vendor.active && <Check className="h-3 w-3 text-white" />}
-                            </div>
-                          </div>
-                          <div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeleteVendor(vendor.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="py-3 text-sm text-muted-foreground">
-                      No vendors added yet
-                    </div>
-                  )}
+                {/* Active toggle - 2 cols, right aligned */}
+                <div className="col-span-12 md:col-span-2 flex items-end justify-end">
+                  <label className="flex items-center gap-2 text-xs">
+                    <Checkbox
+                      checked={form.watch('active')}
+                      onCheckedChange={(checked) => { form.setValue('active', !!checked); setHasChanges(true); }}
+                    />
+                    Active
+                  </label>
                 </div>
               </div>
             </div>
-
-            {/* Right Side Panel */}
-            <div className="w-80 border-l p-4 space-y-3 flex-shrink-0 overflow-y-auto">
-              {/* Accounts Settings Box */}
-              <div className="border rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setShowAccountsPanel(!showAccountsPanel)}
-                  className="w-full flex items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Accounts
-                  </span>
-                  <ChevronRight className={cn("h-4 w-4 transition-transform", showAccountsPanel && "rotate-90")} />
-                </button>
-                
-                {showAccountsPanel && (
-                  <div className="p-3 pt-0 space-y-3 border-t">
-                    {/* Income Account */}
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Income Account</Label>
-                      <select
-                        value={form.watch('incomeAccount') || ''}
-                        onChange={(e) => handleFieldChange('incomeAccount', e.target.value)}
-                        className="w-full h-8 text-sm border rounded px-2 bg-background"
-                      >
-                        <option value="">Select account...</option>
-                        {incomeAccounts.map((account) => (
-                          <option key={account.id} value={account.id.toString()}>
-                            {account.number} - {account.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Asset Account */}
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Asset Account</Label>
-                      <select
-                        value={form.watch('assetAccount') || ''}
-                        onChange={(e) => handleFieldChange('assetAccount', e.target.value)}
-                        className="w-full h-8 text-sm border rounded px-2 bg-background"
-                      >
-                        <option value="">Select account...</option>
-                        {assetAccounts.map((account) => (
-                          <option key={account.id} value={account.id.toString()}>
-                            {account.number} - {account.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* COGS Account */}
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">COGS Account</Label>
-                      <select
-                        value={form.watch('cogsAccount') || ''}
-                        onChange={(e) => handleFieldChange('cogsAccount', e.target.value)}
-                        className="w-full h-8 text-sm border rounded px-2 bg-background"
-                      >
-                        <option value="">Select account...</option>
-                        {cogsAccounts.map((account) => (
-                          <option key={account.id} value={account.id.toString()}>
-                            {account.number} - {account.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
+            
+            {/* Product Image Card - fixed width */}
+            <div className="w-full md:w-48 flex-shrink-0 border rounded-lg overflow-hidden">
+              <div className="p-2 border-b flex items-center justify-between">
+                <span className="text-xs text-muted-foreground font-medium">PRODUCT IMAGE</span>
               </div>
-
-              {/* COST */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">COST</Label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm font-medium">$</span>
-                  <input 
-                    type="text"
-                    inputMode="decimal"
-                    value={form.watch('cost')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || ''}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      form.setValue('cost', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-20 h-8 text-sm text-right border rounded px-2 font-medium bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-              </div>
-
-              {/* EDIT IMAGE button */}
-              <input
-                type="file"
-                ref={imageInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-              />
-              <div className="relative">
-                <Button
-                  className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  onClick={() => setShowImageModal(!showImageModal)}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Edit Image{(pendingImages.length + materialAssets.filter(a => a.type === 'Image').length) > 0 ? ` (${pendingImages.length + materialAssets.filter(a => a.type === 'Image').length})` : ''}
-                  {pendingImages.length > 0 && <span className="ml-1 text-yellow-200">*</span>}
-                </Button>
-
-                {/* Image Management Modal */}
-                {showImageModal && (
-                  <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-popover border rounded-lg shadow-lg z-50 max-h-[500px] overflow-y-auto">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-sm">Manage Images</h4>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => {
-                          setShowImageModal(false);
-                          setImageUrlInput('');
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Existing Images Grid */}
-                    {(materialAssets.length > 0 || pendingImages.length > 0) && (
-                      <div className="mb-4">
-                        <Label className="text-xs text-muted-foreground mb-2 block">Current Images</Label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* Show pending images (to be pushed) */}
-                          {pendingImages.map((url, index) => (
-                            <div key={`pending-${index}`} className="relative border-2 border-yellow-400 rounded-lg overflow-hidden aspect-square bg-muted/30">
-                              <img
-                                src={url}
-                                alt={`Pending image ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute top-1 left-1">
-                                <Badge className="text-[10px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setPendingImages(prev => prev.filter((_, i) => i !== index));
-                                  setHasChanges(true);
-                                }}
-                                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white transition-colors"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ))}
-                          {/* Show ST assets */}
-                          {materialAssets.filter(a => a.type === 'Image').map((asset, index) => (
-                            <div key={index} className="relative border rounded-lg overflow-hidden aspect-square bg-muted/30">
-                              <img
-                                src={getStImageUrl(asset.url)}
-                                alt={asset.alias || `Image ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute top-1 left-1">
-                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-blue-500/20 text-blue-700 border-blue-500/50">ST</Badge>
-                              </div>
-                              {asset.isDefault && (
-                                <div className="absolute bottom-1 left-1">
-                                  <Badge className="text-[10px] px-1 py-0 bg-green-500">Default</Badge>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        {pendingImages.length > 0 && (
-                          <p className="text-xs text-yellow-600 mt-2">
-                            {pendingImages.length} pending image{pendingImages.length > 1 ? 's' : ''} will be uploaded when you push to ServiceTitan.
-                          </p>
-                        )}
-                        {materialAssets.length > 0 && pendingImages.length === 0 && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            ST images are managed in ServiceTitan. Add images below to include in next push.
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Divider */}
-                    <div className="border-t my-3" />
-
-                    {/* Add New Image Section */}
-                    <Label className="text-xs text-muted-foreground mb-2 block">Add New Image</Label>
-
-                    {/* Tab Buttons */}
-                    <div className="flex gap-1 mb-3 p-1 bg-muted rounded-lg">
-                      <button
-                        type="button"
-                        onClick={() => setImageUploadTab('file')}
-                        className={cn(
-                          "flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors",
-                          imageUploadTab === 'file'
-                            ? "bg-background shadow text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <Upload className="h-3 w-3 inline mr-1" />
-                        Upload File
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setImageUploadTab('url')}
-                        className={cn(
-                          "flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors",
-                          imageUploadTab === 'url'
-                            ? "bg-background shadow text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <Download className="h-3 w-3 inline mr-1" />
-                        From URL
-                      </button>
-                    </div>
-
-                    {/* File Upload Tab */}
-                    {imageUploadTab === 'file' && (
-                      <div className="space-y-3">
-                        <div
-                          onClick={() => imageInputRef.current?.click()}
-                          className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition-colors"
-                        >
-                          <Upload className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
-                          <p className="text-xs text-muted-foreground">
-                            Click to select an image
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* URL Tab */}
-                    {imageUploadTab === 'url' && (
-                      <div className="space-y-3">
-                        <div>
-                          <Input
-                            type="url"
-                            value={imageUrlInput}
-                            onChange={(e) => {
-                              setImageUrlInput(e.target.value);
-                              setImageLoadError(false);
-                            }}
-                            placeholder="https://example.com/image.jpg"
-                            className={cn("text-sm", imageLoadError && "border-red-500")}
-                          />
-                          {imageLoadError && (
-                            <p className="text-xs text-red-500 mt-1">Failed to load image</p>
-                          )}
-                        </div>
-                        {/* URL Preview */}
-                        {imageUrlInput.trim() && !imageLoadError && (
-                          <div className="border rounded-lg overflow-hidden bg-muted/30 h-24 flex items-center justify-center">
-                            <img
-                              src={getProxyImageUrl(imageUrlInput.trim())}
-                              alt="Preview"
-                              className="max-h-full max-w-full object-contain"
-                              onError={() => setImageLoadError(true)}
-                            />
-                          </div>
-                        )}
-                        <Button
-                          onClick={handleImageFromUrl}
-                          disabled={!imageUrlInput.trim() || imageLoading}
-                          className="w-full bg-green-500 hover:bg-green-600"
-                          size="sm"
-                        >
-                          {imageLoading ? (
-                            <span className="flex items-center gap-2">
-                              <RefreshCw className="h-3 w-3 animate-spin" />
-                              Uploading...
-                            </span>
-                          ) : (
-                            'Add Image'
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Image Preview with Carousel */}
+              {/* Image with overlays */}
               <div
-                className="border rounded-lg overflow-hidden bg-muted/30 aspect-square flex items-center justify-center relative group"
+                className="aspect-square flex items-center justify-center relative group bg-muted/30"
                 onMouseEnter={() => setImageHovered(true)}
                 onMouseLeave={() => setImageHovered(false)}
               >
@@ -1534,378 +1071,287 @@ export function MaterialDetailPage({
                       src={allImageUrls[currentImageIndex]}
                       alt={`Material image ${currentImageIndex + 1}`}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Hide broken image and show fallback UI
-                        e.currentTarget.style.display = 'none';
-                      }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
-
-                    {/* X button to remove image - appears on hover */}
+                    {/* X button to remove image */}
                     <button
                       type="button"
                       onClick={() => {
                         const currentUrl = allImageUrls[currentImageIndex];
-                        // Check if this is a pending image (S3 URL in pendingImages array)
                         const pendingIndex = pendingImages.findIndex(url => url === currentUrl);
                         if (pendingIndex >= 0) {
-                          // Remove from pending images
                           setPendingImages(prev => prev.filter((_, i) => i !== pendingIndex));
                           setHasChanges(true);
                         } else {
-                          // It's an ST image - find and track for deletion
                           const stAsset = materialAssets.find(a => a.type === 'Image' && getStImageUrl(a.url) === currentUrl);
                           if (stAsset) {
                             setImagesToDelete(prev => [...prev, stAsset.url]);
-                            // Remove from local assets display
                             setMaterialAssets(prev => prev.filter(a => a !== stAsset));
                             setHasChanges(true);
                           }
                         }
-                        // Adjust current index if needed
                         if (currentImageIndex >= allImageUrls.length - 1) {
                           setCurrentImageIndex(Math.max(0, allImageUrls.length - 2));
                         }
                       }}
                       className={cn(
-                        "absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 rounded-full text-white transition-all duration-200 shadow-lg",
+                        "absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white transition-all duration-200 shadow-lg",
                         imageHovered ? "opacity-100 scale-100" : "opacity-0 scale-75"
                       )}
-                      title="Remove image"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-3 w-3" />
                     </button>
-
-                    {/* Pending badge for pending images */}
+                    {/* Badges */}
                     {currentImageIndex < pendingImages.length && (
-                      <div className="absolute top-2 left-2">
-                        <Badge className="text-[10px] px-1.5 py-0.5 bg-yellow-500 text-black">Pending</Badge>
+                      <div className="absolute top-1 left-1">
+                        <Badge className="text-[8px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
                       </div>
                     )}
-
-                    {/* ST badge for ST images */}
                     {currentImageIndex >= pendingImages.length && (
-                      <div className="absolute top-2 left-2">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-blue-500/80 text-white border-blue-400">ST</Badge>
+                      <div className="absolute top-1 left-1">
+                        <Badge variant="outline" className="text-[8px] px-1 py-0 bg-blue-500/80 text-white border-blue-400">ST</Badge>
                       </div>
                     )}
-
-                    {/* Left Arrow - only show if multiple images */}
+                    {/* Nav arrows */}
                     {allImageUrls.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => setCurrentImageIndex(prev => prev === 0 ? allImageUrls.length - 1 : prev - 1)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-                    )}
-
-                    {/* Right Arrow - only show if multiple images */}
-                    {allImageUrls.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => setCurrentImageIndex(prev => prev === allImageUrls.length - 1 ? 0 : prev + 1)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
-                    )}
-
-                    {/* Image counter badge */}
-                    {allImageUrls.length > 1 && (
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-black/60 text-white text-xs px-2">
-                          {currentImageIndex + 1} / {allImageUrls.length}
-                        </Badge>
-                      </div>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentImageIndex(prev => prev === 0 ? allImageUrls.length - 1 : prev - 1)}
+                          className="absolute left-1 top-1/2 -translate-y-1/2 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentImageIndex(prev => prev === allImageUrls.length - 1 ? 0 : prev + 1)}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
+                          <Badge className="bg-black/60 text-white text-[10px] px-1.5">
+                            {currentImageIndex + 1}/{allImageUrls.length}
+                          </Badge>
+                        </div>
+                      </>
                     )}
                   </>
                 ) : (
-                  <div className="text-center text-muted-foreground text-sm p-4">
-                    <ImagePlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <div className="text-center text-muted-foreground text-xs p-2">
+                    <ImagePlus className="h-6 w-6 mx-auto mb-1 opacity-50" />
                     No image
                   </div>
                 )}
               </div>
-
-              {/* ACTIVE toggle */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">ACTIVE</Label>
-                <Switch 
-                  checked={form.watch('active')}
-                  onCheckedChange={(v) => form.setValue('active', v)}
-                />
+              {/* Edit button */}
+              <div className="p-2 border-t">
+                <Button
+                  size="sm"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white text-xs h-7"
+                  onClick={() => setShowImageModal(!showImageModal)}
+                >
+                  Edit{allImageUrls.length > 0 ? ` (${allImageUrls.length})` : ''}
+                  {pendingImages.length > 0 && <span className="ml-1 text-yellow-200">*</span>}
+                </Button>
               </div>
+            </div>
+          </div>
 
-              {/* MARGIN */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">MARGIN</Label>
-                <div className="flex items-center gap-1">
+          {/* Image Management Modal - positioned absolutely */}
+          {showImageModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageModal(false)}>
+              <div className="bg-popover border rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between p-3 border-b">
+                  <h4 className="font-medium text-sm">Manage Images</h4>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setShowImageModal(false); setImageUrlInput(''); }}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="p-4 space-y-4">
+                  {/* Existing Images Grid */}
+                  {(materialAssets.length > 0 || pendingImages.length > 0) && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-2 block">Current Images</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {pendingImages.map((url, index) => (
+                          <div key={`pending-${index}`} className="relative border-2 border-yellow-400 rounded-lg overflow-hidden aspect-square bg-muted/30">
+                            <img src={url} alt={`Pending ${index + 1}`} className="w-full h-full object-cover" />
+                            <Badge className="absolute top-1 left-1 text-[10px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
+                            <button type="button" onClick={() => { setPendingImages(prev => prev.filter((_, i) => i !== index)); setHasChanges(true); }} className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {materialAssets.filter(a => a.type === 'Image').map((asset, index) => (
+                          <div key={index} className="relative border rounded-lg overflow-hidden aspect-square bg-muted/30">
+                            <img src={getStImageUrl(asset.url)} alt={asset.alias || `Image ${index + 1}`} className="w-full h-full object-cover" />
+                            <Badge variant="outline" className="absolute top-1 left-1 text-[10px] px-1 py-0 bg-blue-500/20 text-blue-700 border-blue-500/50">ST</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="border-t" />
+                  <Label className="text-xs text-muted-foreground block">Add New Image</Label>
+                  <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                    <button type="button" onClick={() => setImageUploadTab('file')} className={cn("flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors", imageUploadTab === 'file' ? "bg-background shadow" : "text-muted-foreground hover:text-foreground")}>
+                      <Upload className="h-3 w-3 inline mr-1" />Upload
+                    </button>
+                    <button type="button" onClick={() => setImageUploadTab('url')} className={cn("flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors", imageUploadTab === 'url' ? "bg-background shadow" : "text-muted-foreground hover:text-foreground")}>
+                      <Download className="h-3 w-3 inline mr-1" />URL
+                    </button>
+                  </div>
+                  {imageUploadTab === 'file' && (
+                    <div onClick={() => imageInputRef.current?.click()} className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors">
+                      <Upload className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Click to select</p>
+                    </div>
+                  )}
+                  {imageUploadTab === 'url' && (
+                    <div className="space-y-3">
+                      <Input type="url" value={imageUrlInput} onChange={(e) => { setImageUrlInput(e.target.value); setImageLoadError(false); }} placeholder="https://example.com/image.jpg" className={cn("text-sm", imageLoadError && "border-red-500")} />
+                      {imageUrlInput.trim() && !imageLoadError && (
+                        <div className="border rounded-lg overflow-hidden bg-muted/30 h-24 flex items-center justify-center">
+                          <img src={getProxyImageUrl(imageUrlInput.trim())} alt="Preview" className="max-h-full max-w-full object-contain" onError={() => setImageLoadError(true)} />
+                        </div>
+                      )}
+                      <Button onClick={handleImageFromUrl} disabled={!imageUrlInput.trim() || imageLoading} className="w-full" size="sm">
+                        {imageLoading ? <><RefreshCw className="h-3 w-3 animate-spin mr-1" />Uploading...</> : 'Add Image'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ROW 2: PRICING */}
+          <div className="border rounded-lg p-4">
+            <div className="text-xs text-muted-foreground font-medium mb-3">PRICING</div>
+            <div className="grid grid-cols-6 gap-3 mb-3">
+              {/* Cost */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Cost</label>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <input 
+                    type="text"
+                    inputMode="decimal"
+                    value={form.watch('cost')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || ''}
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); form.setValue('cost', parseFloat(cleaned) || 0); }}
+                    className="w-full bg-blue-500/10 border border-blue-500/30 rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
+                  />
+                </div>
+              </div>
+              {/* Margin */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Margin</label>
+                <div className="relative">
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.watch('margin') || ''}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      form.setValue('margin', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-16 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); form.setValue('margin', parseFloat(cleaned) || 0); }}
+                    className="w-full bg-amber-500/10 border border-amber-500/30 rounded px-2 py-1.5 text-sm text-right h-8"
                   />
-                  <span className="text-xs">%</span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
                 </div>
               </div>
-
-              {/* SELL PRICE */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">SELL PRICE</Label>
-                <span className="text-sm font-medium">{formatCurrency(calculatedPrice)}</span>
+              {/* Sell Price */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Sell Price</label>
+                <div className="w-full bg-green-500/10 border border-green-500/30 rounded px-2 py-1.5 text-sm text-right h-8">
+                  {formatCurrency(calculatedPrice)}
+                </div>
               </div>
-
-              {/* MEMBER PRICE */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">MEMBER PRICE</Label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm font-medium">$</span>
+              {/* Member Price */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Member Price</label>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.watch('memberPrice')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      handleFieldChange('memberPrice', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-20 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); handleFieldChange('memberPrice', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
                   />
                 </div>
               </div>
-
-              {/* ADD-ON PRICE */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">ADD-ON PRICE</Label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm font-medium">$</span>
+              {/* Add-on Price */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Add-on Price</label>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.watch('addOnPrice')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      handleFieldChange('addOnPrice', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-20 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); handleFieldChange('addOnPrice', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
                   />
                 </div>
               </div>
-
-              {/* ADD-ON MEMBER PRICE */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">ADD-ON MEMBER</Label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm font-medium">$</span>
+              {/* Add-on Member */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Add-on Member</label>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.watch('addOnMemberPrice')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      handleFieldChange('addOnMemberPrice', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-20 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); handleFieldChange('addOnMemberPrice', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
                   />
                 </div>
               </div>
-
-              {/* TAX % */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">TAX %</Label>
-                <div className="flex items-center gap-1">
+            </div>
+            {/* Second row: Tax%, SKU%, Unit of Measure, Round Up */}
+            <div className="grid grid-cols-6 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Tax %</label>
+                <div className="relative">
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.watch('taxPercent') || ''}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      form.setValue('taxPercent', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-16 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); form.setValue('taxPercent', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
                   />
-                  <span className="text-xs">%</span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
                 </div>
               </div>
-
-              {/* SKU % */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">SKU %</Label>
-                <div className="flex items-center gap-1">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">SKU %</label>
+                <div className="relative">
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.watch('skuPercent') || ''}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      form.setValue('skuPercent', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-16 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); form.setValue('skuPercent', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
                   />
-                  <span className="text-xs">%</span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
                 </div>
               </div>
-
-              {/* Taxable */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Taxable</Label>
-                <Switch 
-                  checked={form.watch('taxable')}
-                  onCheckedChange={(v) => form.setValue('taxable', v)}
-                />
-              </div>
-
-              {/* Chargeable by Default */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Chargeable by Default</Label>
-                <Switch 
-                  checked={form.watch('chargeableByDefault')}
-                  onCheckedChange={(v) => form.setValue('chargeableByDefault', v)}
-                />
-              </div>
-
-              {/* TRACK STOCK / IS INVENTORY */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Track Inventory</Label>
-                <Switch 
-                  checked={form.watch('isInventory')}
-                  onCheckedChange={(v) => handleFieldChange('isInventory', v)}
-                />
-              </div>
-
-              {/* Separator for Labor & Commission */}
-              <div className="border-t pt-3 mt-2">
-                <Label className="text-xs font-semibold text-muted-foreground">LABOR & COMMISSION</Label>
-              </div>
-
-              {/* HOURS */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">HOURS</Label>
-                <div className="flex items-center gap-1">
-                  <input 
-                    type="text"
-                    inputMode="decimal"
-                    value={form.watch('hours') || '0'}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      handleFieldChange('hours', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-16 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <span className="text-xs">hrs</span>
-                </div>
-              </div>
-
-              {/* BONUS */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">BONUS</Label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm font-medium">$</span>
-                  <input 
-                    type="text"
-                    inputMode="decimal"
-                    value={form.watch('bonus')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      handleFieldChange('bonus', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-20 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-              </div>
-
-              {/* COMMISSION BONUS % */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">COMMISSION %</Label>
-                <div className="flex items-center gap-1">
-                  <input 
-                    type="text"
-                    inputMode="decimal"
-                    value={form.watch('commissionBonus') || '0'}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^0-9.]/g, '');
-                      handleFieldChange('commissionBonus', parseFloat(cleaned) || 0);
-                    }}
-                    className="w-16 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <span className="text-xs">%</span>
-                </div>
-              </div>
-
-              {/* PAYS COMMISSION */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Pays Commission</Label>
-                <Switch 
-                  checked={form.watch('paysCommission')}
-                  onCheckedChange={(v) => handleFieldChange('paysCommission', v)}
-                />
-              </div>
-
-              {/* DEDUCT AS JOB COST */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Deduct as Job Cost</Label>
-                <Switch 
-                  checked={form.watch('deductAsJobCost')}
-                  onCheckedChange={(v) => handleFieldChange('deductAsJobCost', v)}
-                />
-              </div>
-
-              {/* Separator for Additional Settings */}
-              <div className="border-t pt-3 mt-2">
-                <Label className="text-xs font-semibold text-muted-foreground">ADDITIONAL SETTINGS</Label>
-              </div>
-
-              {/* IS CONFIGURABLE MATERIAL */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Configurable Material</Label>
-                <Switch 
-                  checked={form.watch('isConfigurableMaterial')}
-                  onCheckedChange={(v) => handleFieldChange('isConfigurableMaterial', v)}
-                />
-              </div>
-
-              {/* DISPLAY IN AMOUNT */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Display in Amount</Label>
-                <Switch 
-                  checked={form.watch('displayInAmount')}
-                  onCheckedChange={(v) => handleFieldChange('displayInAmount', v)}
-                />
-              </div>
-
-              {/* IS OTHER DIRECT COST */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Other Direct Cost</Label>
-                <Switch 
-                  checked={form.watch('isOtherDirectCost')}
-                  onCheckedChange={(v) => handleFieldChange('isOtherDirectCost', v)}
-                />
-              </div>
-
-              {/* UNIT OF MEASURE */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">UNIT OF MEASURE</Label>
+              <div className="col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">Unit of Measure</label>
                 <input 
                   type="text"
                   value={form.watch('unitOfMeasure') || ''}
                   onChange={(e) => handleFieldChange('unitOfMeasure', e.target.value)}
                   placeholder="Each"
-                  className="w-24 h-7 text-sm text-right border rounded px-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full border rounded px-2 py-1.5 text-sm h-8"
                 />
               </div>
-
-              {/* Round Up Dropdown */}
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">ROUND UP</Label>
+              <div className="col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">Round Up</label>
                 <select 
                   value={form.watch('roundUp') || ''}
                   onChange={(e) => handleFieldChange('roundUp', e.target.value)}
-                  className="h-7 text-xs border rounded px-2 bg-background cursor-pointer"
+                  className="w-full border rounded px-2 py-1.5 text-sm cursor-pointer h-8"
                 >
                   <option value="">None</option>
                   <option value="1">Nearest $1</option>
@@ -1913,119 +1359,343 @@ export function MaterialDetailPage({
                   <option value="100">Nearest $100</option>
                 </select>
               </div>
+            </div>
+          </div>
 
-              {/* Error Display */}
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-                  {error}
-                </div>
-              )}
+          {/* ROW 3: SETTINGS */}
+          <div className="border rounded-lg p-4">
+            <div className="text-xs text-muted-foreground font-medium mb-3">SETTINGS</div>
+            <div className="grid grid-cols-2 gap-x-12 gap-y-2">
+              {/* Taxable */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Taxable</span>
+                <button type="button" onClick={() => form.setValue('taxable', !form.watch('taxable'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('taxable') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('taxable') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Configurable Material */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Configurable Material</span>
+                <button type="button" onClick={() => handleFieldChange('isConfigurableMaterial', !form.watch('isConfigurableMaterial'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('isConfigurableMaterial') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('isConfigurableMaterial') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Chargeable by Default */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Chargeable by Default</span>
+                <button type="button" onClick={() => form.setValue('chargeableByDefault', !form.watch('chargeableByDefault'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('chargeableByDefault') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('chargeableByDefault') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Display in Amount */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Display in Amount</span>
+                <button type="button" onClick={() => handleFieldChange('displayInAmount', !form.watch('displayInAmount'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('displayInAmount') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('displayInAmount') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Track Inventory */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Track Inventory</span>
+                <button type="button" onClick={() => handleFieldChange('isInventory', !form.watch('isInventory'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('isInventory') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('isInventory') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Other Direct Cost */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Other Direct Cost</span>
+                <button type="button" onClick={() => handleFieldChange('isOtherDirectCost', !form.watch('isOtherDirectCost'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('isOtherDirectCost') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('isOtherDirectCost') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+            </div>
+          </div>
 
-              {/* Action Buttons */}
-              <div className="border-t pt-3 mt-2 space-y-2">
-                <Button
-                  onClick={handleSave}
-                  disabled={saveMutation.isPending || !hasChanges}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  {saveMutation.isPending ? (
-                    <span className="flex items-center gap-2">
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                      Saving...
-                    </span>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </Button>
-
-                {/* Save Success Message */}
-                {saveSuccess && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700 flex items-center gap-2">
-                    <Check className="h-4 w-4 text-blue-600" />
-                    {saveSuccess}
-                  </div>
-                )}
-                
+          {/* ROW 4: LABOR & COMMISSION */}
+          <div className="border rounded-lg p-4">
+            <div className="text-xs text-muted-foreground font-medium mb-3">LABOR & COMMISSION</div>
+            <div className="flex items-end gap-6">
+              {/* Hours */}
+              <div className="w-32">
+                <label className="text-xs text-muted-foreground mb-1 block">Hours</label>
                 <div className="relative">
-                  <Button
-                    onClick={handlePush}
-                    disabled={pushing || pushMutation.isPending}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white relative overflow-hidden"
-                  >
-                    {pushing || pushMutation.isPending ? (
-                      <span className="flex items-center gap-2">
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        Pushing to ServiceTitan...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Upload className="h-4 w-4" />
-                        Push to ServiceTitan
-                      </span>
-                    )}
-                  </Button>
-                  {/* Progress bar overlay */}
-                  {pushing && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-800 rounded-b overflow-hidden">
-                      <div
-                        className="h-full bg-green-300 transition-all duration-200 ease-out"
-                        style={{ width: `${pushProgress}%` }}
-                      />
-                    </div>
-                  )}
+                  <input 
+                    type="text"
+                    inputMode="decimal"
+                    value={form.watch('hours') || '0'}
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); handleFieldChange('hours', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">hrs</span>
                 </div>
-
-                {/* Push Success Message */}
-                {pushSuccess && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded text-sm text-green-700 flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-600" />
-                    {pushSuccess}
-                  </div>
-                )}
-
-                {/* Pull Success Message */}
-                {pullSuccess && (
-                  <div className="p-3 bg-purple-50 border border-purple-200 rounded text-sm text-purple-700 flex items-center gap-2">
-                    <Download className="h-4 w-4 text-purple-600" />
-                    {pullSuccess}
-                  </div>
-                )}
               </div>
-
-              {/* Status Messages */}
-              {material?.isNew && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
-                  This material exists only in LAZI CRM. Click "Push to ServiceTitan" to create it in ST.
+              {/* Bonus */}
+              <div className="w-32">
+                <label className="text-xs text-muted-foreground mb-1 block">Bonus</label>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <input 
+                    type="text"
+                    inputMode="decimal"
+                    value={form.watch('bonus')?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); handleFieldChange('bonus', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
+                  />
                 </div>
-              )}
-              
-              {material?.hasPendingChanges && !material?.isNew && (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
-                  You have pending changes. Click "Push to ServiceTitan" to sync.
+              </div>
+              {/* Commission % */}
+              <div className="w-32">
+                <label className="text-xs text-muted-foreground mb-1 block">Commission %</label>
+                <div className="relative">
+                  <input 
+                    type="text"
+                    inputMode="decimal"
+                    value={form.watch('commissionBonus') || '0'}
+                    onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); handleFieldChange('commissionBonus', parseFloat(cleaned) || 0); }}
+                    className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
                 </div>
-              )}
+              </div>
+              {/* Spacer */}
+              <div className="flex-1" />
+              {/* Pays Commission toggle */}
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <span className="text-sm">Pays Commission</span>
+                <button type="button" onClick={() => handleFieldChange('paysCommission', !form.watch('paysCommission'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('paysCommission') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('paysCommission') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Deduct as Job Cost toggle */}
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <span className="text-sm">Deduct as Job Cost</span>
+                <button type="button" onClick={() => handleFieldChange('deductAsJobCost', !form.watch('deductAsJobCost'))} className={cn("relative w-9 h-5 rounded-full transition-colors", form.watch('deductAsJobCost') ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", form.watch('deductAsJobCost') ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+            </div>
+          </div>
 
-              {material?.pushError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-                  Push Error: {material.pushError}
+          {/* Error Display */}
+          {error && (
+            <div className="p-3 bg-destructive/10 border border-destructive text-destructive rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* ROW 5: ACTION BUTTONS */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={handleSave}
+              disabled={saveMutation.isPending || !hasChanges}
+              className="bg-blue-600 hover:bg-blue-700 text-white h-10"
+            >
+              {saveMutation.isPending ? (
+                <span className="flex items-center gap-2"><RefreshCw className="h-4 w-4 animate-spin" />Saving...</span>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+            <div className="relative">
+              <Button
+                onClick={handlePush}
+                disabled={pushing || pushMutation.isPending}
+                className="w-full bg-green-600 hover:bg-green-700 text-white h-10 relative overflow-hidden"
+              >
+                {pushing || pushMutation.isPending ? (
+                  <span className="flex items-center gap-2"><RefreshCw className="h-4 w-4 animate-spin" />Pushing...</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Upload className="h-4 w-4" />Push to ServiceTitan</span>
+                )}
+              </Button>
+              {pushing && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-800 rounded-b overflow-hidden">
+                  <div className="h-full bg-green-300 transition-all duration-200 ease-out" style={{ width: `${pushProgress}%` }} />
                 </div>
               )}
             </div>
           </div>
 
+          {/* Success/Status Messages */}
+          {saveSuccess && (
+            <div className="p-3 bg-blue-500/10 border border-blue-500 rounded-lg text-sm flex items-center gap-2">
+              <Check className="h-4 w-4" />{saveSuccess}
+            </div>
+          )}
+          {pushSuccess && (
+            <div className="p-3 bg-green-500/10 border border-green-500 rounded-lg text-sm flex items-center gap-2">
+              <Check className="h-4 w-4" />{pushSuccess}
+            </div>
+          )}
+          {pullSuccess && (
+            <div className="p-3 bg-purple-500/10 border border-purple-500 rounded-lg text-sm flex items-center gap-2">
+              <Download className="h-4 w-4" />{pullSuccess}
+            </div>
+          )}
+          {material?.isNew && (
+            <div className="p-3 bg-blue-500/10 border border-blue-500 rounded-lg text-sm">
+              This material exists only in LAZI CRM. Click "Push to ServiceTitan" to create it in ST.
+            </div>
+          )}
+          {material?.hasPendingChanges && !material?.isNew && (
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500 rounded-lg text-sm">
+              You have pending changes. Click "Push to ServiceTitan" to sync.
+            </div>
+          )}
+          {material?.pushError && (
+            <div className="p-3 bg-red-500/10 border border-red-500 rounded-lg text-sm">
+              Push Error: {material.pushError}
+            </div>
+          )}
+
+          {/* ROW 6: VENDORS */}
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-xs text-muted-foreground font-medium">VENDORS</div>
+              <div className="relative">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium h-7 text-xs"
+                  onClick={() => setShowAddVendorModal(!showAddVendorModal)}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add Vendor
+                </Button>
+                {showAddVendorModal && (
+                  <div className="absolute top-full right-0 mt-2 w-80 p-4 bg-popover border rounded-lg shadow-lg z-50">
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">Add Vendor</h4>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Select Vendor *</label>
+                        <select value={selectedVendorId} onChange={(e) => setSelectedVendorId(e.target.value)} className="w-full h-8 mt-1 text-sm border rounded px-2">
+                          <option value="">Choose a vendor...</option>
+                          {availableVendors?.map((v: any) => (<option key={v.id} value={v.id}>{v.vendorName}</option>))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Vendor Part #</label>
+                        <Input value={vendorPart} onChange={(e) => setVendorPart(e.target.value)} placeholder="Part number" className="h-8 mt-1" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">UPC Code</label>
+                        <Input value={vendorUpc} onChange={(e) => setVendorUpc(e.target.value)} placeholder="UPC code" className="h-8 mt-1" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Cost</label>
+                        <div className="relative mt-1">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                          <Input type="number" step="0.01" value={vendorCost || ''} onChange={(e) => setVendorCost(parseFloat(e.target.value) || 0)} placeholder="0.00" className="h-8 pl-6" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="outline" onClick={() => { setShowAddVendorModal(false); setSelectedVendorId(''); setVendorCost(0); setVendorPart(''); setVendorUpc(''); }} className="flex-1">Cancel</Button>
+                        <Button size="sm" onClick={handleAddVendor} disabled={!selectedVendorId} className="flex-1 bg-green-600 hover:bg-green-700 text-white">Add Vendor</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Vendors Table */}
+            <div className="border rounded-lg overflow-hidden">
+              <div className="grid grid-cols-[1fr_70px_120px_120px_80px_60px_40px] gap-2 py-2 px-3 text-xs text-muted-foreground bg-muted/30 border-b">
+                <div>Vendor</div>
+                <div className="text-center">Pref</div>
+                <div>UPC Code</div>
+                <div>Part #</div>
+                <div className="text-right">Cost</div>
+                <div className="text-center">Active</div>
+                <div></div>
+              </div>
+              <div className="max-h-[200px] overflow-y-auto">
+                {vendors.length > 0 ? (
+                  vendors.map((vendor: any, index: number) => (
+                    <div key={vendor.id || index} className="grid grid-cols-[1fr_70px_120px_120px_80px_60px_40px] gap-2 py-2 px-3 items-center border-b last:border-b-0 hover:bg-muted/30">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">{vendor.vendorName}</span>
+                      </div>
+                      <div className="flex justify-center">
+                        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", vendor.preferred ? "bg-primary" : "border-2 border-muted-foreground/30")}>
+                          {vendor.preferred && <Check className="h-3 w-3 text-primary-foreground" />}
+                        </div>
+                      </div>
+                      <div><Input defaultValue={vendor.upcCode || ''} className="h-7 text-xs" placeholder="UPC" /></div>
+                      <div><Input defaultValue={vendor.vendorPart || ''} className="h-7 text-xs" placeholder="Part #" /></div>
+                      <div className="text-right text-sm font-medium">${vendor.cost?.toFixed(2) || '0.00'}</div>
+                      <div className="flex justify-center">
+                        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", vendor.active ? "bg-primary" : "border-2 border-muted-foreground/30")}>
+                          {vendor.active && <Check className="h-3 w-3 text-primary-foreground" />}
+                        </div>
+                      </div>
+                      <div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteVendor(vendor.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-4 text-sm text-muted-foreground text-center">No vendors added yet</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Accounts Settings (collapsible) */}
+          <div className="border rounded-lg">
+            <button
+              type="button"
+              onClick={() => setShowAccountsPanel(!showAccountsPanel)}
+              className="w-full flex items-center justify-between p-4 text-sm font-medium hover:bg-muted/50 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Accounts
+              </span>
+              <ChevronRight className={cn("h-4 w-4 transition-transform", showAccountsPanel && "rotate-90")} />
+            </button>
+            {showAccountsPanel && (
+              <div className="p-4 pt-0 space-y-3 border-t">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Income Account</label>
+                  <select value={form.watch('incomeAccount') || ''} onChange={(e) => handleFieldChange('incomeAccount', e.target.value)} className="w-full h-8 text-sm border rounded px-2 bg-background">
+                    <option value="">Select account...</option>
+                    {incomeAccounts.map((account) => (<option key={account.id} value={account.id.toString()}>{account.number} - {account.name}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Asset Account</label>
+                  <select value={form.watch('assetAccount') || ''} onChange={(e) => handleFieldChange('assetAccount', e.target.value)} className="w-full h-8 text-sm border rounded px-2 bg-background">
+                    <option value="">Select account...</option>
+                    {assetAccounts.map((account) => (<option key={account.id} value={account.id.toString()}>{account.number} - {account.name}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">COGS Account</label>
+                  <select value={form.watch('cogsAccount') || ''} onChange={(e) => handleFieldChange('cogsAccount', e.target.value)} className="w-full h-8 text-sm border rounded px-2 bg-background">
+                    <option value="">Select account...</option>
+                    {cogsAccounts.map((account) => (<option key={account.id} value={account.id.toString()}>{account.number} - {account.name}</option>))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
+
 
       {/* Success Modal Overlay - Centered on screen */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 transform animate-in zoom-in-95 duration-200">
+          <div className="bg-card rounded-xl shadow-2xl p-8 max-w-md mx-4 transform animate-in zoom-in-95 duration-200">
             <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
                 <Check className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Success!</h3>
-              <p className="text-gray-600 mb-6">{successMessage}</p>
+              <h3 className="text-xl font-semibold mb-2">Success!</h3>
+              <p className="text-muted-foreground mb-6">{successMessage}</p>
               <Button
                 onClick={() => setShowSuccessModal(false)}
                 className="bg-green-600 hover:bg-green-700 text-white px-8"

@@ -33,6 +33,7 @@ import pricebookHealthRoutes from './routes/pricebook-health.js';
 import pricebookImagesRoutes from './routes/pricebook-images.js';
 import pricebookImageManagerRoutes from './routes/pricebook-image-manager.js';
 import pricebookKitsRoutes from './routes/pricebook-kits.js';
+import pricebookOrganizationRoutes from './routes/pricebook-organization.js';
 import imagesRoutes from './routes/images.routes.js';
 
 const logger = createLogger('app');
@@ -445,6 +446,9 @@ app.use('/api/pricebook/images', pricebookImageManagerRoutes);
 
 // Mount Pricebook Kits routes (Material Kits - LAZI-only feature)
 app.use('/api/pricebook/kits', pricebookKitsRoutes);
+
+// Mount Pricebook Organization routes (health metrics, bulk ops, duplicates, audit)
+app.use('/api/pricebook/organization', pricebookOrganizationRoutes);
 
 // Mount Images routes (ST proxy, local serving, database images)
 app.use('/api/images', imagesRoutes);

@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Download, List, ChevronRight, Filter, ChevronLeft } from 'lucide-react';
+import { Plus, Search, Download, List, ChevronRight, Filter, ChevronLeft, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { MaterialDetailPage } from './material-detail-page';
@@ -114,8 +114,9 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
   const categories = flattenCategories(categoriesData || []);
 
   const { data: materialsData, isLoading } = useQuery({
-    queryKey: ['pricebook-materials', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData],
+    queryKey: ['pricebook-materials', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage],
     queryFn: () => fetchMaterials(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData || []),
+    enabled: categoriesData !== undefined, // Wait for categories to load
   });
 
   const materials = materialsData?.data || [];
@@ -158,6 +159,14 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
         <Button size="sm" onClick={() => { setSelectedMaterialId(null); setShowDetailPage(true); }}>
           <Plus className="h-4 w-4 mr-1" />
           NEW
+        </Button>
+        <Button 
+          size="sm" 
+          variant="outline"
+          onClick={() => window.open('/pricebook/clip', 'lazi-clipper', 'width=600,height=800')}
+        >
+          <Globe className="h-4 w-4 mr-1" />
+          Add from Web
         </Button>
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
