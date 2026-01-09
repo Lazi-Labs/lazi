@@ -45,6 +45,7 @@ const defaultFormData: ExpenseItemFormData = {
   amount: 0,
   frequency: 'monthly',
   vendor: '',
+  is_tax_deductible: true,
 };
 
 export default function ExpenseItemModal({
@@ -66,6 +67,7 @@ export default function ExpenseItemModal({
         amount: expense.amount,
         frequency: expense.frequency,
         vendor: expense.vendor || '',
+        is_tax_deductible: expense.is_tax_deductible ?? true,
       });
     } else {
       setFormData({

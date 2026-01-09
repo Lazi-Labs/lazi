@@ -32,16 +32,17 @@ interface OfficeStaffModalProps {
 const defaultFormData: OfficeStaffFormData = {
   first_name: '',
   last_name: '',
-  display_name: '',
   role: 'Admin',
   status: 'active',
-  salary_type: 'salary',
-  amount: 0,
-  health_monthly: 0,
-  dental_monthly: 0,
-  vision_monthly: 0,
-  life_monthly: 0,
-  retirement_match_percent: 0,
+  pay_type: 'salary',
+  hours_per_week: 40,
+  health_insurance_monthly: 0,
+  dental_insurance_monthly: 0,
+  vision_insurance_monthly: 0,
+  life_insurance_monthly: 0,
+  retirement_401k_match_percent: 0,
+  hsa_contribution_monthly: 0,
+  other_benefits_monthly: 0,
 };
 
 export default function OfficeStaffModal({
@@ -59,16 +60,21 @@ export default function OfficeStaffModal({
       setFormData({
         first_name: staff.first_name,
         last_name: staff.last_name,
-        display_name: staff.display_name || '',
         role: staff.role,
         status: staff.status,
-        salary_type: staff.salary_type,
-        amount: staff.amount,
-        health_monthly: staff.health_monthly,
-        dental_monthly: staff.dental_monthly,
-        vision_monthly: staff.vision_monthly,
-        life_monthly: staff.life_monthly,
-        retirement_match_percent: staff.retirement_match_percent,
+        email: staff.email,
+        phone: staff.phone,
+        pay_type: staff.pay_type,
+        base_pay_rate: staff.base_pay_rate,
+        annual_salary: staff.annual_salary,
+        hours_per_week: staff.hours_per_week,
+        health_insurance_monthly: staff.health_insurance_monthly,
+        dental_insurance_monthly: staff.dental_insurance_monthly,
+        vision_insurance_monthly: staff.vision_insurance_monthly,
+        life_insurance_monthly: staff.life_insurance_monthly,
+        retirement_401k_match_percent: staff.retirement_401k_match_percent,
+        hsa_contribution_monthly: staff.hsa_contribution_monthly ?? 0,
+        other_benefits_monthly: staff.other_benefits_monthly ?? 0,
       });
     } else {
       setFormData(defaultFormData);
@@ -76,7 +82,7 @@ export default function OfficeStaffModal({
     setActiveTab('basic');
   }, [staff, isOpen]);
 
-  const handleChange = (field: keyof OfficeStaffFormData, value: string | number) => {
+  const handleChange = (field: keyof OfficeStaffFormData, value: string | number | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -88,11 +94,11 @@ export default function OfficeStaffModal({
   const isEditing = !!staff;
 
   const getAnnualSalary = () => {
-    if (formData.salary_type === 'salary') {
-      return formData.amount || 0;
+    if (formData.pay_type === 'salary') {
+      return formData.annual_salary || 0;
     }
-    // Hourly: assume 40 hours/week, 52 weeks/year
-    return (formData.amount || 0) * 40 * 52;
+    // Hourly: hours_per_week * 52 weeks * base_pay_rate
+    return (formData.base_pay_rate || 0) * (formData.hours_per_week || 40) * 52;
   };
 
   const getMonthlySalary = () => {
@@ -140,14 +146,26 @@ export default function OfficeStaffModal({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="display_name">Display Name</Label>
-                <Input
-                  id="display_name"
-                  value={formData.display_name}
-                  onChange={(e) => handleChange('display_name', e.target.value)}
-                  placeholder="Optional - defaults to full name"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={(e) => handleChange('email', e.target.value || undefined)}
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone || ''}
+                    onChange={(e) => handleChange('phone', e.target.value || undefined)}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -200,10 +218,10 @@ export default function OfficeStaffModal({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="salary_type">Pay Type</Label>
+                    <Label htmlFor="pay_type">Pay Type</Label>
                     <Select
-                      value={formData.salary_type}
-                      onValueChange={(value) => handleChange('salary_type', value as 'salary' | 'hourly')}
+                      value={formData.pay_type}
+                      onValueChange={(value) => handleChange('pay_type', value as 'salary' | 'hourly')}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select type" />
@@ -215,19 +233,43 @@ export default function OfficeStaffModal({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="amount">
-                      {formData.salary_type === 'salary' ? 'Annual Salary ($)' : 'Hourly Rate ($)'}
-                    </Label>
+                    <Label htmlFor="hours_per_week">Hours Per Week</Label>
                     <Input
-                      id="amount"
+                      id="hours_per_week"
                       type="number"
-                      min="0"
-                      step={formData.salary_type === 'salary' ? '1000' : '0.01'}
-                      value={formData.amount}
-                      onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
+                      min="1"
+                      max="80"
+                      value={formData.hours_per_week}
+                      onChange={(e) => handleChange('hours_per_week', parseInt(e.target.value) || 40)}
                     />
                   </div>
                 </div>
+
+                {formData.pay_type === 'salary' ? (
+                  <div className="space-y-2 mt-4">
+                    <Label htmlFor="annual_salary">Annual Salary ($)</Label>
+                    <Input
+                      id="annual_salary"
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={formData.annual_salary || ''}
+                      onChange={(e) => handleChange('annual_salary', parseFloat(e.target.value) || undefined)}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2 mt-4">
+                    <Label htmlFor="base_pay_rate">Hourly Rate ($)</Label>
+                    <Input
+                      id="base_pay_rate"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.base_pay_rate || ''}
+                      onChange={(e) => handleChange('base_pay_rate', parseFloat(e.target.value) || undefined)}
+                    />
+                  </div>
+                )}
 
                 <div className="mt-4 p-3 bg-white rounded border border-blue-100">
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -257,47 +299,47 @@ export default function OfficeStaffModal({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="health_monthly">Health Insurance ($/mo)</Label>
+                    <Label htmlFor="health_insurance_monthly">Health Insurance ($/mo)</Label>
                     <Input
-                      id="health_monthly"
+                      id="health_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.health_monthly}
-                      onChange={(e) => handleChange('health_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.health_insurance_monthly}
+                      onChange={(e) => handleChange('health_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dental_monthly">Dental Insurance ($/mo)</Label>
+                    <Label htmlFor="dental_insurance_monthly">Dental Insurance ($/mo)</Label>
                     <Input
-                      id="dental_monthly"
+                      id="dental_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.dental_monthly}
-                      onChange={(e) => handleChange('dental_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.dental_insurance_monthly}
+                      onChange={(e) => handleChange('dental_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vision_monthly">Vision Insurance ($/mo)</Label>
+                    <Label htmlFor="vision_insurance_monthly">Vision Insurance ($/mo)</Label>
                     <Input
-                      id="vision_monthly"
+                      id="vision_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.vision_monthly}
-                      onChange={(e) => handleChange('vision_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.vision_insurance_monthly}
+                      onChange={(e) => handleChange('vision_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="life_monthly">Life Insurance ($/mo)</Label>
+                    <Label htmlFor="life_insurance_monthly">Life Insurance ($/mo)</Label>
                     <Input
-                      id="life_monthly"
+                      id="life_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.life_monthly}
-                      onChange={(e) => handleChange('life_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.life_insurance_monthly}
+                      onChange={(e) => handleChange('life_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                 </div>
@@ -306,15 +348,15 @@ export default function OfficeStaffModal({
               <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                 <div className="text-emerald-800 font-medium mb-4">Retirement</div>
                 <div className="space-y-2">
-                  <Label htmlFor="retirement_match_percent">401k Match (%)</Label>
+                  <Label htmlFor="retirement_401k_match_percent">401k Match (%)</Label>
                   <Input
-                    id="retirement_match_percent"
+                    id="retirement_401k_match_percent"
                     type="number"
                     min="0"
                     max="100"
                     step="0.5"
-                    value={formData.retirement_match_percent}
-                    onChange={(e) => handleChange('retirement_match_percent', parseFloat(e.target.value) || 0)}
+                    value={formData.retirement_401k_match_percent}
+                    onChange={(e) => handleChange('retirement_401k_match_percent', parseFloat(e.target.value) || 0)}
                   />
                 </div>
               </div>

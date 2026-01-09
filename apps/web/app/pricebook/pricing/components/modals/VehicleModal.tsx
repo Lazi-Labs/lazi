@@ -43,6 +43,8 @@ const defaultFormData: VehicleFormData = {
   maintenance_monthly: 0,
   market_value: 0,
   loan_balance: 0,
+  registration_annual: 0,
+  fuel_type: 'gasoline',
 };
 
 export default function VehicleModal({
@@ -69,6 +71,8 @@ export default function VehicleModal({
         maintenance_monthly: vehicle.maintenance_monthly,
         market_value: vehicle.market_value || 0,
         loan_balance: vehicle.loan_balance || 0,
+        registration_annual: vehicle.registration_annual ?? 0,
+        fuel_type: vehicle.fuel_type || 'gasoline',
       });
     } else {
       setFormData(defaultFormData);
@@ -122,7 +126,7 @@ export default function VehicleModal({
                 <div className="space-y-2">
                   <Label htmlFor="year">Year *</Label>
                   <Select
-                    value={formData.year.toString()}
+                    value={(formData.year || currentYear).toString()}
                     onValueChange={(value) => handleChange('year', parseInt(value))}
                   >
                     <SelectTrigger>

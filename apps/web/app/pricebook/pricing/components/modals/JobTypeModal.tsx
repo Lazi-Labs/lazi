@@ -30,7 +30,9 @@ const defaultFormData: JobTypeFormData = {
   material_gross_margin: 40,
   member_discount_percent: 15,
   min_hours: 1,
+  max_hours: 8,
   flat_surcharge: 0,
+  color: '#3b82f6',
 };
 
 export default function JobTypeModal({
@@ -52,7 +54,9 @@ export default function JobTypeModal({
         material_gross_margin: jobType.material_gross_margin,
         member_discount_percent: jobType.member_discount_percent,
         min_hours: jobType.min_hours,
+        max_hours: jobType.max_hours ?? 8,
         flat_surcharge: jobType.flat_surcharge || 0,
+        color: jobType.color || '#3b82f6',
       });
     } else {
       setFormData(defaultFormData);

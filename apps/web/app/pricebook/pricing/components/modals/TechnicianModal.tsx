@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, User, DollarSign, Clock, Shield, Truck } from 'lucide-react';
+import { User, DollarSign, Clock, Shield, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,18 +33,18 @@ interface TechnicianModalProps {
 const defaultFormData: TechnicianFormData = {
   first_name: '',
   last_name: '',
-  display_name: '',
   role: 'Technician',
   status: 'active',
-  hourly_rate: 25,
+  pay_type: 'hourly',
   paid_hours_per_day: 8,
-  work_days_per_week: 5,
-  health_monthly: 0,
-  dental_monthly: 0,
-  vision_monthly: 0,
-  life_monthly: 0,
-  retirement_match_percent: 0,
-  assigned_vehicle_id: undefined,
+  health_insurance_monthly: 0,
+  dental_insurance_monthly: 0,
+  vision_insurance_monthly: 0,
+  life_insurance_monthly: 0,
+  retirement_401k_match_percent: 0,
+  hsa_contribution_monthly: 0,
+  other_benefits_monthly: 0,
+  unproductive_time: [],
 };
 
 export default function TechnicianModal({
@@ -63,18 +63,23 @@ export default function TechnicianModal({
       setFormData({
         first_name: technician.first_name,
         last_name: technician.last_name,
-        display_name: technician.display_name || '',
         role: technician.role,
         status: technician.status,
-        hourly_rate: technician.hourly_rate,
+        email: technician.email,
+        phone: technician.phone,
+        pay_type: technician.pay_type,
+        base_pay_rate: technician.base_pay_rate,
+        annual_salary: technician.annual_salary,
         paid_hours_per_day: technician.paid_hours_per_day,
-        work_days_per_week: technician.work_days_per_week,
-        health_monthly: technician.health_monthly,
-        dental_monthly: technician.dental_monthly,
-        vision_monthly: technician.vision_monthly,
-        life_monthly: technician.life_monthly,
-        retirement_match_percent: technician.retirement_match_percent,
+        health_insurance_monthly: technician.health_insurance_monthly,
+        dental_insurance_monthly: technician.dental_insurance_monthly,
+        vision_insurance_monthly: technician.vision_insurance_monthly,
+        life_insurance_monthly: technician.life_insurance_monthly,
+        retirement_401k_match_percent: technician.retirement_401k_match_percent,
+        hsa_contribution_monthly: technician.hsa_contribution_monthly ?? 0,
+        other_benefits_monthly: technician.other_benefits_monthly ?? 0,
         assigned_vehicle_id: technician.assigned_vehicle_id,
+        unproductive_time: technician.unproductive_time || [],
       });
     } else {
       setFormData(defaultFormData);
@@ -92,6 +97,14 @@ export default function TechnicianModal({
   };
 
   const isEditing = !!technician;
+
+  const getAnnualSalary = () => {
+    if (formData.pay_type === 'salary') {
+      return formData.annual_salary || 0;
+    }
+    // Hourly: paid_hours_per_day * 5 days * 52 weeks * base_pay_rate
+    return (formData.base_pay_rate || 0) * (formData.paid_hours_per_day || 8) * 5 * 52;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -135,14 +148,26 @@ export default function TechnicianModal({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="display_name">Display Name</Label>
-                <Input
-                  id="display_name"
-                  value={formData.display_name}
-                  onChange={(e) => handleChange('display_name', e.target.value)}
-                  placeholder="Optional - defaults to full name"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={(e) => handleChange('email', e.target.value || undefined)}
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone || ''}
+                    onChange={(e) => handleChange('phone', e.target.value || undefined)}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -208,25 +233,54 @@ export default function TechnicianModal({
             {/* Compensation Tab */}
             <TabsContent value="compensation" className="space-y-4 mt-4">
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center gap-2 text-blue-800 font-medium mb-2">
+                <div className="flex items-center gap-2 text-blue-800 font-medium mb-4">
                   <DollarSign className="h-4 w-4" />
                   Base Compensation
                 </div>
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
-                    <Input
-                      id="hourly_rate"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.hourly_rate}
-                      onChange={(e) => handleChange('hourly_rate', parseFloat(e.target.value) || 0)}
-                    />
+                    <Label htmlFor="pay_type">Pay Type</Label>
+                    <Select
+                      value={formData.pay_type}
+                      onValueChange={(value) => handleChange('pay_type', value as 'salary' | 'hourly')}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hourly">Hourly Rate</SelectItem>
+                        <SelectItem value="salary">Annual Salary</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="text-sm text-blue-700">
-                    Annual Gross: ${((formData.hourly_rate || 0) * (formData.paid_hours_per_day || 8) * (formData.work_days_per_week || 5) * 52).toLocaleString()}
-                  </div>
+                  {formData.pay_type === 'hourly' ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="base_pay_rate">Hourly Rate ($)</Label>
+                      <Input
+                        id="base_pay_rate"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.base_pay_rate || ''}
+                        onChange={(e) => handleChange('base_pay_rate', parseFloat(e.target.value) || undefined)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="annual_salary">Annual Salary ($)</Label>
+                      <Input
+                        id="annual_salary"
+                        type="number"
+                        min="0"
+                        step="1000"
+                        value={formData.annual_salary || ''}
+                        onChange={(e) => handleChange('annual_salary', parseFloat(e.target.value) || undefined)}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="text-sm text-blue-700 mt-4">
+                  Annual Gross: ${getAnnualSalary().toLocaleString()}
                 </div>
               </div>
             </TabsContent>
@@ -240,65 +294,78 @@ export default function TechnicianModal({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="health_monthly">Health Insurance ($/mo)</Label>
+                    <Label htmlFor="health_insurance_monthly">Health Insurance ($/mo)</Label>
                     <Input
-                      id="health_monthly"
+                      id="health_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.health_monthly}
-                      onChange={(e) => handleChange('health_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.health_insurance_monthly}
+                      onChange={(e) => handleChange('health_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dental_monthly">Dental Insurance ($/mo)</Label>
+                    <Label htmlFor="dental_insurance_monthly">Dental Insurance ($/mo)</Label>
                     <Input
-                      id="dental_monthly"
+                      id="dental_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.dental_monthly}
-                      onChange={(e) => handleChange('dental_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.dental_insurance_monthly}
+                      onChange={(e) => handleChange('dental_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vision_monthly">Vision Insurance ($/mo)</Label>
+                    <Label htmlFor="vision_insurance_monthly">Vision Insurance ($/mo)</Label>
                     <Input
-                      id="vision_monthly"
+                      id="vision_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.vision_monthly}
-                      onChange={(e) => handleChange('vision_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.vision_insurance_monthly}
+                      onChange={(e) => handleChange('vision_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="life_monthly">Life Insurance ($/mo)</Label>
+                    <Label htmlFor="life_insurance_monthly">Life Insurance ($/mo)</Label>
                     <Input
-                      id="life_monthly"
+                      id="life_insurance_monthly"
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.life_monthly}
-                      onChange={(e) => handleChange('life_monthly', parseFloat(e.target.value) || 0)}
+                      value={formData.life_insurance_monthly}
+                      onChange={(e) => handleChange('life_insurance_monthly', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                 </div>
               </div>
 
               <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="text-emerald-800 font-medium mb-4">Retirement</div>
-                <div className="space-y-2">
-                  <Label htmlFor="retirement_match_percent">401k Match (%)</Label>
-                  <Input
-                    id="retirement_match_percent"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                    value={formData.retirement_match_percent}
-                    onChange={(e) => handleChange('retirement_match_percent', parseFloat(e.target.value) || 0)}
-                  />
+                <div className="text-emerald-800 font-medium mb-4">Retirement & Other</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="retirement_401k_match_percent">401k Match (%)</Label>
+                    <Input
+                      id="retirement_401k_match_percent"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={formData.retirement_401k_match_percent}
+                      onChange={(e) => handleChange('retirement_401k_match_percent', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="hsa_contribution_monthly">HSA Contribution ($/mo)</Label>
+                    <Input
+                      id="hsa_contribution_monthly"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.hsa_contribution_monthly}
+                      onChange={(e) => handleChange('hsa_contribution_monthly', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -310,36 +377,22 @@ export default function TechnicianModal({
                   <Clock className="h-4 w-4" />
                   Work Schedule
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="paid_hours_per_day">Paid Hours Per Day</Label>
-                    <Input
-                      id="paid_hours_per_day"
-                      type="number"
-                      min="1"
-                      max="24"
-                      step="0.5"
-                      value={formData.paid_hours_per_day}
-                      onChange={(e) => handleChange('paid_hours_per_day', parseFloat(e.target.value) || 8)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="work_days_per_week">Work Days Per Week</Label>
-                    <Input
-                      id="work_days_per_week"
-                      type="number"
-                      min="1"
-                      max="7"
-                      step="1"
-                      value={formData.work_days_per_week}
-                      onChange={(e) => handleChange('work_days_per_week', parseInt(e.target.value) || 5)}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paid_hours_per_day">Paid Hours Per Day</Label>
+                  <Input
+                    id="paid_hours_per_day"
+                    type="number"
+                    min="1"
+                    max="24"
+                    step="0.5"
+                    value={formData.paid_hours_per_day}
+                    onChange={(e) => handleChange('paid_hours_per_day', parseFloat(e.target.value) || 8)}
+                  />
                 </div>
                 <div className="mt-4 text-sm text-violet-700">
-                  Weekly Hours: {(formData.paid_hours_per_day || 8) * (formData.work_days_per_week || 5)}h
+                  Weekly Hours: {(formData.paid_hours_per_day || 8) * 5}h
                   <br />
-                  Annual Hours: {(formData.paid_hours_per_day || 8) * (formData.work_days_per_week || 5) * 52}h
+                  Annual Hours: {(formData.paid_hours_per_day || 8) * 5 * 52}h
                 </div>
               </div>
             </TabsContent>
