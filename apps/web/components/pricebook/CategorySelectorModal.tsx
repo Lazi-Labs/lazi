@@ -14,8 +14,9 @@ interface Category {
   stId: string;
   name: string;
   parentId: string | null;
-  children: Category[];
-  itemCount: number;
+  children?: Category[];
+  itemCount?: number;
+  subcategoryCount?: number;
   path?: string;
 }
 
@@ -53,7 +54,7 @@ function flattenCategories(categories: Category[], parentPath: string = ''): Arr
     const fullPath = parentPath ? `${parentPath} > ${cat.name}` : cat.name;
     result.push({ ...cat, fullPath });
 
-    if (cat.children?.length) {
+    if (cat.children && cat.children.length > 0) {
       result.push(...flattenCategories(cat.children, fullPath));
     }
   }
@@ -130,6 +131,7 @@ export function CategorySelectorModal({
     const hasChildren = category.children && category.children.length > 0;
     const selected = isSelected(category.id) || isSelected(category.stId);
     const currentPath = parentPath ? `${parentPath} > ${category.name}` : category.name;
+    const count = category.itemCount || category.subcategoryCount || 0;
 
     return (
       <div key={category.id}>
@@ -164,9 +166,9 @@ export function CategorySelectorModal({
 
           <span className="flex-1 text-sm truncate">{category.name}</span>
 
-          {category.itemCount > 0 && (
+          {count > 0 && (
             <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
-              {category.itemCount}
+              {count}
             </span>
           )}
 
@@ -177,7 +179,7 @@ export function CategorySelectorModal({
 
         {hasChildren && isExpanded && (
           <div>
-            {category.children.map((child) => renderCategory(child, depth + 1, currentPath))}
+            {category.children!.map((child) => renderCategory(child, depth + 1, currentPath))}
           </div>
         )}
       </div>

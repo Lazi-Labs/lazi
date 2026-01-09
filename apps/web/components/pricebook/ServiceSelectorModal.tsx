@@ -38,8 +38,9 @@ interface Category {
   stId: string;
   name: string;
   parentId: string | null;
-  children: Category[];
-  itemCount: number;
+  children?: Category[];
+  itemCount?: number;
+  subcategoryCount?: number;
 }
 
 interface ServiceSelectorModalProps {
@@ -149,6 +150,7 @@ export function ServiceSelectorModal({
     const isExpanded = expandedCategories.has(category.id);
     const hasChildren = category.children && category.children.length > 0;
     const isSelected = selectedCategoryId === category.id || selectedCategoryId === category.stId;
+    const count = category.itemCount || category.subcategoryCount || 0;
 
     return (
       <div key={category.id}>
@@ -183,16 +185,16 @@ export function ServiceSelectorModal({
 
           <span className="flex-1 truncate">{category.name}</span>
 
-          {category.itemCount > 0 && (
+          {count > 0 && (
             <span className="text-xs text-muted-foreground">
-              {category.itemCount}
+              {count}
             </span>
           )}
         </div>
 
         {hasChildren && isExpanded && (
           <div>
-            {category.children.map((child) => renderCategory(child, depth + 1))}
+            {category.children!.map((child) => renderCategory(child, depth + 1))}
           </div>
         )}
       </div>
