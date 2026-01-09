@@ -81,7 +81,7 @@ export default function PricebookOrganizationPage() {
           <PricebookHealthDashboard />
           <EntityBreakdown
             onEntityClick={(type) => {
-              window.location.href = `/dashboard/pricebook?section=${type}`;
+              window.location.href = `/pricebook?section=${type}`;
             }}
           />
         </div>
@@ -93,7 +93,7 @@ export default function PricebookOrganizationPage() {
             <IssueCardsGrid
               onIssueClick={(issueType) => {
                 // Navigate to services with filter
-                window.location.href = `/dashboard/pricebook?section=services&filter=${issueType}`;
+                window.location.href = `/pricebook?section=services&filter=${issueType}`;
               }}
             />
           </div>
@@ -108,7 +108,7 @@ export default function PricebookOrganizationPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Items sorted by priority score</p>
           </div>
           <Link
-            href="/dashboard/pricebook?section=services"
+            href="/pricebook?section=services"
             className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
           >
             View All
@@ -127,7 +127,7 @@ export default function PricebookOrganizationPage() {
                 className="px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                 onClick={() => {
                   const section = item.entity_type === 'material' ? 'materials' : 'services';
-                  window.location.href = `/dashboard/pricebook/${section}/${item.st_id}`;
+                  window.location.href = `/pricebook/${section}/${item.st_id}`;
                 }}
               >
                 <div className="flex-1">

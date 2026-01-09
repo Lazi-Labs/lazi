@@ -111,10 +111,11 @@ const navItems: NavItem[] = [
   { href: '/automations', label: 'Automations', icon: Zap },
   { href: '/workflows', label: 'Workflows', icon: Zap },
   { href: '/fleet-pro', label: 'Fleet Pro', icon: Car },
-  { 
-    label: 'Pricebook', 
+  {
+    label: 'Pricebook',
     icon: BookOpen,
     children: [
+      { href: '/pricebook/organization', label: 'Dashboard' },
       { href: '/pricebook?section=kits', label: 'Material Kits' },
       { href: '/pricebook?section=services', label: 'Services' },
       { href: '/pricebook?section=materials', label: 'Materials' },
@@ -134,6 +135,12 @@ const navItems: NavItem[] = [
   { href: '/developer', label: 'Developer', icon: Code },
 ];
 
+const UNBUILT_FEATURES = [
+  'Calls', 'Schedule', 'Dispatch', 'Contacts', 'Communication',
+  'Accounting', 'Purchasing', 'Inventory', 'Follow Up', 'Reports',
+  'Marketing', 'Fleet Pro', 'Projects'
+];
+
 interface SidebarProps {
   onNavigate?: () => void;
   isMobile?: boolean;
@@ -142,7 +149,11 @@ interface SidebarProps {
 export function Sidebar({ onNavigate, isMobile }: SidebarProps = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { sidebarCollapsed } = useUIStore();
+  const { sidebarCollapsed, hideUnbuiltFeatures, _hasHydrated } = useUIStore();
+  
+  const filteredNavItems = (_hasHydrated && hideUnbuiltFeatures)
+    ? navItems.filter(item => !UNBUILT_FEATURES.includes(item.label))
+    : navItems;
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['Pricebook']));
   
   // On mobile, always show expanded sidebar (not collapsed)
@@ -211,7 +222,7 @@ export function Sidebar({ onNavigate, isMobile }: SidebarProps = {}) {
 
         {/* Navigation */}
         <nav className="flex-1 py-2">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive = isItemActive(item);
             const isExpanded = expandedItems.has(item.label);
             const hasChildren = item.children && item.children.length > 0;
@@ -346,7 +357,7 @@ export function Sidebar({ onNavigate, isMobile }: SidebarProps = {}) {
 
         {/* Navigation */}
         <nav className="flex-1 py-2">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive = isItemActive(item);
             const isExpanded = expandedItems.has(item.label);
             const hasChildren = item.children && item.children.length > 0;

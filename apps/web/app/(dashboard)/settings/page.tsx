@@ -9,12 +9,15 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { User, Bell, Shield, Palette, Database, Building2, ChevronRight } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { useUIStore } from '@/stores/ui-store';
 import { BuilderSection } from '@/components/builder';
 import { PageHeader } from '@/components/shared';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { hideUnbuiltFeatures, setHideUnbuiltFeatures, _hasHydrated, sidebarCollapsed, toggleSidebarCollapsed } = useUIStore();
 
   return (
     <div className="space-y-6">
@@ -160,9 +163,35 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Expanded</Button>
-                  <Button variant="outline" size="sm">Collapsed</Button>
+                  <Button 
+                    variant={!sidebarCollapsed ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => sidebarCollapsed && toggleSidebarCollapsed()}
+                  >
+                    Expanded
+                  </Button>
+                  <Button 
+                    variant={sidebarCollapsed ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => !sidebarCollapsed && toggleSidebarCollapsed()}
+                  >
+                    Collapsed
+                  </Button>
                 </div>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Hide Unbuilt Features</p>
+                  <p className="text-sm text-muted-foreground">
+                    Hide navigation items for features not yet built
+                  </p>
+                </div>
+                <Switch
+                  checked={_hasHydrated ? hideUnbuiltFeatures : false}
+                  onCheckedChange={setHideUnbuiltFeatures}
+                  disabled={!_hasHydrated}
+                />
               </div>
             </CardContent>
           </Card>

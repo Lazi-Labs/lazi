@@ -19,14 +19,11 @@ import {
   ChevronRight,
   Download,
   Upload,
-  Eye,
-  Pencil,
   X,
   Trash2,
   Scissors,
   Save,
   ImagePlus,
-  Loader2,
   AlertCircle,
   Settings,
   ExternalLink,
@@ -986,207 +983,633 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
       )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="flex flex-col md:flex-row h-full">
-          {/* Left Navigation - hidden on mobile */}
-          <div className="hidden md:flex w-16 border-r flex-col items-center py-4 gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex-col gap-1 h-auto py-2"
-              onClick={() => onNavigate?.('prev')}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="text-xs">PREV</span>
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex-col gap-1 h-auto py-2"
-              onClick={() => onNavigate?.('next')}
-            >
-              <span className="text-xs">NEXT</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Navigation */}
+        <div className="hidden md:flex w-16 border-r flex-col items-center py-4 gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onNavigate?.('prev')}>
+            <ChevronLeft className="h-4 w-4" />
+            <span className="text-xs">PREV</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate?.('next')}>
+            <span className="text-xs">NEXT</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
 
-          {/* Center Content */}
-          <div className="flex-1 p-3 md:p-4 min-w-0">
-            {/* Service Identity Section */}
-            <div className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto] gap-2 mb-4">
-              {/* CODE */}
-              <div className="text-xs text-muted-foreground font-medium py-2">CODE</div>
-              <div className="flex items-center gap-2 md:col-span-2">
-                <Input 
-                  value={formData.code || ''} 
-                  onChange={(e) => updateField('code', e.target.value)}
-                  className="font-mono text-sm h-10 md:h-8 flex-1"
-                />
-              </div>
-              
-              {/* NAME */}
-              <div className="text-xs text-muted-foreground font-medium py-2">NAME</div>
-              <div className="flex items-center gap-2 md:col-span-2">
-                <Input 
-                  value={formData.name || ''} 
-                  onChange={(e) => updateField('name', e.target.value)}
-                  className="text-sm h-10 md:h-8 flex-1"
-                />
-                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
-                  <Pencil className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
-              </div>
+        {/* Form Content - New Reorganized Layout */}
+        <div className="flex-1 overflow-auto p-4 space-y-4">
 
-              {/* DESC */}
-              <div className="text-xs text-muted-foreground font-medium py-2">DESC</div>
-              <div className="md:col-span-2">
-                <Textarea 
-                  value={formData.description || ''} 
-                  onChange={(e) => updateField('description', e.target.value)}
-                  className="text-sm min-h-[80px] md:min-h-[60px] resize-none"
-                  placeholder="Service description..."
-                />
-              </div>
+          {/* Hidden file input for image upload */}
+          <input
+            type="file"
+            ref={imageInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
 
-              {/* WARR */}
-              <div className="text-xs text-muted-foreground font-medium py-2">WARR</div>
-              <div className="md:col-span-2 flex items-center gap-2">
-                <Input
-                  value={typeof formData.warranty === 'string' ? formData.warranty : formData.warranty?.description || ''}
-                  onChange={(e) => updateField('warranty', e.target.value)}
-                  className="text-sm h-10 md:h-8 flex-1"
-                  placeholder="Warranty terms..."
-                />
-                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0">
-                  <Pencil className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
-              </div>
-
-              {/* UPGR */}
-              <div className="text-xs text-muted-foreground font-medium py-2">UPGR</div>
-              <div className="md:col-span-2 flex items-center gap-2">
-                <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
-                  {formData.upgrades?.length ? formData.upgrades.map((u, i) => (
-                    <Badge key={i} variant="secondary" className="gap-1">
-                      {u}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => updateField('upgrades', formData.upgrades?.filter((_, idx) => idx !== i))}
-                      />
-                    </Badge>
-                  )) : (
-                    <span className="text-xs text-muted-foreground">No upgrades assigned</span>
-                  )}
+          {/* ROW 1: IDENTITY + PRODUCT IMAGE */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Identity Section */}
+            <div className="flex-1 border rounded-lg p-4">
+              <div className="text-xs text-muted-foreground font-medium mb-3">IDENTITY</div>
+              <div className="grid grid-cols-12 gap-3">
+                {/* Code - 3 cols */}
+                <div className="col-span-12 md:col-span-3">
+                  <div className="text-xs text-muted-foreground font-medium py-2">CODE</div>
+                  <Input
+                    value={formData.code || ''}
+                    onChange={(e) => updateField('code', e.target.value)}
+                    className="font-mono text-sm h-8"
+                    placeholder="SVC-0001"
+                  />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
-                  onClick={() => setIsUpgradesModalOpen(true)}
-                >
-                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
-              </div>
-
-              {/* REC */}
-              <div className="text-xs text-muted-foreground font-medium py-2">REC</div>
-              <div className="md:col-span-2 flex items-center gap-2">
-                <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
-                  {formData.recommendations?.length ? formData.recommendations.map((r, i) => (
-                    <Badge key={i} variant="secondary" className="gap-1">
-                      {r}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => updateField('recommendations', formData.recommendations?.filter((_, idx) => idx !== i))}
-                      />
-                    </Badge>
-                  )) : (
-                    <span className="text-xs text-muted-foreground">No recommendations assigned</span>
-                  )}
+                {/* Name - 6 cols */}
+                <div className="col-span-12 md:col-span-6">
+                  <div className="text-xs text-muted-foreground font-medium py-2">NAME</div>
+                  <Input
+                    value={formData.name || ''}
+                    onChange={(e) => updateField('name', e.target.value)}
+                    className="text-sm h-8"
+                    placeholder="Service Name"
+                  />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
-                  onClick={() => setIsRecommendationsModalOpen(true)}
-                >
-                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
-              </div>
-
-              {/* CAT */}
-              <div className="text-xs text-muted-foreground font-medium py-2">CAT</div>
-              <div className="md:col-span-2 flex items-center gap-2">
-                <div className="flex-1 border rounded-md p-2 min-h-[44px] md:min-h-[32px] flex items-center gap-2 flex-wrap">
-                  {formData.categories?.length ? formData.categories.map((cat) => (
-                    <Badge key={cat.id} variant="outline" className="gap-1 text-xs">
-                      {cat.path || cat.name}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => updateField('categories', formData.categories?.filter(c => c.id !== cat.id))}
-                      />
-                    </Badge>
-                  )) : (
-                    <span className="text-xs text-muted-foreground">No categories assigned</span>
-                  )}
+                {/* Category - 3 cols */}
+                <div className="col-span-12 md:col-span-3">
+                  <div className="text-xs text-muted-foreground font-medium py-2">CATEGORY</div>
+                  <div className="flex items-center gap-1">
+                    <div className="flex-1 border rounded-md px-2 py-1.5 min-h-[32px] flex items-center gap-1 flex-wrap text-sm truncate">
+                      {formData.categories?.length ? (
+                        formData.categories.slice(0, 1).map((cat) => (
+                          <span key={cat.id} className="truncate">{cat.path || cat.name}</span>
+                        ))
+                      ) : (
+                        <span className="text-muted-foreground">Select...</span>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setIsCategoriesModalOpen(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 md:h-8 md:w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
-                  onClick={() => setIsCategoriesModalOpen(true)}
-                >
-                  <Plus className="h-4 w-4 md:h-3 md:w-3" />
-                </Button>
+                {/* Description - 10 cols */}
+                <div className="col-span-12 md:col-span-10">
+                  <div className="text-xs text-muted-foreground font-medium py-2">DESCRIPTION</div>
+                  <Textarea
+                    value={formData.description || ''}
+                    onChange={(e) => updateField('description', e.target.value)}
+                    className="text-sm min-h-[60px] resize-none"
+                    placeholder="Service description..."
+                  />
+                </div>
+                {/* Active toggle - 2 cols, right aligned */}
+                <div className="col-span-12 md:col-span-2 flex items-end justify-end">
+                  <label className="flex items-center gap-2 text-xs">
+                    <Checkbox
+                      checked={formData.active ?? true}
+                      onCheckedChange={(v) => updateField('active', v)}
+                    />
+                    Active
+                  </label>
+                </div>
+                {/* Warranty - full width */}
+                <div className="col-span-12">
+                  <div className="text-xs text-muted-foreground font-medium py-2">WARRANTY</div>
+                  <Input
+                    value={typeof formData.warranty === 'string' ? formData.warranty : formData.warranty?.description || ''}
+                    onChange={(e) => updateField('warranty', e.target.value)}
+                    className="text-sm h-8"
+                    placeholder="Warranty terms..."
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Materials / Equipment Tabs */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'materials' | 'equipment')}>
-              <TabsList className="mb-2">
-                <TabsTrigger value="materials" className="uppercase text-xs">Materials</TabsTrigger>
-                <TabsTrigger value="equipment" className="uppercase text-xs">Equipment</TabsTrigger>
-              </TabsList>
+            {/* Product Image Card - fixed width w-72 */}
+            <div className="w-full md:w-72 flex-shrink-0 border rounded-lg overflow-hidden">
+              <div className="p-2 border-b flex items-center justify-between">
+                <span className="text-xs text-muted-foreground font-medium">PRODUCT IMAGE</span>
+              </div>
+              {/* Image with overlays */}
+              <div
+                className="aspect-square flex items-center justify-center relative group bg-muted/30"
+                onMouseEnter={() => setImageHovered(true)}
+                onMouseLeave={() => setImageHovered(false)}
+              >
+                {allImageUrls.length > 0 ? (
+                  <>
+                    <img
+                      src={allImageUrls[currentImageIndex]}
+                      alt={`Service image ${currentImageIndex + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                    {/* X button to remove image */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentUrl = allImageUrls[currentImageIndex];
+                        const pendingIndex = pendingImages.findIndex(url => url === currentUrl);
+                        if (pendingIndex >= 0) {
+                          setPendingImages(prev => prev.filter((_, i) => i !== pendingIndex));
+                          setHasChanges(true);
+                        } else {
+                          const stAsset = serviceAssets.find(a => a.type === 'Image' && getStImageUrl(a.url) === currentUrl);
+                          if (stAsset) {
+                            setImagesToDelete(prev => [...prev, stAsset.url]);
+                            setServiceAssets(prev => prev.filter(a => a !== stAsset));
+                            setHasChanges(true);
+                          }
+                        }
+                        if (currentImageIndex >= allImageUrls.length - 1) {
+                          setCurrentImageIndex(Math.max(0, allImageUrls.length - 2));
+                        }
+                      }}
+                      className={cn(
+                        "absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white transition-all duration-200 shadow-lg",
+                        imageHovered ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                      )}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                    {/* Badges */}
+                    {currentImageIndex < pendingImages.length && (
+                      <div className="absolute top-1 left-1">
+                        <Badge className="text-[8px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
+                      </div>
+                    )}
+                    {currentImageIndex >= pendingImages.length && (
+                      <div className="absolute top-1 left-1">
+                        <Badge variant="outline" className="text-[8px] px-1 py-0 bg-blue-500/80 text-white border-blue-400">ST</Badge>
+                      </div>
+                    )}
+                    {/* Nav arrows */}
+                    {allImageUrls.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentImageIndex(prev => prev === 0 ? allImageUrls.length - 1 : prev - 1)}
+                          className="absolute left-1 top-1/2 -translate-y-1/2 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentImageIndex(prev => prev === allImageUrls.length - 1 ? 0 : prev + 1)}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
+                          <Badge className="bg-black/60 text-white text-[10px] px-1.5">
+                            {currentImageIndex + 1}/{allImageUrls.length}
+                          </Badge>
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-muted-foreground text-xs p-2">
+                    <ImagePlus className="h-6 w-6 mx-auto mb-1 opacity-50" />
+                    No image
+                  </div>
+                )}
+              </div>
+              {/* Edit button */}
+              <div className="p-2 border-t">
+                <Button
+                  size="sm"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white text-xs h-7"
+                  onClick={() => setShowImageModal(!showImageModal)}
+                >
+                  Edit{allImageUrls.length > 0 ? ` (${allImageUrls.length})` : ''}
+                  {pendingImages.length > 0 && <span className="ml-1 text-yellow-200">*</span>}
+                </Button>
+              </div>
+            </div>
+          </div>
 
-              <TabsContent value="materials" className="mt-0">
-                {/* Materials Toolbar */}
-                <div className="flex flex-wrap items-center gap-1 mb-2 p-2 bg-muted/30 rounded-md">
-                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0">
-                    <Search className="h-3 w-3 mr-1" />
-                    SEARCH
+          {/* Image Management Modal - positioned absolutely */}
+          {showImageModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageModal(false)}>
+              <div className="bg-popover border rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between p-3 border-b">
+                  <h4 className="font-medium text-sm">Manage Images</h4>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setShowImageModal(false); setImageUrlInput(''); }}>
+                    <X className="h-4 w-4" />
                   </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0 hidden sm:flex">
-                    <Copy className="h-3 w-3 mr-1" />
-                    COPY
-                  </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0 hidden sm:flex">
-                    PASTE
-                  </Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0 hidden md:flex">
-                    <Save className="h-3 w-3 mr-1" />
-                    SAVE AS...
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="text-xs h-9 md:h-7 min-h-[44px] md:min-h-0"
-                    onClick={() => setIsKitModalOpen(true)}
-                  >
-                    LOAD KIT...
-                  </Button>
-                  <div className="flex-1 min-w-[100px]" />
-                  <div className="relative w-full sm:w-auto mt-2 sm:mt-0">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search this list" 
-                      value={materialSearch}
-                      onChange={(e) => setMaterialSearch(e.target.value)}
-                      className="pl-7 h-10 md:h-7 text-xs w-full sm:w-48"
+                </div>
+                <div className="p-4 space-y-4">
+                  {/* Existing Images Grid */}
+                  {(serviceAssets.length > 0 || pendingImages.length > 0) && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-2 block">Current Images</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {pendingImages.map((url, index) => (
+                          <div key={`pending-${index}`} className="relative border-2 border-yellow-400 rounded-lg overflow-hidden aspect-square bg-muted/30">
+                            <img src={url} alt={`Pending ${index + 1}`} className="w-full h-full object-cover" />
+                            <Badge className="absolute top-1 left-1 text-[10px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
+                            <button type="button" onClick={() => { setPendingImages(prev => prev.filter((_, i) => i !== index)); setHasChanges(true); }} className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {serviceAssets.filter(a => a.type === 'Image').map((asset, index) => (
+                          <div key={index} className="relative border rounded-lg overflow-hidden aspect-square bg-muted/30">
+                            <img src={getStImageUrl(asset.url)} alt={asset.alias || `Image ${index + 1}`} className="w-full h-full object-cover" />
+                            <Badge variant="outline" className="absolute top-1 left-1 text-[10px] px-1 py-0 bg-blue-500/20 text-blue-700 border-blue-500/50">ST</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="border-t" />
+                  <Label className="text-xs text-muted-foreground block">Add New Image</Label>
+                  <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                    <button type="button" onClick={() => setImageUploadTab('file')} className={cn("flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors", imageUploadTab === 'file' ? "bg-background shadow" : "text-muted-foreground hover:text-foreground")}>
+                      <Upload className="h-3 w-3 inline mr-1" />Upload
+                    </button>
+                    <button type="button" onClick={() => setImageUploadTab('url')} className={cn("flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors", imageUploadTab === 'url' ? "bg-background shadow" : "text-muted-foreground hover:text-foreground")}>
+                      <Download className="h-3 w-3 inline mr-1" />URL
+                    </button>
+                  </div>
+                  {imageUploadTab === 'file' && (
+                    <div onClick={() => imageInputRef.current?.click()} className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors">
+                      <Upload className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Click to select</p>
+                    </div>
+                  )}
+                  {imageUploadTab === 'url' && (
+                    <div className="space-y-3">
+                      <Input type="url" value={imageUrlInput} onChange={(e) => { setImageUrlInput(e.target.value); setImageLoadError(false); }} placeholder="https://example.com/image.jpg" className={cn("text-sm", imageLoadError && "border-red-500")} />
+                      {imageUrlInput.trim() && !imageLoadError && (
+                        <div className="border rounded-lg overflow-hidden bg-muted/30 h-24 flex items-center justify-center">
+                          <img src={getProxyImageUrl(imageUrlInput.trim())} alt="Preview" className="max-h-full max-w-full object-contain" onError={() => setImageLoadError(true)} />
+                        </div>
+                      )}
+                      <Button onClick={handleImageFromUrl} disabled={!imageUrlInput.trim() || imageLoading} className="w-full" size="sm">
+                        {imageLoading ? <><RefreshCw className="h-3 w-3 animate-spin mr-1" />Uploading...</> : 'Add Image'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ROW 2: PRICING + LABOR */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Pricing Section */}
+            <div className="flex-1 border rounded-lg p-4">
+              <div className="text-xs text-muted-foreground font-medium mb-3">PRICING</div>
+              <div className="grid grid-cols-4 gap-3">
+                {/* Price */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Price</label>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('price', parseFloat(cleaned) || 0); }}
+                      className="w-full bg-green-500/10 border border-green-500/30 rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
                     />
                   </div>
                 </div>
+                {/* Member Price */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Member</label>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.memberPrice?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('memberPrice', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
+                    />
+                  </div>
+                </div>
+                {/* Add-on Price */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Add-on</label>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.addOnPrice?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('addOnPrice', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
+                    />
+                  </div>
+                </div>
+                {/* Member Add-on */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Member Add-on</label>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.memberAddOnPrice?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('memberAddOnPrice', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                {/* Materials Header - hidden on mobile, shown on desktop */}
+            {/* Labor Section - fixed width w-72 */}
+            <div className="w-full md:w-72 flex-shrink-0 border rounded-lg p-4">
+              <div className="text-xs text-muted-foreground font-medium mb-3">LABOR</div>
+              <div className="space-y-3">
+                {/* Sold Hours */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Sold Hours</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.durationHours || '0'}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('durationHours', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">hrs</span>
+                  </div>
+                </div>
+                {/* Rate Code */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Rate Code</label>
+                  <Input
+                    value={formData.rateCode || ''}
+                    onChange={(e) => updateField('rateCode', e.target.value)}
+                    className="text-sm h-8"
+                  />
+                </div>
+                {/* Margin */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Labor %</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.laborCost || ''}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('laborCost', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Material %</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.materialCost || ''}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('materialCost', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 text-sm text-right h-8"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+                {/* Bonus */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Bonus</label>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.bonus?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('bonus', parseFloat(cleaned) || 0); }}
+                      className="w-full border rounded px-2 py-1.5 pl-5 text-sm text-right h-8"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ROW 3: SETTINGS */}
+          <div className="border rounded-lg p-4">
+            <div className="text-xs text-muted-foreground font-medium mb-3">SETTINGS</div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-12 gap-y-2">
+              {/* Taxable */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">Taxable</span>
+                <button type="button" onClick={() => updateField('taxable', !formData.taxable)} className={cn("relative w-9 h-5 rounded-full transition-colors", formData.taxable ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", formData.taxable ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* No Discounts */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <span className="text-sm">No Discounts</span>
+                <button type="button" onClick={() => updateField('noDiscounts', !formData.noDiscounts)} className={cn("relative w-9 h-5 rounded-full transition-colors", formData.noDiscounts ? 'bg-primary' : 'bg-muted')}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform", formData.noDiscounts ? 'translate-x-4' : 'translate-x-0.5')} />
+                </button>
+              </label>
+              {/* Round Up */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Round Up</span>
+                <select
+                  value={formData.roundUp || ''}
+                  onChange={(e) => updateField('roundUp', e.target.value)}
+                  className="h-7 text-xs border rounded px-2 bg-background"
+                >
+                  <option value="">None</option>
+                  <option value="1">Nearest $1</option>
+                  <option value="10">Nearest $10</option>
+                  <option value="100">Nearest $100</option>
+                </select>
+              </div>
+              {/* Surcharge */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Surcharge %</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={formData.surchargePercent || ''}
+                  onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ''); updateField('surchargePercent', parseFloat(cleaned) || 0); }}
+                  className="w-16 h-7 text-xs border rounded px-2 text-right"
+                  placeholder="0"
+                />
+              </div>
+              {/* Cross-Sale */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Cross-Sale</span>
+                <Input
+                  value={formData.crossSale || ''}
+                  onChange={(e) => updateField('crossSale', e.target.value)}
+                  className="w-24 h-7 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ROW 4: ACCOUNTS (Collapsible) */}
+          <div className="border rounded-lg">
+            <button
+              type="button"
+              onClick={() => setShowAccountsPanel(!showAccountsPanel)}
+              className="w-full flex items-center justify-between p-4 text-sm font-medium hover:bg-muted/50 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Accounts
+              </span>
+              <ChevronRight className={cn("h-4 w-4 transition-transform", showAccountsPanel && "rotate-90")} />
+            </button>
+            {showAccountsPanel && (
+              <div className="p-4 pt-0 space-y-3 border-t">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Income Account</label>
+                    <select
+                      value={formData.incomeAccount || ''}
+                      onChange={(e) => updateField('incomeAccount', e.target.value)}
+                      className="w-full h-8 text-sm border rounded px-2 bg-background"
+                    >
+                      <option value="">Select account...</option>
+                      {incomeAccounts.map((account) => (
+                        <option key={account.id} value={account.id.toString()}>
+                          {account.number} - {account.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Asset Account</label>
+                    <select
+                      value={formData.assetAccount || ''}
+                      onChange={(e) => updateField('assetAccount', e.target.value)}
+                      className="w-full h-8 text-sm border rounded px-2 bg-background"
+                    >
+                      <option value="">Select account...</option>
+                      {assetAccounts.map((account) => (
+                        <option key={account.id} value={account.id.toString()}>
+                          {account.number} - {account.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">COGS Account</label>
+                    <select
+                      value={formData.cogsAccount || ''}
+                      onChange={(e) => updateField('cogsAccount', e.target.value)}
+                      className="w-full h-8 text-sm border rounded px-2 bg-background"
+                    >
+                      <option value="">Select account...</option>
+                      {cogsAccounts.map((account) => (
+                        <option key={account.id} value={account.id.toString()}>
+                          {account.number} - {account.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ROW 5: UPGRADES & RECOMMENDATIONS */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Upgrades Section */}
+            <div className="flex-1 border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs text-muted-foreground font-medium">UPGRADES</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setIsUpgradesModalOpen(true)}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
+                {formData.upgrades?.length ? formData.upgrades.map((u, i) => (
+                  <Badge key={i} variant="secondary" className="gap-1">
+                    {u}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => updateField('upgrades', formData.upgrades?.filter((_, idx) => idx !== i))}
+                    />
+                  </Badge>
+                )) : (
+                  <span className="text-xs text-muted-foreground">No upgrades assigned</span>
+                )}
+              </div>
+            </div>
+            {/* Recommendations Section */}
+            <div className="flex-1 border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs text-muted-foreground font-medium">RECOMMENDATIONS</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setIsRecommendationsModalOpen(true)}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
+                {formData.recommendations?.length ? formData.recommendations.map((r, i) => (
+                  <Badge key={i} variant="secondary" className="gap-1">
+                    {r}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => updateField('recommendations', formData.recommendations?.filter((_, idx) => idx !== i))}
+                    />
+                  </Badge>
+                )) : (
+                  <span className="text-xs text-muted-foreground">No recommendations assigned</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ROW 6: MATERIALS & EQUIPMENT (Tabbed) */}
+          <div className="border rounded-lg p-4">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'materials' | 'equipment')}>
+              <div className="flex items-center justify-between mb-3">
+                <TabsList>
+                  <TabsTrigger value="materials" className="uppercase text-xs">Materials</TabsTrigger>
+                  <TabsTrigger value="equipment" className="uppercase text-xs">Equipment</TabsTrigger>
+                </TabsList>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setIsKitModalOpen(true)}
+                  >
+                    Load Kit
+                  </Button>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <Input
+                      placeholder="Search..."
+                      value={materialSearch}
+                      onChange={(e) => setMaterialSearch(e.target.value)}
+                      className="pl-7 h-7 text-xs w-40"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <TabsContent value="materials" className="mt-0">
+                {/* Materials Header */}
                 <div className="hidden md:grid grid-cols-[auto_1fr_auto_80px_80px_auto_1fr_auto] gap-2 px-2 py-1 text-xs text-muted-foreground font-medium border-b">
                   <div className="w-10"></div>
                   <div>Item</div>
@@ -1199,17 +1622,17 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                 </div>
 
                 {/* Materials List */}
-                <div className="divide-y max-h-[400px] md:max-h-[300px] overflow-auto">
+                <div className="divide-y max-h-[300px] overflow-auto">
                   {formData.materials?.length ? (
                     formData.materials
-                      .filter(m => !materialSearch || 
+                      .filter(m => !materialSearch ||
                         m.name.toLowerCase().includes(materialSearch.toLowerCase()) ||
                         m.code.toLowerCase().includes(materialSearch.toLowerCase())
                       )
                       .map((material) => (
-                        <MaterialRow 
-                          key={material.id} 
-                          material={material} 
+                        <MaterialRow
+                          key={material.id}
+                          material={material}
                           onNavigate={(materialId) => {
                             window.location.href = `/dashboard/pricebook/materials/${materialId}`;
                           }}
@@ -1217,22 +1640,18 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                       ))
                   ) : (
                     <div className="p-8 text-center text-muted-foreground text-sm">
-                      No materials added. Click SEARCH to add materials.
+                      No materials added. Click Load Kit or use SEARCH to add materials.
                     </div>
                   )}
                 </div>
 
                 {/* Materials Footer */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2 bg-muted/30 rounded-md mt-2 text-sm">
-                  <Button variant="ghost" size="sm" className="text-xs text-destructive min-h-[44px] md:min-h-0">
+                <div className="flex items-center justify-between gap-3 p-2 bg-muted/30 rounded-md mt-2 text-sm">
+                  <Button variant="ghost" size="sm" className="text-xs text-destructive">
                     <Trash2 className="h-3 w-3 mr-1" />
                     Remove All
                   </Button>
-                  <label className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
-                    <Checkbox checked={false} disabled />
-                    Hide linked materials
-                  </label>
-                  <div className="flex flex-wrap items-center gap-3 md:gap-6">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
                       <span className="text-xs text-muted-foreground mr-2">NET</span>
                       <span className="font-semibold">{formatCurrency(materialNet)}</span>
@@ -1240,10 +1659,6 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                     <div className="text-right">
                       <span className="text-xs text-muted-foreground mr-2">LIST</span>
                       <span className="font-semibold">{formatCurrency(materialList)}</span>
-                    </div>
-                    <div className="hidden md:flex items-center gap-1">
-                      <Input className="w-16 h-7 text-xs text-right" placeholder="%" />
-                      <span className="text-xs text-muted-foreground">override</span>
                     </div>
                   </div>
                 </div>
@@ -1255,455 +1670,52 @@ export function ServiceDetailPage({ serviceId, onClose, onNavigate }: ServiceDet
                 </div>
               </TabsContent>
             </Tabs>
-
-            {/* Video URL */}
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Video URL</span>
-              <Input 
-                value={formData.videoUrl || ''} 
-                onChange={(e) => updateField('videoUrl', e.target.value)}
-                className="text-sm h-8 flex-1"
-                placeholder="https://..."
-              />
-            </div>
           </div>
 
-          {/* Right Sidebar - Pricing & Image - below content on mobile */}
-          <div className="w-full md:w-80 border-t md:border-t-0 md:border-l p-3 md:p-4 space-y-3 flex-shrink-0">
-            {/* Status & Hours */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-xs">
-                  <Checkbox
-                    checked={formData.active ?? true}
-                    onCheckedChange={(v) => updateField('active', v)}
-                  />
-                  ACTIVE?
-                </label>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">SOLD HRS</span>
-                  <Input
-                    type="number"
-                    value={formData.durationHours || ''}
-                    onChange={(e) => updateField('durationHours', parseFloat(e.target.value))}
-                    className="w-16 h-7 text-xs text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Pricing Fields */}
-            <div className="space-y-2">
-              <PriceField label="PRICE" value={formData.price} onChange={(v) => updateField('price', v)} />
-              <PriceField label="MEMBER" value={formData.memberPrice} onChange={(v) => updateField('memberPrice', v)} />
-              <PriceField label="ADD-ON" value={formData.addOnPrice} onChange={(v) => updateField('addOnPrice', v)} />
-              <PriceField label="MEMBER ADD-ON" value={formData.memberAddOnPrice} onChange={(v) => updateField('memberAddOnPrice', v)} />
-            </div>
-
-            {/* Rate & Margin */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">RATE CODE</span>
-                <Input 
-                  value={formData.rateCode || ''} 
-                  onChange={(e) => updateField('rateCode', e.target.value)}
-                  className="w-20 h-7 text-xs"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">MARGIN %</span>
-                <div className="flex gap-1">
-                  <Input
-                    placeholder="LAB"
-                    value={formData.laborCost || ''}
-                    onChange={(e) => updateField('laborCost', parseFloat(e.target.value))}
-                    className="w-20 h-7 text-xs"
-                  />
-                  <Input
-                    placeholder="MAT"
-                    value={formData.materialCost || ''}
-                    onChange={(e) => updateField('materialCost', parseFloat(e.target.value))}
-                    className="w-20 h-7 text-xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Other Fields */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">BONUS</span>
-                <Input 
-                  value={formData.bonus || ''} 
-                  onChange={(e) => updateField('bonus', parseFloat(e.target.value))}
-                  className="w-20 h-7 text-xs"
-                />
-              </div>
-              {/* Accounts Settings Box */}
-              <div className="border rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setShowAccountsPanel(!showAccountsPanel)}
-                  className="w-full flex items-center justify-between p-2 text-xs font-medium hover:bg-muted/50 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <Settings className="h-3 w-3" />
-                    Accounts
-                  </span>
-                  <ChevronRight className={cn("h-3 w-3 transition-transform", showAccountsPanel && "rotate-90")} />
-                </button>
-
-                {showAccountsPanel && (
-                  <div className="p-2 pt-0 space-y-2 border-t">
-                    {/* Income Account */}
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Income Account</Label>
-                      <select
-                        value={formData.incomeAccount || ''}
-                        onChange={(e) => updateField('incomeAccount', e.target.value)}
-                        className="w-full h-7 text-xs border rounded px-2 bg-background"
-                      >
-                        <option value="">Select account...</option>
-                        {incomeAccounts.map((account) => (
-                          <option key={account.id} value={account.id.toString()}>
-                            {account.number} - {account.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Asset Account */}
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Asset Account</Label>
-                      <select
-                        value={formData.assetAccount || ''}
-                        onChange={(e) => updateField('assetAccount', e.target.value)}
-                        className="w-full h-7 text-xs border rounded px-2 bg-background"
-                      >
-                        <option value="">Select account...</option>
-                        {assetAccounts.map((account) => (
-                          <option key={account.id} value={account.id.toString()}>
-                            {account.number} - {account.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* COGS Account */}
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">COGS Account</Label>
-                      <select
-                        value={formData.cogsAccount || ''}
-                        onChange={(e) => updateField('cogsAccount', e.target.value)}
-                        className="w-full h-7 text-xs border rounded px-2 bg-background"
-                      >
-                        <option value="">Select account...</option>
-                        {cogsAccounts.map((account) => (
-                          <option key={account.id} value={account.id.toString()}>
-                            {account.number} - {account.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">SURCHARGE %</span>
-                <Input 
-                  value={formData.surchargePercent || ''} 
-                  onChange={(e) => updateField('surchargePercent', parseFloat(e.target.value))}
-                  className="w-20 h-7 text-xs"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-xs">
-                  <Checkbox
-                    checked={formData.taxable ?? false}
-                    onCheckedChange={(v) => updateField('taxable', v)}
-                  />
-                  TAXABLE
-                </label>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">X-SALE</span>
-                <Input 
-                  value={formData.crossSale || ''} 
-                  onChange={(e) => updateField('crossSale', e.target.value)}
-                  className="w-20 h-7 text-xs"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-xs">
-                  <Checkbox
-                    checked={formData.noDiscounts ?? false}
-                    onCheckedChange={(v) => updateField('noDiscounts', v)}
-                  />
-                  NO DISCOUNTS
-                </label>
-              </div>
-              
-              {/* Round Up Dropdown */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">ROUND UP</span>
-                <select 
-                  value={formData.roundUp || ''}
-                  onChange={(e) => updateField('roundUp', e.target.value)}
-                  className="h-7 text-xs border rounded px-2 bg-background"
-                >
-                  <option value="">None</option>
-                  <option value="1">Nearest $1</option>
-                  <option value="10">Nearest $10</option>
-                  <option value="100">Nearest $100</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Image Panel */}
-            <input
-              type="file"
-              ref={imageInputRef}
-              onChange={handleImageUpload}
-              accept="image/*"
-              className="hidden"
+          {/* ROW 7: VIDEO URL */}
+          <div className="border rounded-lg p-4">
+            <div className="text-xs text-muted-foreground font-medium mb-3">VIDEO URL</div>
+            <Input
+              value={formData.videoUrl || ''}
+              onChange={(e) => updateField('videoUrl', e.target.value)}
+              className="text-sm h-8"
+              placeholder="https://youtube.com/..."
             />
+          </div>
+
+          {/* ROW 8: ACTION BUTTONS */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={handleSave}
+              disabled={isSaving || (!hasChanges && !isNewService)}
+              className="bg-blue-600 hover:bg-blue-700 text-white h-10"
+            >
+              {isSaving ? (
+                <span className="flex items-center gap-2"><RefreshCw className="h-4 w-4 animate-spin" />Saving...</span>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
             <div className="relative">
               <Button
-                className="w-full bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => setShowImageModal(!showImageModal)}
+                onClick={handlePush}
+                disabled={isPushing}
+                className="w-full bg-green-600 hover:bg-green-700 text-white h-10 relative overflow-hidden"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                Edit Image{(pendingImages.length + serviceAssets.filter(a => a.type === 'Image').length) > 0 ? ` (${pendingImages.length + serviceAssets.filter(a => a.type === 'Image').length})` : ''}
-                {pendingImages.length > 0 && <span className="ml-1 text-yellow-200">*</span>}
+                {isPushing ? (
+                  <span className="flex items-center gap-2"><RefreshCw className="h-4 w-4 animate-spin" />Pushing...</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Upload className="h-4 w-4" />Push to ServiceTitan</span>
+                )}
               </Button>
-
-              {/* Image Management Modal */}
-              {showImageModal && (
-                <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-popover border rounded-lg shadow-lg z-50 max-h-[500px] overflow-y-auto">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-sm">Manage Images</h4>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => {
-                        setShowImageModal(false);
-                        setImageUrlInput('');
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Existing Images Grid */}
-                  {(serviceAssets.length > 0 || pendingImages.length > 0) && (
-                    <div className="mb-4">
-                      <Label className="text-xs text-muted-foreground mb-2 block">Current Images</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Show pending images (to be pushed) */}
-                        {pendingImages.map((url, index) => (
-                          <div key={`pending-${index}`} className="relative border-2 border-yellow-400 rounded-lg overflow-hidden aspect-square bg-muted/30">
-                            <img
-                              src={url}
-                              alt={`Pending image ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-1 left-1">
-                              <Badge className="text-[10px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPendingImages(prev => prev.filter((_, i) => i !== index));
-                                setHasChanges(true);
-                              }}
-                              className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 rounded-full text-white transition-colors"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
-                        ))}
-                        {/* Show ST assets */}
-                        {serviceAssets.filter(a => a.type === 'Image').map((asset, index) => (
-                          <div key={index} className="relative border rounded-lg overflow-hidden aspect-square bg-muted/30">
-                            <img
-                              src={getStImageUrl(asset.url)}
-                              alt={asset.alias || `Image ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-1 left-1">
-                              <Badge variant="outline" className="text-[10px] px-1 py-0 bg-blue-500/20 text-blue-700 border-blue-500/50">ST</Badge>
-                            </div>
-                            {asset.isDefault && (
-                              <div className="absolute bottom-1 left-1">
-                                <Badge className="text-[10px] px-1 py-0 bg-green-500">Default</Badge>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      {pendingImages.length > 0 && (
-                        <p className="text-xs text-yellow-600 mt-2">
-                          {pendingImages.length} pending image{pendingImages.length > 1 ? 's' : ''} will be uploaded when you push to ServiceTitan.
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Divider */}
-                  <div className="border-t my-3" />
-
-                  {/* Add New Image Section */}
-                  <Label className="text-xs text-muted-foreground mb-2 block">Add New Image</Label>
-
-                  {/* Tab Buttons */}
-                  <div className="flex gap-1 mb-3 p-1 bg-muted rounded-lg">
-                    <button
-                      type="button"
-                      onClick={() => setImageUploadTab('file')}
-                      className={cn(
-                        "flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors",
-                        imageUploadTab === 'file'
-                          ? "bg-background shadow text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <Upload className="h-3 w-3 inline mr-1" />
-                      Upload File
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setImageUploadTab('url')}
-                      className={cn(
-                        "flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-colors",
-                        imageUploadTab === 'url'
-                          ? "bg-background shadow text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <Download className="h-3 w-3 inline mr-1" />
-                      From URL
-                    </button>
-                  </div>
-
-                  {/* File Upload Tab */}
-                  {imageUploadTab === 'file' && (
-                    <div className="space-y-3">
-                      <div
-                        onClick={() => imageInputRef.current?.click()}
-                        className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition-colors"
-                      >
-                        <Upload className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">
-                          Click to select an image
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* URL Tab */}
-                  {imageUploadTab === 'url' && (
-                    <div className="space-y-3">
-                      <div>
-                        <Input
-                          type="url"
-                          value={imageUrlInput}
-                          onChange={(e) => {
-                            setImageUrlInput(e.target.value);
-                            setImageLoadError(false);
-                          }}
-                          placeholder="https://example.com/image.jpg"
-                          className={cn("text-sm", imageLoadError && "border-red-500")}
-                        />
-                        {imageLoadError && (
-                          <p className="text-xs text-red-500 mt-1">Failed to load image</p>
-                        )}
-                      </div>
-                      {/* URL Preview */}
-                      {imageUrlInput.trim() && !imageLoadError && (
-                        <div className="border rounded-lg overflow-hidden bg-muted/30 h-24 flex items-center justify-center">
-                          <img
-                            src={getProxyImageUrl(imageUrlInput.trim())}
-                            alt="Preview"
-                            className="max-h-full max-w-full object-contain"
-                            onError={() => setImageLoadError(true)}
-                          />
-                        </div>
-                      )}
-                      <Button
-                        onClick={handleImageFromUrl}
-                        disabled={!imageUrlInput.trim() || imageLoading}
-                        className="w-full bg-green-500 hover:bg-green-600"
-                        size="sm"
-                      >
-                        {imageLoading ? (
-                          <span className="flex items-center gap-2">
-                            <RefreshCw className="h-3 w-3 animate-spin" />
-                            Uploading...
-                          </span>
-                        ) : (
-                          'Add Image'
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Image Preview with Carousel */}
-            <div
-              className="border rounded-lg overflow-hidden bg-muted/30 aspect-square flex items-center justify-center relative group"
-              onMouseEnter={() => setImageHovered(true)}
-              onMouseLeave={() => setImageHovered(false)}
-            >
-              {allImageUrls.length > 0 ? (
-                <>
-                  <img
-                    src={allImageUrls[currentImageIndex]}
-                    alt={`Service image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Navigation arrows */}
-                  {allImageUrls.length > 1 && imageHovered && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentImageIndex(i => (i - 1 + allImageUrls.length) % allImageUrls.length)}
-                        className="absolute left-1 top-1/2 -translate-y-1/2 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentImageIndex(i => (i + 1) % allImageUrls.length)}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </>
-                  )}
-                  {/* Image counter */}
-                  {allImageUrls.length > 1 && (
-                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/50 rounded text-white text-xs">
-                      {currentImageIndex + 1} / {allImageUrls.length}
-                    </div>
-                  )}
-                  {/* Pending badge on preview */}
-                  {currentImageIndex < pendingImages.length && (
-                    <div className="absolute top-1 left-1">
-                      <Badge className="text-[10px] px-1 py-0 bg-yellow-500 text-black">Pending</Badge>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center text-muted-foreground p-4">
-                  <ImagePlus className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-xs">No images</p>
+              {isPushing && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-800 rounded-b overflow-hidden">
+                  <div className="h-full bg-green-300 transition-all duration-200 ease-out" style={{ width: `${pushProgress}%` }} />
                 </div>
               )}
             </div>
           </div>
+
         </div>
       </div>
 

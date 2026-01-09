@@ -90,13 +90,37 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const tenantId = request.headers.get('x-tenant-id') || process.env.NEXT_PUBLIC_SERVICE_TITAN_TENANT_ID || '3222348440';
     
-    const equipment = {
-      id: crypto.randomUUID(),
-      ...body,
-    };
+    console.log('[POST /api/pricebook/equipment] Creating new equipment:', body.code);
     
-    return NextResponse.json(equipment);
+    const res = await fetch(`${ST_AUTOMATION_URL}/api/pricebook/equipment`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
+      body: JSON.stringify(body),
+    });
+    
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await res.text();
+      console.error('[POST] Non-JSON response:', res.status, text.substring(0, 500));
+      return NextResponse.json(
+        { error: `Backend returned non-JSON response (${res.status})` },
+        { status: 502 }
+      );
+    }
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      console.error('[POST] Backend error:', res.status, data);
+      return NextResponse.json(data, { status: res.status });
+    }
+    
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Failed to create equipment:', error);
     return NextResponse.json({ error: 'Failed to create equipment' }, { status: 500 });

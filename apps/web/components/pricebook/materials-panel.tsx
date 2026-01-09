@@ -10,6 +10,11 @@ import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
 import { MaterialDetailPage } from './material-detail-page';
 import { CategoryTreeFilter, getAllDescendantIds } from './category-tree-filter';
+import { QuickFilters, MATERIAL_FILTERS } from './organization/QuickFilters';
+import { ReviewedBadge } from './organization/ReviewedToggle';
+import { PendingSyncBadge } from './organization/PendingSyncBadge';
+import { PendingSyncPanel } from './organization/PendingSyncPanel';
+import { useQuickFilters, usePendingSyncCounts, FilterType } from '@/hooks/usePricebookOrganization';
 
 interface Material {
   id: string;
@@ -57,7 +62,7 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentSection = searchParams.get('section');
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
   const [showDetailPage, setShowDetailPage] = useState(false);
@@ -66,7 +71,12 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
+  const [syncPanelOpen, setSyncPanelOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  // Quick filters hooks
+  const { activeFilters, toggleFilter, clearFilters } = useQuickFilters();
+  const { data: syncCounts } = usePendingSyncCounts();
 
   // Close detail page when navigating to a different section
   useEffect(() => {
@@ -114,8 +124,8 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
   const categories = flattenCategories(categoriesData || []);
 
   const { data: materialsData, isLoading } = useQuery({
-    queryKey: ['pricebook-materials', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage],
-    queryFn: () => fetchMaterials(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData || []),
+    queryKey: ['pricebook-materials', selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, activeFilters],
+    queryFn: () => fetchMaterials(selectedCategory, searchQuery, appliedFilters, pageSize, currentPage, categoriesData || [], activeFilters),
     enabled: categoriesData !== undefined, // Wait for categories to load
   });
 
@@ -343,14 +353,24 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
           )}
         </div>
         
+        <PendingSyncBadge onClick={() => setSyncPanelOpen(true)} />
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-1" />
           IMPORT
         </Button>
-        <Button variant="outline" size="sm">
-          <List className="h-4 w-4 mr-1" />
-          ALL
-        </Button>
+      </div>
+
+      {/* Quick Filters */}
+      <div className="px-3 py-2 border-b bg-background">
+        <QuickFilters
+          activeFilters={activeFilters}
+          onFilterToggle={toggleFilter}
+          onClearAll={clearFilters}
+          filterTypes={MATERIAL_FILTERS}
+          counts={{
+            pending_sync: syncCounts?.totalPending,
+          }}
+        />
       </div>
 
       {/* Materials List */}
@@ -372,15 +392,19 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {material.defaultImageUrl && (
-                    <img 
-                      src={material.defaultImageUrl} 
-                      alt="" 
+                    <img
+                      src={material.defaultImageUrl}
+                      alt=""
                       className="w-8 h-8 rounded object-cover"
                     />
                   )}
                   <div className="min-w-0">
-                    <div className="font-medium truncate">
+                    <div className="font-medium truncate flex items-center gap-2">
                       {material.displayName || material.name}
+                      <ReviewedBadge isReviewed={(material as any).is_reviewed} />
+                      {(material as any).has_local_changes && (
+                        <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" title="Pending sync" />
+                      )}
                     </div>
                     {material.primaryVendor?.vendorName && (
                       <div className="text-xs text-muted-foreground">
@@ -461,6 +485,13 @@ export function MaterialsPanel({ selectedCategory, onCategorySelect }: Materials
           </div>
         </div>
       </div>
+
+      {/* Pending Sync Panel */}
+      <PendingSyncPanel
+        open={syncPanelOpen}
+        onClose={() => setSyncPanelOpen(false)}
+        entityType="material"
+      />
     </div>
   );
 }
@@ -505,12 +536,13 @@ interface MaterialsResponse {
 }
 
 async function fetchMaterials(
-  categoryId: string | null, 
+  categoryId: string | null,
   search: string,
   filters: FilterState,
   pageSize: number,
   page: number,
-  categoriesData: any[]
+  categoriesData: any[],
+  quickFilters: FilterType[] = []
 ): Promise<MaterialsResponse> {
   const params = new URLSearchParams();
   // Use filter category if set, otherwise use selectedCategory from sidebar
@@ -527,7 +559,7 @@ async function fetchMaterials(
   if (search) params.set('search', search);
   params.set('pageSize', pageSize.toString());
   params.set('page', page.toString());
-  
+
   // Apply filters
   if (filters.status !== 'all') {
     params.set('active', filters.status === 'active' ? 'true' : 'false');
@@ -538,7 +570,15 @@ async function fetchMaterials(
   if (filters.priceMax) params.set('priceMax', filters.priceMax);
   if (filters.images !== 'any') params.set('hasImages', filters.images === 'has' ? 'true' : 'false');
   if (filters.vendor) params.set('vendor', filters.vendor);
-  
+
+  // Apply quick filters
+  if (quickFilters.includes('no_image')) params.set('hasImages', 'false');
+  if (quickFilters.includes('uncategorized')) params.set('uncategorized', 'true');
+  if (quickFilters.includes('no_vendor')) params.set('noVendor', 'true');
+  if (quickFilters.includes('reviewed')) params.set('reviewed', 'true');
+  if (quickFilters.includes('unreviewed') || quickFilters.includes('needs_review')) params.set('reviewed', 'false');
+  if (quickFilters.includes('pending_sync')) params.set('pendingSync', 'true');
+
   const res = await fetch(apiUrl(`/api/pricebook/materials?${params}`));
   if (!res.ok) return { data: [], totalCount: 0, page: 1, pageSize: 25, hasMore: false };
   return res.json();

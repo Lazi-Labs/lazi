@@ -528,7 +528,8 @@ export type FilterType =
   | 'needs_review'
   | 'unreviewed'
   | 'reviewed'
-  | 'pending_sync';
+  | 'pending_sync'
+  | 'no_vendor';
 
 export function useQuickFilters(initialFilters: FilterType[] = []) {
   const [activeFilters, setActiveFilters] = useState<FilterType[]>(initialFilters);

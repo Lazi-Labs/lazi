@@ -6,7 +6,7 @@ services:
   # ===========================================================================
   lazi-api:
     build:
-      context: ./services/api
+      context: ../../services/api
       dockerfile: Dockerfile
     container_name: lazi-api
     restart: unless-stopped
@@ -57,7 +57,7 @@ services:
   # ===========================================================================
   lazi-web:
     build:
-      context: ./apps/web
+      context: ../../apps/web
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://api.lazilabs.com
@@ -80,6 +80,7 @@ services:
       - PLAID_WEBHOOK_URL=https://lazilabs.com/dashboard/api/plaid/webhook
       - PLAID_REDIRECT_URI=https://lazilabs.com/dashboard/api/plaid/oauth-redirect
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - PRICING_API_URL=https://pricing.lazilabs.com
     networks:
       - lazi-internal
       - traefik-net

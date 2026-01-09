@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Pricing System - LAZI AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .tab-active { background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .metric-card { transition: all 0.2s ease; }
+        .metric-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .expand-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .expand-content.open { max-height: 2000px; }
+        .modal-backdrop { background: rgba(0,0,0,0.5); }
+        input:focus { outline: none; ring: 2px; ring-color: #0ea5e9; }
+        .btn-primary { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); }
+        .btn-primary:hover { background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <div id="app" class="max-w-7xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Advanced Pricing System</h1>
+                <p class="text-slate-500 text-sm">Perfect Catch & Pools - LAZI AI</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="saveStatus" class="text-sm text-slate-500">All changes saved</span>
+                <button onclick="exportData()" class="px-4 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">
+                    Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-slate-100 p-1 rounded-xl mb-6 inline-flex">
+            <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 tab-active">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Overview
+            </button>
+            <button onclick="switchTab('workforce')" id="tab-workforce" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4"></i> Workforce
+            </button>
+            <button onclick="switchTab('fleet')" id="tab-fleet" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i data-lucide="truck" class="w-4 h-4"></i> Fleet
+            </button>
+            <button onclick="switchTab('expenses')" id="tab-expenses" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i data-lucide="receipt" class="w-4 h-4"></i> Expenses
+            </button>
+            <button onclick="switchTab('rates')" id="tab-rates" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i data-lucide="calculator" class="w-4 h-4"></i> Rates
+            </button>
+            <button onclick="switchTab('pl')" id="tab-pl" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> P&L
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="content-overview" class="tab-content"></div>
+        <div id="content-workforce" class="tab-content hidden"></div>
+        <div id="content-fleet" class="tab-content hidden"></div>
+        <div id="content-expenses" class="tab-content hidden"></div>
+        <div id="content-rates" class="tab-content hidden"></div>
+        <div id="content-pl" class="tab-content hidden"></div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // DATA STORE
+        // ============================================================================
+        
+        const state = {
+            settings: {
+                companyName: "Perfect Catch & Pools",
+                workingDaysPerYear: 260,
+                weeksPerYear: 52,
+                targetAnnualRevenue: 2205000,
+                materialCostPercent: 20
+            },
+            
+            technicians: [
+                {
+                    id: 1,
+                    name: "Mike Johnson",
+                    role: "Lead Technician",
+                    status: "active",
+                    hireDate: "2021-03-15",
+                    email: "mike@perfectcatch.com",
+                    phone: "(727) 555-0101",
+                    payType: "hourly",
+                    basePayRate: 35,
+                    paidHoursPerDay: 8,
+                    payrollTaxRate: 7.65,
+                    futaRate: 0.6,
+                    sutaRate: 2.7,
+                    workersCompRate: 8.5,
+                    healthInsurance: 450,
+                    dentalVision: 75,
+                    retirement401k: 3,
+                    otherBenefits: 50,
+                    assignedVehicleId: 1,
+                    unproductiveTime: [
+                        { id: 1, name: "Morning Meeting", hours: 0.5, paid: true },
+                        { id: 2, name: "Drive Time", hours: 1.5, paid: true },
+                        { id: 3, name: "Lunch Break", hours: 0.5, paid: false },
+                        { id: 4, name: "Paperwork/Admin", hours: 0.5, paid: true }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "David Rodriguez",
+                    role: "Lead Technician",
+                    status: "active",
+                    hireDate: "2020-08-22",
+                    email: "david@perfectcatch.com",
+                    phone: "(727) 555-0102",
+                    payType: "hourly",
+                    basePayRate: 35,
+                    paidHoursPerDay: 8,
+                    payrollTaxRate: 7.65,
+                    futaRate: 0.6,
+                    sutaRate: 2.7,
+                    workersCompRate: 8.5,
+                    healthInsurance: 450,
+                    dentalVision: 75,
+                    retirement401k: 3,
+                    otherBenefits: 50,
+                    assignedVehicleId: 2,
+                    unproductiveTime: [
+                        { id: 1, name: "Morning Meeting", hours: 0.5, paid: true },
+                        { id: 2, name: "Drive Time", hours: 1.5, paid: true },
+                        { id: 3, name: "Lunch Break", hours: 0.5, paid: false },
+                        { id: 4, name: "Paperwork/Admin", hours: 0.5, paid: true }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "Chris Thompson",
+                    role: "Lead Technician",
+                    status: "active",
+                    hireDate: "2022-01-10",
+                    email: "chris@perfectcatch.com",
+                    phone: "(727) 555-0103",
+                    payType: "hourly",
+                    basePayRate: 32,
+                    paidHoursPerDay: 8,
+                    payrollTaxRate: 7.65,
+                    futaRate: 0.6,
+                    sutaRate: 2.7,
+                    workersCompRate: 8.5,
+                    healthInsurance: 450,
+                    dentalVision: 75,
+                    retirement401k: 3,
+                    otherBenefits: 50,
+                    assignedVehicleId: 3,
+                    unproductiveTime: [
+                        { id: 1, name: "Morning Meeting", hours: 0.5, paid: true },
+                        { id: 2, name: "Drive Time", hours: 2.0, paid: true },
+                        { id: 3, name: "Lunch Break", hours: 0.5, paid: false },
+                        { id: 4, name: "Paperwork/Admin", hours: 0.5, paid: true }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "Alex Martinez",
+                    role: "Helper/Apprentice",
+                    status: "active",
+                    hireDate: "2023-06-01",
+                    email: "alex@perfectcatch.com",
+                    phone: "(727) 555-0104",
+                    payType: "hourly",
+                    basePayRate: 22,
+                    paidHoursPerDay: 8,
+                    payrollTaxRate: 7.65,
+                    futaRate: 0.6,
+                    sutaRate: 2.7,
+                    workersCompRate: 8.5,
+                    healthInsurance: 300,
+                    dentalVision: 50,
+                    retirement401k: 3,
+                    otherBenefits: 25,
+                    assignedVehicleId: 5,
+                    unproductiveTime: [
+                        { id: 1, name: "Morning Meeting", hours: 0.5, paid: true },
+                        { id: 2, name: "Drive Time", hours: 1.5, paid: true },
+                        { id: 3, name: "Lunch Break", hours: 0.5, paid: false },
+                        { id: 4, name: "Paperwork/Admin", hours: 0.5, paid: true },
+                        { id: 5, name: "Training", hours: 0.5, paid: true }
+                    ]
+                }
+            ],
+            
+            officeStaff: [
+                {
+                    id: 1,
+                    name: "Sarah Wilson",
+                    role: "Office Manager",
+                    status: "active",
+                    hireDate: "2019-05-15",
+                    email: "sarah@perfectcatch.com",
+                    phone: "(727) 555-0201",
+                    payType: "salary",
+                    annualSalary: 55000,
+                    hoursPerWeek: 40,
+                    payrollTaxRate: 7.65,
+                    futaRate: 0.6,
+                    sutaRate: 2.7,
+                    workersCompRate: 0.5,
+                    healthInsurance: 500,
+                    dentalVision: 75,
+                    retirement401k: 3,
+                    otherBenefits: 50
+                },
+                {
+                    id: 2,
+                    name: "Jennifer Lee",
+                    role: "Dispatcher/CSR",
+                    status: "active",
+                    hireDate: "2021-09-01",
+                    email: "jennifer@perfectcatch.com",
+                    phone: "(727) 555-0202",
+                    payType: "hourly",
+                    basePayRate: 20,
+                    hoursPerWeek: 40,
+                    payrollTaxRate: 7.65,
+                    futaRate: 0.6,
+                    sutaRate: 2.7,
+                    workersCompRate: 0.5,
+                    healthInsurance: 400,
+                    dentalVision: 50,
+                    retirement401k: 3,
+                    otherBenefits: 25
+                },
+                {
+                    id: 3,
+                    name: "Yanni (Owner)",
+                    role: "Owner/Operator",
+                    status: "active",
+                    hireDate: "2018-01-01",
+                    email: "yanni@perfectcatch.com",
+                    phone: "(727) 555-0200",
+                    payType: "salary",
+                    annualSalary: 96000,
+                    hoursPerWeek: 50,
+                    payrollTaxRate: 0,
+                    futaRate: 0,
+                    sutaRate: 0,
+                    workersCompRate: 0,
+                    healthInsurance: 600,
+                    dentalVision: 100,
+                    retirement401k: 0,
+                    otherBenefits: 100
+                }
+            ],
+            
+            vehicles: [
+                { id: 1, year: 2024, make: "Ford", model: "T250", vin: "KB27688", status: "active", assignedDriverId: 1, loanBalance: 71048, monthlyPayment: 1527.70, marketValue: 38500, insurance: 200, fuel: 550, maintenance: 75 },
+                { id: 2, year: 2024, make: "Ford", model: "T250", vin: "KA00562", status: "active", assignedDriverId: 2, loanBalance: 66699, monthlyPayment: 1549.67, marketValue: 38500, insurance: 200, fuel: 550, maintenance: 75 },
+                { id: 3, year: 2024, make: "Ford", model: "T250", vin: "KB27552", status: "active", assignedDriverId: 3, loanBalance: 67533, monthlyPayment: 1508.83, marketValue: 38500, insurance: 200, fuel: 550, maintenance: 75 },
+                { id: 4, year: 2023, make: "Ford", model: "T250", vin: "KB49980", status: "reserve", assignedDriverId: null, loanBalance: 49715, monthlyPayment: 1338.71, marketValue: 34000, insurance: 175, fuel: 0, maintenance: 50 },
+                { id: 5, year: 2024, make: "Ford", model: "T250", vin: "KB53953", status: "active", assignedDriverId: 4, loanBalance: 70655, monthlyPayment: 1580.00, marketValue: 36000, insurance: 200, fuel: 500, maintenance: 75 },
+                { id: 6, year: 2023, make: "Ford", model: "F250", vin: "EC20408", status: "active", assignedDriverId: null, loanBalance: 60527, monthlyPayment: 1863.45, marketValue: 0, insurance: 225, fuel: 600, maintenance: 100 },
+                { id: 7, year: 2018, make: "Ford", model: "T250", vin: "KA64488", status: "maintenance", assignedDriverId: null, loanBalance: 18188, monthlyPayment: 552.70, marketValue: 12850, insurance: 125, fuel: 0, maintenance: 200 },
+                { id: 8, year: 2019, make: "Ford", model: "T250", vin: "KA32101", status: "reserve", assignedDriverId: null, loanBalance: 0, monthlyPayment: 0, marketValue: 18500, insurance: 150, fuel: 0, maintenance: 50 }
+            ],
+            
+            expenseCategories: [
+                {
+                    id: "facility",
+                    name: "Facility & Office",
+                    icon: "building-2",
+                    color: "blue",
+                    collapsed: false,
+                    items: [
+                        { id: 1, name: "Office/Warehouse Rent", amount: 2500, frequency: "monthly" },
+                        { id: 2, name: "Utilities (Electric/Water)", amount: 450, frequency: "monthly" },
+                        { id: 3, name: "Internet/Phone", amount: 275, frequency: "monthly" },
+                        { id: 4, name: "Office Supplies", amount: 150, frequency: "monthly" },
+                        { id: 5, name: "Cleaning/Maintenance", amount: 200, frequency: "monthly" }
+                    ]
+                },
+                {
+                    id: "insurance",
+                    name: "Business Insurance",
+                    icon: "shield",
+                    color: "emerald",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "General Liability", amount: 14400, frequency: "annual" },
+                        { id: 2, name: "E&O Insurance", amount: 3000, frequency: "annual" },
+                        { id: 3, name: "Bonding", amount: 1800, frequency: "annual" },
+                        { id: 4, name: "Umbrella Policy", amount: 2400, frequency: "annual" }
+                    ]
+                },
+                {
+                    id: "software",
+                    name: "Software & Technology",
+                    icon: "monitor",
+                    color: "violet",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "ServiceTitan", amount: 1500, frequency: "monthly" },
+                        { id: 2, name: "QuickBooks", amount: 150, frequency: "monthly" },
+                        { id: 3, name: "LAZI AI Platform", amount: 299, frequency: "monthly" },
+                        { id: 4, name: "Google Workspace", amount: 120, frequency: "monthly" },
+                        { id: 5, name: "Other Software", amount: 100, frequency: "monthly" }
+                    ]
+                },
+                {
+                    id: "marketing",
+                    name: "Marketing & Advertising",
+                    icon: "megaphone",
+                    color: "rose",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "Google Ads (PPC)", amount: 2000, frequency: "monthly" },
+                        { id: 2, name: "SEO Services", amount: 500, frequency: "monthly" },
+                        { id: 3, name: "Social Media Ads", amount: 300, frequency: "monthly" },
+                        { id: 4, name: "Print/Direct Mail", amount: 200, frequency: "monthly" },
+                        { id: 5, name: "Referral Program", amount: 250, frequency: "monthly" }
+                    ]
+                },
+                {
+                    id: "financial",
+                    name: "Financial & Professional",
+                    icon: "landmark",
+                    color: "slate",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "Accounting/Bookkeeping", amount: 500, frequency: "monthly" },
+                        { id: 2, name: "Legal Retainer", amount: 250, frequency: "monthly" },
+                        { id: 3, name: "Merchant Processing Fees", amount: 450, frequency: "monthly" },
+                        { id: 4, name: "Business Loans Interest", amount: 1200, frequency: "monthly" },
+                        { id: 5, name: "Bank Fees", amount: 75, frequency: "monthly" }
+                    ]
+                },
+                {
+                    id: "tools",
+                    name: "Tools & Equipment",
+                    icon: "wrench",
+                    color: "orange",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "Tool Replacement/Repair", amount: 300, frequency: "monthly" },
+                        { id: 2, name: "Safety Equipment", amount: 100, frequency: "monthly" },
+                        { id: 3, name: "Uniforms", amount: 75, frequency: "monthly" }
+                    ]
+                },
+                {
+                    id: "training",
+                    name: "Training & Development",
+                    icon: "graduation-cap",
+                    color: "teal",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "Certifications", amount: 1200, frequency: "annual" },
+                        { id: 2, name: "Training Programs", amount: 150, frequency: "monthly" },
+                        { id: 3, name: "Industry Memberships", amount: 500, frequency: "annual" }
+                    ]
+                },
+                {
+                    id: "misc",
+                    name: "Miscellaneous",
+                    icon: "more-horizontal",
+                    color: "gray",
+                    collapsed: true,
+                    items: [
+                        { id: 1, name: "Contingency/Emergency", amount: 500, frequency: "monthly" },
+                        { id: 2, name: "Employee Events/Morale", amount: 200, frequency: "monthly" },
+                        { id: 3, name: "Miscellaneous", amount: 150, frequency: "monthly" }
+                    ]
+                }
+            ],
+            
+            jobTypes: [
+                { id: 1, name: "Service Call", code: "SVC", description: "4 Hours or Less", minHours: 0, maxHours: 4, targetMargin: 60, memberDiscount: 0, materialMargin: 40, surcharge: 0 },
+                { id: 2, name: "Half Day", code: "HALF", description: "4-6 Hours", minHours: 4, maxHours: 6, targetMargin: 60, memberDiscount: 10, materialMargin: 60, surcharge: 0 },
+                { id: 3, name: "Full Day Install", code: "INST", description: "6+ Hours / Multi-Day", minHours: 6, maxHours: 40, targetMargin: 60, memberDiscount: 10, materialMargin: 65, surcharge: 0 }
+            ],
+            
+            markupTiers: [
+                { id: 1, minCost: 0, maxCost: 20, grossMargin: 80 },
+                { id: 2, minCost: 20.01, maxCost: 50, grossMargin: 78 },
+                { id: 3, minCost: 50.01, maxCost: 1000, grossMargin: 75 },
+                { id: 4, minCost: 1000.01, maxCost: 999999, grossMargin: 70 }
+            ]
+        };
+
+        // ============================================================================
+        // FORMATTING UTILITIES
+        // ============================================================================
+        
+        const fmt = {
+            currency: (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n || 0),
+            currencyFull: (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n || 0),
+            percent: (n) => `${(n || 0).toFixed(1)}%`,
+            number: (n) => new Intl.NumberFormat('en-US').format(n || 0)
+        };
+
+        // ============================================================================
+        // CALCULATION ENGINE
+        // ============================================================================
+        
+        function calcTechMetrics(tech) {
+            const hoursPerYear = tech.paidHoursPerDay * state.settings.workingDaysPerYear;
+            const annualBasePay = tech.basePayRate * hoursPerYear;
+            
+            // Burden calculations
+            const payrollTaxes = annualBasePay * (tech.payrollTaxRate / 100);
+            const futa = Math.min(annualBasePay, 7000) * (tech.futaRate / 100);
+            const suta = annualBasePay * (tech.sutaRate / 100);
+            const workersComp = annualBasePay * (tech.workersCompRate / 100);
+            const healthAnnual = tech.healthInsurance * 12;
+            const dentalAnnual = tech.dentalVision * 12;
+            const retirement = annualBasePay * (tech.retirement401k / 100);
+            const otherAnnual = tech.otherBenefits * 12;
+            
+            const totalBurden = payrollTaxes + futa + suta + workersComp + healthAnnual + dentalAnnual + retirement + otherAnnual;
+            const burdenPercent = (totalBurden / annualBasePay) * 100;
+            const totalCostAnnual = annualBasePay + totalBurden;
+            
+            // Productivity
+            const paidUnproductive = tech.unproductiveTime.filter(t => t.paid).reduce((s, t) => s + t.hours, 0);
+            const unpaidUnproductive = tech.unproductiveTime.filter(t => !t.paid).reduce((s, t) => s + t.hours, 0);
+            const billableHoursPerDay = tech.paidHoursPerDay - paidUnproductive;
+            const billableHoursPerYear = billableHoursPerDay * state.settings.workingDaysPerYear;
+            const efficiency = (billableHoursPerDay / tech.paidHoursPerDay) * 100;
+            
+            // True cost
+            const trueCostPerHour = billableHoursPerYear > 0 ? totalCostAnnual / billableHoursPerYear : 0;
+            
+            // Vehicle cost
+            const vehicle = state.vehicles.find(v => v.id === tech.assignedVehicleId);
+            const vehicleMonthlyCost = vehicle ? (vehicle.monthlyPayment + vehicle.insurance + vehicle.fuel + vehicle.maintenance) : 0;
+            const billableHoursPerMonth = billableHoursPerDay * (state.settings.workingDaysPerYear / 12);
+            const vehicleCostPerHour = billableHoursPerMonth > 0 ? vehicleMonthlyCost / billableHoursPerMonth : 0;
+            
+            const loadedCostPerHour = trueCostPerHour + vehicleCostPerHour;
+            
+            return {
+                hoursPerYear,
+                annualBasePay,
+                payrollTaxes, futa, suta, workersComp, healthAnnual, dentalAnnual, retirement, otherAnnual,
+                totalBurden,
+                burdenPercent,
+                totalCostAnnual,
+                paidUnproductive,
+                unpaidUnproductive,
+                billableHoursPerDay,
+                billableHoursPerYear,
+                efficiency,
+                trueCostPerHour,
+                vehicleMonthlyCost,
+                vehicleCostPerHour,
+                loadedCostPerHour,
+                monthlyCost: totalCostAnnual / 12
+            };
+        }
+        
+        function calcStaffMetrics(staff) {
+            const hoursPerYear = staff.hoursPerWeek * state.settings.weeksPerYear;
+            const annualBasePay = staff.payType === 'salary' ? staff.annualSalary : (staff.basePayRate * hoursPerYear);
+            
+            const payrollTaxes = annualBasePay * (staff.payrollTaxRate / 100);
+            const futa = Math.min(annualBasePay, 7000) * (staff.futaRate / 100);
+            const suta = annualBasePay * (staff.sutaRate / 100);
+            const workersComp = annualBasePay * (staff.workersCompRate / 100);
+            const healthAnnual = staff.healthInsurance * 12;
+            const dentalAnnual = staff.dentalVision * 12;
+            const retirement = annualBasePay * (staff.retirement401k / 100);
+            const otherAnnual = staff.otherBenefits * 12;
+            
+            const totalBurden = payrollTaxes + futa + suta + workersComp + healthAnnual + dentalAnnual + retirement + otherAnnual;
+            const burdenPercent = (totalBurden / annualBasePay) * 100;
+            const totalCostAnnual = annualBasePay + totalBurden;
+            
+            return {
+                hoursPerYear,
+                annualBasePay,
+                totalBurden,
+                burdenPercent,
+                totalCostAnnual,
+                monthlyCost: totalCostAnnual / 12
+            };
+        }
+        
+        function calcFleetMetrics() {
+            const active = state.vehicles.filter(v => ['active', 'reserve', 'maintenance'].includes(v.status));
+            const totalPayments = active.reduce((s, v) => s + v.monthlyPayment, 0);
+            const totalInsurance = active.reduce((s, v) => s + v.insurance, 0);
+            const totalFuel = active.reduce((s, v) => s + v.fuel, 0);
+            const totalMaintenance = active.reduce((s, v) => s + v.maintenance, 0);
+            const totalMonthly = totalPayments + totalInsurance + totalFuel + totalMaintenance;
+            const totalLoanBalance = active.reduce((s, v) => s + v.loanBalance, 0);
+            const totalMarketValue = active.reduce((s, v) => s + v.marketValue, 0);
+            const totalEquity = totalMarketValue - totalLoanBalance;
+            
+            return {
+                totalVehicles: state.vehicles.length,
+                activeVehicles: state.vehicles.filter(v => v.status === 'active').length,
+                totalPayments, totalInsurance, totalFuel, totalMaintenance,
+                totalMonthly,
+                totalYearly: totalMonthly * 12,
+                totalLoanBalance, totalMarketValue, totalEquity
+            };
+        }
+        
+        function calcExpenseMonthly(item) {
+            switch(item.frequency) {
+                case 'annual': return item.amount / 12;
+                case 'quarterly': return item.amount / 3;
+                default: return item.amount;
+            }
+        }
+        
+        function calcTotalExpenses() {
+            let total = 0;
+            state.expenseCategories.forEach(cat => {
+                cat.items.forEach(item => {
+                    total += calcExpenseMonthly(item);
+                });
+            });
+            return total;
+        }
+        
+        function calcSummary() {
+            const activeTechs = state.technicians.filter(t => t.status === 'active');
+            const activeStaff = state.officeStaff.filter(s => s.status === 'active');
+            
+            let totalTechCost = 0;
+            let totalBillableHours = 0;
+            let totalBurdenPercent = 0;
+            let totalEfficiency = 0;
+            let totalTrueCost = 0;
+            let totalLoadedCost = 0;
+            
+            activeTechs.forEach(tech => {
+                const m = calcTechMetrics(tech);
+                totalTechCost += m.totalCostAnnual;
+                totalBillableHours += m.billableHoursPerYear;
+                totalBurdenPercent += m.burdenPercent;
+                totalEfficiency += m.efficiency;
+                totalTrueCost += m.trueCostPerHour;
+                totalLoadedCost += m.loadedCostPerHour;
+            });
+            
+            let totalStaffCost = 0;
+            activeStaff.forEach(staff => {
+                const m = calcStaffMetrics(staff);
+                totalStaffCost += m.totalCostAnnual;
+            });
+            
+            const fleet = calcFleetMetrics();
+            const monthlyExpenses = calcTotalExpenses();
+            const monthlyOverhead = monthlyExpenses + (totalStaffCost / 12);
+            
+            const avgBurden = activeTechs.length > 0 ? totalBurdenPercent / activeTechs.length : 0;
+            const avgEfficiency = activeTechs.length > 0 ? totalEfficiency / activeTechs.length : 0;
+            const avgTrueCost = activeTechs.length > 0 ? totalTrueCost / activeTechs.length : 0;
+            const avgLoadedCost = activeTechs.length > 0 ? totalLoadedCost / activeTechs.length : 0;
+            
+            const fleetCostPerHour = totalBillableHours > 0 ? (fleet.totalMonthly * 12) / totalBillableHours : 0;
+            const overheadPerHour = totalBillableHours > 0 ? (monthlyOverhead * 12) / totalBillableHours : 0;
+            
+            // P&L
+            const revenue = state.settings.targetAnnualRevenue;
+            const materialsCost = revenue * (state.settings.materialCostPercent / 100);
+            const grossProfit = revenue - materialsCost - totalTechCost;
+            const netProfit = grossProfit - (monthlyOverhead * 12);
+            const grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
+            const netMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+            
+            // Break-even
+            const contributionMargin = 1 - (state.settings.materialCostPercent / 100);
+            const monthlyBreakEven = contributionMargin > 0 ? ((totalTechCost / 12) + monthlyOverhead) / contributionMargin : 0;
+            
+            return {
+                techCount: activeTechs.length,
+                staffCount: activeStaff.length,
+                totalTechCost,
+                totalStaffCost,
+                totalBillableHours,
+                avgBurden,
+                avgEfficiency,
+                avgTrueCost,
+                avgLoadedCost,
+                fleetMonthly: fleet.totalMonthly,
+                fleetCostPerHour,
+                monthlyExpenses,
+                monthlyOverhead,
+                overheadPerHour,
+                revenue,
+                materialsCost,
+                grossProfit,
+                grossMargin,
+                netProfit,
+                netMargin,
+                monthlyBreakEven,
+                dailyBreakEven: monthlyBreakEven / 21.67,
+                annualBreakEven: monthlyBreakEven * 12,
+                revenuePerTech: activeTechs.length > 0 ? revenue / activeTechs.length : 0
+            };
+        }
+        
+        function calcHourlyRate(loadedCost, targetMargin) {
+            if (targetMargin >= 100) return 0;
+            return loadedCost / (1 - targetMargin / 100);
+        }
+
+        // ============================================================================
+        // TAB SWITCHING
+        // ============================================================================
+        
+        let currentTab = 'overview';
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-active'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            renderCurrentTab();
+        }
+        
+        function renderCurrentTab() {
+            switch(currentTab) {
+                case 'overview': renderOverview(); break;
+                case 'workforce': renderWorkforce(); break;
+                case 'fleet': renderFleet(); break;
+                case 'expenses': renderExpenses(); break;
+                case 'rates': renderRates(); break;
+                case 'pl': renderPL(); break;
+            }
+            lucide.createIcons();
+        }
+
+        // ============================================================================
+        // RENDER FUNCTIONS
+        // ============================================================================
+        
+        function renderOverview() {
+            const s = calcSummary();
+            const html = `
+                <!-- Top Metrics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Total Technicians</span>
+                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${s.techCount}</div>
+                        <div class="text-xs text-slate-400">Active field technicians</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Avg. True Cost/Hr</span>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.avgTrueCost)}</div>
+                        <div class="text-xs text-slate-400">Per billable hour</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Avg. Efficiency</span>
+                            <i data-lucide="clock" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.percent(s.avgEfficiency)}</div>
+                        <div class="text-xs text-slate-400">Billable vs paid hours</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Avg. Burden</span>
+                            <i data-lucide="trending-up" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.percent(s.avgBurden)}</div>
+                        <div class="text-xs text-slate-400">Above base pay</div>
+                    </div>
+                </div>
+                
+                <!-- Second Row -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Fleet Cost</span>
+                            <i data-lucide="truck" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.fleetMonthly)}</div>
+                        <div class="text-xs text-slate-400">Monthly total</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Overhead</span>
+                            <i data-lucide="receipt" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.monthlyOverhead)}</div>
+                        <div class="text-xs text-slate-400">Monthly fixed costs</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Loaded Cost/Hr</span>
+                            <i data-lucide="calculator" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.avgLoadedCost)}</div>
+                        <div class="text-xs text-slate-400">Labor + vehicle allocation</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Break-Even</span>
+                            <i data-lucide="target" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.monthlyBreakEven)}</div>
+                        <div class="text-xs text-slate-400">Monthly target</div>
+                    </div>
+                </div>
+                
+                <!-- P&L and Rates Summary -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5">
+                        <h3 class="font-semibold text-slate-800 mb-1">P&L Projections</h3>
+                        <p class="text-sm text-slate-500 mb-4">Annual financial summary</p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600">Projected Revenue</span>
+                                <span class="font-semibold">${fmt.currency(s.revenue)}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600">Material Cost</span>
+                                <span class="font-semibold text-red-500">-${fmt.currency(s.materialsCost)}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600">Labor Cost</span>
+                                <span class="font-semibold text-red-500">-${fmt.currency(s.totalTechCost)}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600">Gross Profit</span>
+                                <span class="font-semibold text-emerald-600">${fmt.currency(s.grossProfit)}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600">Gross Margin</span>
+                                <span class="px-2 py-0.5 bg-slate-100 rounded-full text-sm">${fmt.percent(s.grossMargin)}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600">Overhead</span>
+                                <span class="font-semibold text-red-500">-${fmt.currency(s.monthlyOverhead * 12)}</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-slate-100">
+                                <span class="text-slate-600 font-semibold">Net Profit</span>
+                                <span class="font-bold text-emerald-600">${fmt.currency(s.netProfit)}</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-slate-600">Net Margin</span>
+                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">${fmt.percent(s.netMargin)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl border border-slate-200 p-5">
+                        <h3 class="font-semibold text-slate-800 mb-1">Job Type Rates</h3>
+                        <p class="text-sm text-slate-500 mb-4">Calculated hourly rates by job type</p>
+                        
+                        <div class="space-y-4">
+                            ${state.jobTypes.map(jt => {
+                                const rate = calcHourlyRate(s.avgLoadedCost, jt.targetMargin);
+                                const memberRate = rate * (1 - jt.memberDiscount / 100);
+                                return `
+                                    <div class="p-4 bg-slate-50 rounded-lg">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="font-medium">${jt.name}</span>
+                                            <span class="text-xl font-bold">${fmt.currencyFull(rate)}/hr</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm text-slate-500">
+                                            <span>Target: ${jt.targetMargin}% margin</span>
+                                            <span class="text-emerald-600">Member: ${fmt.currencyFull(memberRate)}/hr</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-overview').innerHTML = html;
+        }
+        
+        function renderWorkforce() {
+            const s = calcSummary();
+            const html = `
+                <!-- Metrics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Total Technicians</span>
+                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${s.techCount}</div>
+                        <div class="text-xs text-slate-400">Active field technicians</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Office Staff</span>
+                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${s.staffCount}</div>
+                        <div class="text-xs text-slate-400">Non-billable employees</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Total Billable Hours</span>
+                            <i data-lucide="clock" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.number(s.totalBillableHours)}</div>
+                        <div class="text-xs text-slate-400">Annual capacity</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Total Labor Cost</span>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.totalTechCost)}</div>
+                        <div class="text-xs text-slate-400">Annual (base + burden)</div>
+                    </div>
+                </div>
+                
+                <!-- Technicians Section -->
+                <div class="bg-white rounded-xl border border-slate-200 mb-6">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Technician Metrics</h3>
+                            <p class="text-sm text-slate-500">Individual cost and efficiency breakdown</p>
+                        </div>
+                        <button onclick="openTechModal()" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Technician
+                        </button>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        ${state.technicians.map(tech => {
+                            const m = calcTechMetrics(tech);
+                            const vehicle = state.vehicles.find(v => v.id === tech.assignedVehicleId);
+                            return `
+                                <div class="tech-row">
+                                    <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50" onclick="toggleExpand(this)">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white font-semibold">
+                                                ${tech.name.split(' ').map(n => n[0]).join('')}
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-slate-800">${tech.name}</div>
+                                                <div class="text-sm text-slate-500">${tech.role} • ${fmt.currencyFull(tech.basePayRate)}/hr</div>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded-full text-xs ${tech.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${tech.status}</span>
+                                        </div>
+                                        <div class="flex items-center gap-8">
+                                            <div class="text-center">
+                                                <div class="text-xs text-slate-500">Burden</div>
+                                                <div class="font-semibold text-amber-600">${fmt.percent(m.burdenPercent)}</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-xs text-slate-500">Efficiency</div>
+                                                <div class="font-semibold text-emerald-600">${fmt.percent(m.efficiency)}</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-xs text-slate-500">True Cost</div>
+                                                <div class="font-semibold">${fmt.currencyFull(m.trueCostPerHour)}</div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-xs text-slate-500">Loaded</div>
+                                                <div class="font-semibold text-indigo-600">${fmt.currencyFull(m.loadedCostPerHour)}</div>
+                                            </div>
+                                            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 expand-icon transition-transform"></i>
+                                        </div>
+                                    </div>
+                                    <div class="expand-content bg-slate-50">
+                                        <div class="p-4 grid grid-cols-3 gap-4">
+                                            <!-- Burden Breakdown -->
+                                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                                <h4 class="font-medium text-amber-800 mb-3">Annual Burden Breakdown</h4>
+                                                <div class="space-y-2 text-sm">
+                                                    <div class="flex justify-between"><span>Base Pay</span><span class="font-medium">${fmt.currency(m.annualBasePay)}</span></div>
+                                                    <div class="flex justify-between"><span>Payroll Taxes (FICA)</span><span>${fmt.currency(m.payrollTaxes)}</span></div>
+                                                    <div class="flex justify-between"><span>FUTA</span><span>${fmt.currency(m.futa)}</span></div>
+                                                    <div class="flex justify-between"><span>SUTA</span><span>${fmt.currency(m.suta)}</span></div>
+                                                    <div class="flex justify-between"><span>Workers Comp</span><span>${fmt.currency(m.workersComp)}</span></div>
+                                                    <div class="flex justify-between"><span>Health Insurance</span><span>${fmt.currency(m.healthAnnual)}</span></div>
+                                                    <div class="flex justify-between"><span>Dental/Vision</span><span>${fmt.currency(m.dentalAnnual)}</span></div>
+                                                    <div class="flex justify-between"><span>401k Match</span><span>${fmt.currency(m.retirement)}</span></div>
+                                                    <div class="flex justify-between"><span>Other Benefits</span><span>${fmt.currency(m.otherAnnual)}</span></div>
+                                                    <div class="border-t border-amber-300 pt-2 flex justify-between font-semibold">
+                                                        <span>Total Burden</span><span>${fmt.currency(m.totalBurden)}</span>
+                                                    </div>
+                                                    <div class="flex justify-between font-bold text-amber-700">
+                                                        <span>Total Annual Cost</span><span>${fmt.currency(m.totalCostAnnual)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Productivity -->
+                                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                                                <h4 class="font-medium text-emerald-800 mb-3">Productivity Summary</h4>
+                                                <div class="space-y-2 text-sm">
+                                                    <div class="flex justify-between"><span>Paid Hours/Day</span><span class="font-medium">${tech.paidHoursPerDay} hrs</span></div>
+                                                    <div class="flex justify-between"><span>Paid Unproductive</span><span class="text-red-500">-${m.paidUnproductive} hrs</span></div>
+                                                    <div class="flex justify-between"><span>Unpaid Time</span><span class="text-slate-500">${m.unpaidUnproductive} hrs</span></div>
+                                                    <div class="border-t border-emerald-300 pt-2 flex justify-between font-semibold">
+                                                        <span>Billable Hours/Day</span><span>${m.billableHoursPerDay} hrs</span>
+                                                    </div>
+                                                    <div class="flex justify-between"><span>Billable Hours/Year</span><span>${fmt.number(m.billableHoursPerYear)} hrs</span></div>
+                                                    <div class="flex justify-between font-bold text-emerald-700">
+                                                        <span>Efficiency</span><span>${fmt.percent(m.efficiency)}</span>
+                                                    </div>
+                                                    <div class="mt-4 pt-4 border-t border-emerald-300">
+                                                        <div class="text-xs text-emerald-600 mb-2">Unproductive Time:</div>
+                                                        ${tech.unproductiveTime.map(ut => `
+                                                            <div class="flex justify-between text-xs">
+                                                                <span>${ut.name}</span>
+                                                                <span>${ut.hours}hr ${ut.paid ? '(paid)' : '(unpaid)'}</span>
+                                                            </div>
+                                                        `).join('')}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Vehicle & Total -->
+                                            <div class="bg-violet-50 border border-violet-200 rounded-lg p-4">
+                                                <h4 class="font-medium text-violet-800 mb-3">Vehicle Assignment</h4>
+                                                <div class="space-y-2 text-sm">
+                                                    ${vehicle ? `
+                                                        <div class="flex justify-between"><span>Vehicle</span><span class="font-medium">${vehicle.year} ${vehicle.make} ${vehicle.model}</span></div>
+                                                        <div class="flex justify-between"><span>VIN</span><span>${vehicle.vin}</span></div>
+                                                        <div class="flex justify-between"><span>Monthly Cost</span><span>${fmt.currency(m.vehicleMonthlyCost)}</span></div>
+                                                        <div class="flex justify-between font-semibold"><span>Cost/Billable Hr</span><span>${fmt.currencyFull(m.vehicleCostPerHour)}</span></div>
+                                                    ` : `<div class="text-slate-500 italic">No vehicle assigned</div>`}
+                                                </div>
+                                                
+                                                <div class="mt-4 pt-4 border-t border-violet-300">
+                                                    <h4 class="font-medium text-violet-800 mb-3">Total Cost Summary</h4>
+                                                    <div class="space-y-2 text-sm">
+                                                        <div class="flex justify-between"><span>True Cost/Hr</span><span class="font-medium">${fmt.currencyFull(m.trueCostPerHour)}</span></div>
+                                                        <div class="flex justify-between"><span>Vehicle Cost/Hr</span><span>+${fmt.currencyFull(m.vehicleCostPerHour)}</span></div>
+                                                        <div class="border-t border-violet-300 pt-2 flex justify-between font-bold text-violet-700">
+                                                            <span>Loaded Cost/Hr</span><span>${fmt.currencyFull(m.loadedCostPerHour)}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="px-4 pb-4 flex justify-end gap-2">
+                                            <button onclick="openTechModal(${tech.id})" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100">
+                                                <i data-lucide="edit-2" class="w-4 h-4 inline"></i> Edit
+                                            </button>
+                                            <button onclick="deleteTech(${tech.id})" class="px-3 py-1.5 text-sm border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
+                                                <i data-lucide="trash-2" class="w-4 h-4 inline"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <!-- Office Staff Section -->
+                <div class="bg-white rounded-xl border border-slate-200">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Office Staff</h3>
+                            <p class="text-sm text-slate-500">Non-billable employee costs (flows to overhead)</p>
+                        </div>
+                        <button onclick="openStaffModal()" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Staff
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Employee</th>
+                                    <th class="px-4 py-3 text-left">Role</th>
+                                    <th class="px-4 py-3 text-right">Pay</th>
+                                    <th class="px-4 py-3 text-right">Burden %</th>
+                                    <th class="px-4 py-3 text-right">Annual Cost</th>
+                                    <th class="px-4 py-3 text-right">Monthly</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${state.officeStaff.map(staff => {
+                                    const m = calcStaffMetrics(staff);
+                                    return `
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-semibold">
+                                                        ${staff.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                                                    </div>
+                                                    <span class="font-medium">${staff.name}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-slate-600">${staff.role}</td>
+                                            <td class="px-4 py-3 text-right">${staff.payType === 'salary' ? fmt.currency(staff.annualSalary) + '/yr' : fmt.currencyFull(staff.basePayRate) + '/hr'}</td>
+                                            <td class="px-4 py-3 text-right text-amber-600">${fmt.percent(m.burdenPercent)}</td>
+                                            <td class="px-4 py-3 text-right font-medium">${fmt.currency(m.totalCostAnnual)}</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currency(m.monthlyCost)}</td>
+                                            <td class="px-4 py-3 text-right">
+                                                <button onclick="openStaffModal(${staff.id})" class="p-1 hover:bg-slate-200 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button onclick="deleteStaff(${staff.id})" class="p-1 hover:bg-red-100 text-red-500 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                            <tfoot class="bg-slate-100 font-semibold">
+                                <tr>
+                                    <td class="px-4 py-3" colspan="4">Total Office Staff Cost</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(s.totalStaffCost)}</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(s.totalStaffCost / 12)}</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-workforce').innerHTML = html;
+        }
+        
+        function renderFleet() {
+            const f = calcFleetMetrics();
+            const s = calcSummary();
+            const html = `
+                <!-- Metrics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Total Vehicles</span>
+                            <i data-lucide="truck" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${f.totalVehicles}</div>
+                        <div class="text-xs text-slate-400">In fleet</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Active Vehicles</span>
+                            <i data-lucide="truck" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${f.activeVehicles}</div>
+                        <div class="text-xs text-slate-400">In service</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Monthly Fleet Cost</span>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(f.totalMonthly)}</div>
+                        <div class="text-xs text-slate-400">All vehicle expenses</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Cost Per Billable Hour</span>
+                            <i data-lucide="calculator" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.fleetCostPerHour)}</div>
+                        <div class="text-xs text-slate-400">Fleet allocation</div>
+                    </div>
+                </div>
+                
+                <!-- Fleet Table -->
+                <div class="bg-white rounded-xl border border-slate-200">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Fleet Management</h3>
+                            <p class="text-sm text-slate-500">Vehicle details and cost tracking</p>
+                        </div>
+                        <button onclick="openVehicleModal()" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Vehicle
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Vehicle</th>
+                                    <th class="px-4 py-3 text-left">VIN</th>
+                                    <th class="px-4 py-3 text-left">Status</th>
+                                    <th class="px-4 py-3 text-left">Driver</th>
+                                    <th class="px-4 py-3 text-right">Payment</th>
+                                    <th class="px-4 py-3 text-right">Insurance</th>
+                                    <th class="px-4 py-3 text-right">Fuel</th>
+                                    <th class="px-4 py-3 text-right">Maint.</th>
+                                    <th class="px-4 py-3 text-right">Total/Mo</th>
+                                    <th class="px-4 py-3 text-right">Equity</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${state.vehicles.map(v => {
+                                    const driver = state.technicians.find(t => t.assignedVehicleId === v.id);
+                                    const total = v.monthlyPayment + v.insurance + v.fuel + v.maintenance;
+                                    const equity = v.marketValue - v.loanBalance;
+                                    return `
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-4 py-3 font-medium">${v.year} ${v.make} ${v.model}</td>
+                                            <td class="px-4 py-3 text-slate-500">${v.vin}</td>
+                                            <td class="px-4 py-3">
+                                                <span class="px-2 py-0.5 rounded-full text-xs ${
+                                                    v.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                                                    v.status === 'reserve' ? 'bg-sky-100 text-sky-700' :
+                                                    v.status === 'maintenance' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-slate-100 text-slate-600'
+                                                }">${v.status}</span>
+                                            </td>
+                                            <td class="px-4 py-3">${driver ? driver.name : '<span class="text-slate-400">Unassigned</span>'}</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currencyFull(v.monthlyPayment)}</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currency(v.insurance)}</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currency(v.fuel)}</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currency(v.maintenance)}</td>
+                                            <td class="px-4 py-3 text-right font-semibold">${fmt.currency(total)}</td>
+                                            <td class="px-4 py-3 text-right ${equity < 0 ? 'text-red-500' : 'text-emerald-600'}">${fmt.currency(equity)}</td>
+                                            <td class="px-4 py-3 text-right">
+                                                <button onclick="openVehicleModal(${v.id})" class="p-1 hover:bg-slate-200 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button onclick="deleteVehicle(${v.id})" class="p-1 hover:bg-red-100 text-red-500 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                            <tfoot class="bg-slate-100 font-semibold">
+                                <tr>
+                                    <td class="px-4 py-3" colspan="4">Fleet Totals</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(f.totalPayments)}</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(f.totalInsurance)}</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(f.totalFuel)}</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(f.totalMaintenance)}</td>
+                                    <td class="px-4 py-3 text-right">${fmt.currency(f.totalMonthly)}</td>
+                                    <td class="px-4 py-3 text-right ${f.totalEquity < 0 ? 'text-red-500' : 'text-emerald-600'}">${fmt.currency(f.totalEquity)}</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-fleet').innerHTML = html;
+        }
+        
+        function renderExpenses() {
+            const s = calcSummary();
+            const html = `
+                <!-- Metrics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Monthly Overhead</span>
+                            <i data-lucide="receipt" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.monthlyOverhead)}</div>
+                        <div class="text-xs text-slate-400">Fixed operating costs</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Annual Overhead</span>
+                            <i data-lucide="receipt" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.monthlyOverhead * 12)}</div>
+                        <div class="text-xs text-slate-400">Yearly total</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Overhead/Billable Hr</span>
+                            <i data-lucide="calculator" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.overheadPerHour)}</div>
+                        <div class="text-xs text-slate-400">Allocation per hour</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Office Staff Cost</span>
+                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.totalStaffCost)}</div>
+                        <div class="text-xs text-slate-400">Annual total</div>
+                    </div>
+                </div>
+                
+                <!-- Expense Categories -->
+                <div class="bg-white rounded-xl border border-slate-200">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-semibold text-slate-800">Expense Categories</h3>
+                        <p class="text-sm text-slate-500">Manage overhead and operating expenses</p>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        ${state.expenseCategories.map(cat => {
+                            const monthlyTotal = cat.items.reduce((s, i) => s + calcExpenseMonthly(i), 0);
+                            return `
+                                <div class="expense-category">
+                                    <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50" onclick="toggleExpand(this)">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-${cat.color}-100 flex items-center justify-center">
+                                                <i data-lucide="${cat.icon}" class="w-5 h-5 text-${cat.color}-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">${cat.name}</div>
+                                                <div class="text-sm text-slate-500">${cat.items.length} items</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <span class="font-semibold">${fmt.currency(monthlyTotal)}/mo</span>
+                                            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 expand-icon transition-transform"></i>
+                                        </div>
+                                    </div>
+                                    <div class="expand-content bg-slate-50">
+                                        <div class="p-4">
+                                            <table class="w-full text-sm">
+                                                <thead class="text-xs text-slate-500 uppercase">
+                                                    <tr>
+                                                        <th class="pb-2 text-left">Item</th>
+                                                        <th class="pb-2 text-right">Amount</th>
+                                                        <th class="pb-2 text-right">Frequency</th>
+                                                        <th class="pb-2 text-right">Monthly</th>
+                                                        <th class="pb-2 text-right">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-200">
+                                                    ${cat.items.map(item => `
+                                                        <tr>
+                                                            <td class="py-2">${item.name}</td>
+                                                            <td class="py-2 text-right">${fmt.currency(item.amount)}</td>
+                                                            <td class="py-2 text-right capitalize">${item.frequency}</td>
+                                                            <td class="py-2 text-right font-medium">${fmt.currency(calcExpenseMonthly(item))}</td>
+                                                            <td class="py-2 text-right">
+                                                                <button onclick="openExpenseModal('${cat.id}', ${item.id})" class="p-1 hover:bg-slate-200 rounded"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                                                                <button onclick="deleteExpense('${cat.id}', ${item.id})" class="p-1 hover:bg-red-100 text-red-500 rounded"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                                                            </td>
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
+                                            <button onclick="openExpenseModal('${cat.id}')" class="mt-3 text-sm text-sky-600 hover:text-sky-700 flex items-center gap-1">
+                                                <i data-lucide="plus" class="w-4 h-4"></i> Add Item
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-expenses').innerHTML = html;
+        }
+        
+        function renderRates() {
+            const s = calcSummary();
+            const html = `
+                <!-- Metrics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Loaded Cost/Hr</span>
+                            <i data-lucide="calculator" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.avgLoadedCost)}</div>
+                        <div class="text-xs text-slate-400">Base for rate calculation</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Avg. True Cost/Hr</span>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.avgTrueCost)}</div>
+                        <div class="text-xs text-slate-400">Labor cost only</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Fleet/Hr</span>
+                            <i data-lucide="truck" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.fleetCostPerHour)}</div>
+                        <div class="text-xs text-slate-400">Vehicle allocation</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Overhead/Hr</span>
+                            <i data-lucide="receipt" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currencyFull(s.overheadPerHour)}</div>
+                        <div class="text-xs text-slate-400">Fixed cost allocation</div>
+                    </div>
+                </div>
+                
+                <!-- Editable Job Type Rate Cards -->
+                <div class="bg-white rounded-xl border border-slate-200 mb-6">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-semibold text-slate-800">Job Type Rate Cards</h3>
+                        <p class="text-sm text-slate-500">Edit margins and see calculated rates in real-time</p>
+                    </div>
+                    <div class="p-4 space-y-6">
+                        ${state.jobTypes.map((jt, idx) => {
+                            const rate = calcHourlyRate(s.avgLoadedCost, jt.targetMargin);
+                            const memberRate = rate * (1 - jt.memberDiscount / 100);
+                            const minInvoice = (rate * jt.minHours) + (jt.surcharge || 0);
+                            const gradients = [
+                                'from-sky-400 to-cyan-500',
+                                'from-violet-500 to-purple-600',
+                                'from-emerald-500 to-teal-600'
+                            ];
+                            return `
+                                <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                                    <!-- Gradient Header -->
+                                    <div class="bg-gradient-to-r ${gradients[idx % 3]} text-white p-4">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-bold text-lg">${jt.name}</h4>
+                                                <p class="text-white/80 text-sm">${jt.description || jt.minHours + '-' + jt.maxHours + ' Hours'}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-3xl font-bold" id="rate-display-${jt.id}">${fmt.currencyFull(rate)}</div>
+                                                <div class="text-white/80 text-sm">per hour</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Editable Fields -->
+                                    <div class="p-4 bg-slate-50">
+                                        <div class="grid grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm text-slate-600 mb-1">Target Margin</label>
+                                                <div class="relative">
+                                                    <input type="number" step="1" min="0" max="99" 
+                                                        value="${jt.targetMargin}" 
+                                                        onchange="updateJobType(${jt.id}, 'targetMargin', parseFloat(this.value))"
+                                                        class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-lg font-medium">
+                                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm text-slate-600 mb-1">Member Discount</label>
+                                                <div class="relative">
+                                                    <input type="number" step="1" min="0" max="50" 
+                                                        value="${jt.memberDiscount}" 
+                                                        onchange="updateJobType(${jt.id}, 'memberDiscount', parseFloat(this.value))"
+                                                        class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-lg font-medium">
+                                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm text-slate-600 mb-1">Material Margin</label>
+                                                <div class="relative">
+                                                    <input type="number" step="1" min="0" max="90" 
+                                                        value="${jt.materialMargin}" 
+                                                        onchange="updateJobType(${jt.id}, 'materialMargin', parseFloat(this.value))"
+                                                        class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-lg font-medium">
+                                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm text-slate-600 mb-1">Surcharge</label>
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                                                    <input type="number" step="5" min="0" 
+                                                        value="${jt.surcharge || 0}" 
+                                                        onchange="updateJobType(${jt.id}, 'surcharge', parseFloat(this.value))"
+                                                        class="w-full px-3 py-2 pl-8 border border-slate-300 rounded-lg text-lg font-medium">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Calculated Values -->
+                                        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                                            <div class="bg-white rounded-lg p-3 text-center">
+                                                <div class="text-sm text-slate-500">Member Rate</div>
+                                                <div class="text-xl font-bold text-emerald-600" id="member-rate-${jt.id}">${fmt.currencyFull(memberRate)}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3 text-center">
+                                                <div class="text-sm text-slate-500">Min Invoice</div>
+                                                <div class="text-xl font-bold" id="min-invoice-${jt.id}">${fmt.currencyFull(minInvoice)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <!-- Markup Tiers -->
+                <div class="bg-white rounded-xl border border-slate-200">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Material Markup Tiers</h3>
+                            <p class="text-sm text-slate-500">Tiered markup structure for materials/parts</p>
+                        </div>
+                        <button onclick="openMarkupTierModal()" class="btn-primary text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Tier
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <table class="w-full text-sm">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Cost Range</th>
+                                    <th class="px-4 py-3 text-right">Gross Margin</th>
+                                    <th class="px-4 py-3 text-right">Markup %</th>
+                                    <th class="px-4 py-3 text-right">Multiplier</th>
+                                    <th class="px-4 py-3 text-right">$10 → Sell</th>
+                                    <th class="px-4 py-3 text-right">$100 → Sell</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${state.markupTiers.map(tier => {
+                                    const markup = tier.grossMargin / (100 - tier.grossMargin) * 100;
+                                    const multiplier = 1 / (1 - tier.grossMargin / 100);
+                                    return `
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-4 py-3">${fmt.currency(tier.minCost)} - ${tier.maxCost >= 999999 ? '∞' : fmt.currency(tier.maxCost)}</td>
+                                            <td class="px-4 py-3 text-right">
+                                                <input type="number" value="${tier.grossMargin}" min="1" max="99" step="1"
+                                                    onchange="updateMarkupTier(${tier.id}, parseFloat(this.value))"
+                                                    class="w-16 px-2 py-1 border border-slate-300 rounded text-right">%
+                                            </td>
+                                            <td class="px-4 py-3 text-right text-emerald-600 font-medium">${markup.toFixed(0)}%</td>
+                                            <td class="px-4 py-3 text-right">${multiplier.toFixed(2)}×</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currency(10 * multiplier)}</td>
+                                            <td class="px-4 py-3 text-right">${fmt.currency(100 * multiplier)}</td>
+                                            <td class="px-4 py-3 text-right">
+                                                <button onclick="deleteMarkupTier(${tier.id})" class="p-1 hover:bg-red-100 text-red-500 rounded">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Material Price Calculator -->
+                    <div class="p-4 border-t border-slate-200 bg-slate-50">
+                        <h4 class="font-medium text-slate-700 mb-3">Material Price Calculator</h4>
+                        <div class="flex items-center gap-4">
+                            <div>
+                                <label class="text-sm text-slate-600">Cost</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                                    <input type="number" id="material-cost-input" value="25" step="0.01" min="0"
+                                        onchange="calculateMaterialSellPrice()"
+                                        class="w-32 px-3 py-2 pl-8 border border-slate-300 rounded-lg">
+                                </div>
+                            </div>
+                            <div class="text-2xl text-slate-400">→</div>
+                            <div>
+                                <label class="text-sm text-slate-600">Sell Price</label>
+                                <div id="material-sell-price" class="text-2xl font-bold text-emerald-600">${fmt.currency(25 * 4.545)}</div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-slate-600">Margin</label>
+                                <div id="material-margin-display" class="text-lg font-medium text-slate-700">78%</div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-slate-600">Profit</label>
+                                <div id="material-profit-display" class="text-lg font-medium text-emerald-600">${fmt.currency(25 * 4.545 - 25)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-rates').innerHTML = html;
+        }
+        
+        function updateJobType(id, field, value) {
+            const jt = state.jobTypes.find(j => j.id === id);
+            if (jt) {
+                jt[field] = value;
+                
+                // Recalculate rates
+                const s = calcSummary();
+                const rate = calcHourlyRate(s.avgLoadedCost, jt.targetMargin);
+                const memberRate = rate * (1 - jt.memberDiscount / 100);
+                const minInvoice = (rate * jt.minHours) + (jt.surcharge || 0);
+                
+                // Update displays
+                document.getElementById(`rate-display-${id}`).textContent = fmt.currencyFull(rate);
+                document.getElementById(`member-rate-${id}`).textContent = fmt.currencyFull(memberRate);
+                document.getElementById(`min-invoice-${id}`).textContent = fmt.currencyFull(minInvoice);
+            }
+        }
+        
+        function updateMarkupTier(id, grossMargin) {
+            const tier = state.markupTiers.find(t => t.id === id);
+            if (tier) {
+                tier.grossMargin = grossMargin;
+                renderRates();
+                lucide.createIcons();
+            }
+        }
+        
+        function deleteMarkupTier(id) {
+            if (confirm('Delete this markup tier?')) {
+                state.markupTiers = state.markupTiers.filter(t => t.id !== id);
+                renderRates();
+                lucide.createIcons();
+            }
+        }
+        
+        function openMarkupTierModal() {
+            const lastTier = state.markupTiers[state.markupTiers.length - 1];
+            const newMin = lastTier ? lastTier.maxCost + 0.01 : 0;
+            
+            openModal(`
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4">Add Markup Tier</h2>
+                    <form onsubmit="saveMarkupTier(event)" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Min Cost</label>
+                                <input type="number" step="0.01" name="minCost" value="${newMin}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Max Cost</label>
+                                <input type="number" step="0.01" name="maxCost" value="999999" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Gross Margin %</label>
+                            <input type="number" step="1" min="1" max="99" name="grossMargin" value="60" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        </div>
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg">Add Tier</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+        
+        function saveMarkupTier(e) {
+            e.preventDefault();
+            const form = e.target;
+            const newTier = {
+                id: Math.max(...state.markupTiers.map(t => t.id), 0) + 1,
+                minCost: parseFloat(form.minCost.value),
+                maxCost: parseFloat(form.maxCost.value),
+                grossMargin: parseFloat(form.grossMargin.value)
+            };
+            state.markupTiers.push(newTier);
+            state.markupTiers.sort((a, b) => a.minCost - b.minCost);
+            closeModal();
+            renderRates();
+            lucide.createIcons();
+        }
+        
+        function calculateMaterialSellPrice() {
+            const cost = parseFloat(document.getElementById('material-cost-input').value) || 0;
+            
+            // Find applicable tier
+            const tier = state.markupTiers.find(t => cost >= t.minCost && cost <= t.maxCost);
+            if (!tier) {
+                document.getElementById('material-sell-price').textContent = 'N/A';
+                return;
+            }
+            
+            const multiplier = 1 / (1 - tier.grossMargin / 100);
+            const sellPrice = cost * multiplier;
+            const profit = sellPrice - cost;
+            
+            document.getElementById('material-sell-price').textContent = fmt.currency(sellPrice);
+            document.getElementById('material-margin-display').textContent = tier.grossMargin + '%';
+            document.getElementById('material-profit-display').textContent = fmt.currency(profit);
+        }
+        
+        function renderPL() {
+            const s = calcSummary();
+            const html = `
+                <!-- Top Metrics -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Projected Revenue</span>
+                            <i data-lucide="target" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.revenue)}</div>
+                        <div class="text-xs text-slate-400">Annual target</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Gross Profit</span>
+                            <i data-lucide="trending-up" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-emerald-600">${fmt.currency(s.grossProfit)}</div>
+                        <div class="text-xs text-slate-400">${fmt.percent(s.grossMargin)} margin</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Net Profit</span>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold ${s.netProfit >= 0 ? 'text-emerald-600' : 'text-red-500'}">${fmt.currency(s.netProfit)}</div>
+                        <div class="text-xs text-slate-400">${fmt.percent(s.netMargin)} margin</div>
+                    </div>
+                    <div class="metric-card bg-white rounded-xl border border-slate-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-slate-500">Break-Even</span>
+                            <i data-lucide="target" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${fmt.currency(s.annualBreakEven)}</div>
+                        <div class="text-xs text-slate-400">Annual minimum</div>
+                    </div>
+                </div>
+                
+                <!-- Break-Even & Per-Tech -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5">
+                        <h3 class="font-semibold text-slate-800 mb-1">Break-Even Analysis</h3>
+                        <p class="text-sm text-slate-500 mb-4">Revenue targets to cover all costs</p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between py-3 border-b border-slate-100">
+                                <span class="text-slate-600">Daily Break-Even</span>
+                                <span class="font-semibold">${fmt.currency(s.dailyBreakEven)}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-slate-100">
+                                <span class="text-slate-600">Monthly Break-Even</span>
+                                <span class="font-semibold">${fmt.currency(s.monthlyBreakEven)}</span>
+                            </div>
+                            <div class="flex justify-between py-3">
+                                <span class="text-slate-600">Annual Break-Even</span>
+                                <span class="font-semibold">${fmt.currency(s.annualBreakEven)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl border border-slate-200 p-5">
+                        <h3 class="font-semibold text-slate-800 mb-1">Per-Technician Metrics</h3>
+                        <p class="text-sm text-slate-500 mb-4">Revenue and production targets</p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between py-3 border-b border-slate-100">
+                                <span class="text-slate-600">Revenue/Tech (Annual)</span>
+                                <span class="font-semibold">${fmt.currency(s.revenuePerTech)}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-slate-100">
+                                <span class="text-slate-600">Revenue/Tech (Monthly)</span>
+                                <span class="font-semibold">${fmt.currency(s.revenuePerTech / 12)}</span>
+                            </div>
+                            <div class="flex justify-between py-3">
+                                <span class="text-slate-600">Total Billable Hours</span>
+                                <span class="font-semibold">${fmt.number(s.totalBillableHours)} hrs/yr</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-pl').innerHTML = html;
+        }
+
+        // ============================================================================
+        // UI INTERACTIONS
+        // ============================================================================
+        
+        function toggleExpand(el) {
+            const content = el.nextElementSibling;
+            const icon = el.querySelector('.expand-icon');
+            content.classList.toggle('open');
+            icon.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : '';
+        }
+        
+        function openModal(html) {
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal').classList.add('flex');
+            lucide.createIcons();
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+        }
+        
+        // Close modal on backdrop click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+
+        // ============================================================================
+        // CRUD MODALS
+        // ============================================================================
+        
+        // Temporary storage for unproductive time being edited
+        let tempUnproductiveTime = [];
+        
+        function openTechModal(id = null) {
+            const tech = id ? state.technicians.find(t => t.id === id) : null;
+            const isEdit = !!tech;
+            
+            // Initialize temp unproductive time
+            tempUnproductiveTime = tech ? JSON.parse(JSON.stringify(tech.unproductiveTime)) : [
+                { id: 1, name: "Morning Meeting", hours: 0.5, paid: true },
+                { id: 2, name: "Drive Time", hours: 1.5, paid: true },
+                { id: 3, name: "Lunch Break", hours: 0.5, paid: false },
+                { id: 4, name: "Paperwork/Admin", hours: 0.5, paid: true }
+            ];
+            
+            openModal(`
+                <div class="p-6 max-h-[85vh] overflow-y-auto">
+                    <h2 class="text-xl font-bold mb-4">${isEdit ? 'Edit' : 'Add'} Technician</h2>
+                    <form onsubmit="saveTech(event, ${id})" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                                <input type="text" name="name" value="${tech?.name || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                                <input type="text" name="role" value="${tech?.role || 'Technician'}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Base Pay Rate ($/hr)</label>
+                                <input type="number" step="0.01" name="basePayRate" value="${tech?.basePayRate || 25}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Paid Hours/Day</label>
+                                <input type="number" step="0.5" name="paidHoursPerDay" value="${tech?.paidHoursPerDay || 8}" onchange="updateTechModalSummaries()" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-slate-700 pt-2">Burden Rates</h3>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">FICA %</label>
+                                <input type="number" step="0.01" name="payrollTaxRate" value="${tech?.payrollTaxRate || 7.65}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">FUTA %</label>
+                                <input type="number" step="0.01" name="futaRate" value="${tech?.futaRate || 0.6}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">SUTA %</label>
+                                <input type="number" step="0.01" name="sutaRate" value="${tech?.sutaRate || 2.7}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Workers Comp %</label>
+                                <input type="number" step="0.01" name="workersCompRate" value="${tech?.workersCompRate || 8.5}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-slate-700 pt-2">Benefits (Monthly)</h3>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Health $</label>
+                                <input type="number" name="healthInsurance" value="${tech?.healthInsurance || 400}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Dental/Vision $</label>
+                                <input type="number" name="dentalVision" value="${tech?.dentalVision || 50}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">401k Match %</label>
+                                <input type="number" step="0.5" name="retirement401k" value="${tech?.retirement401k || 3}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Other $</label>
+                                <input type="number" name="otherBenefits" value="${tech?.otherBenefits || 25}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            </div>
+                        </div>
+                        
+                        <!-- Unproductive Time Section -->
+                        <div class="border-t border-slate-200 pt-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-semibold text-emerald-700">Unproductive Time (Hours per Day)</h3>
+                                <button type="button" onclick="addUnproductiveTime()" class="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                                    <i data-lucide="plus" class="w-4 h-4"></i> Add Time
+                                </button>
+                            </div>
+                            <div id="unproductive-time-list" class="space-y-2">
+                                ${renderUnproductiveTimeInputs()}
+                            </div>
+                            
+                            <!-- Productivity Summary -->
+                            <div id="productivity-summary" class="mt-4 p-3 bg-emerald-50 rounded-lg">
+                                ${renderProductivitySummary(tech?.paidHoursPerDay || 8)}
+                            </div>
+                        </div>
+                        
+                        <!-- Vehicle Assignment -->
+                        <div class="border-t border-slate-200 pt-4">
+                            <h3 class="font-semibold text-violet-700 mb-3">Vehicle Assignment</h3>
+                            <div class="grid grid-cols-2 gap-4 items-end">
+                                <div>
+                                    <select name="assignedVehicleId" onchange="updateTechModalSummaries()" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                                        <option value="">None</option>
+                                        ${state.vehicles.map(v => `<option value="${v.id}" ${tech?.assignedVehicleId === v.id ? 'selected' : ''}>${v.year} ${v.make} ${v.model} - ${v.vin}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div id="vehicle-cost-display" class="text-sm">
+                                    ${renderVehicleCostDisplay(tech?.assignedVehicleId, tech?.paidHoursPerDay || 8)}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+            lucide.createIcons();
+        }
+        
+        function renderUnproductiveTimeInputs() {
+            return tempUnproductiveTime.map((ut, idx) => `
+                <div class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                    <input type="text" value="${ut.name}" onchange="updateUnproductiveTime(${idx}, 'name', this.value)" 
+                        class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm" placeholder="Activity name">
+                    <input type="number" step="0.25" value="${ut.hours}" onchange="updateUnproductiveTime(${idx}, 'hours', parseFloat(this.value))" 
+                        class="w-20 px-2 py-2 border border-slate-300 rounded-lg text-sm text-center">
+                    <span class="text-xs text-slate-500">hrs</span>
+                    <label class="flex items-center gap-1 text-sm cursor-pointer">
+                        <input type="checkbox" ${ut.paid ? 'checked' : ''} onchange="updateUnproductiveTime(${idx}, 'paid', this.checked)"
+                            class="w-4 h-4 text-emerald-600 rounded">
+                        <span class="text-emerald-600">Paid</span>
+                    </label>
+                    <button type="button" onclick="removeUnproductiveTime(${idx})" class="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function renderProductivitySummary(paidHoursPerDay) {
+            const paidUnproductive = tempUnproductiveTime.filter(t => t.paid).reduce((s, t) => s + t.hours, 0);
+            const unpaidTime = tempUnproductiveTime.filter(t => !t.paid).reduce((s, t) => s + t.hours, 0);
+            const billablePerDay = paidHoursPerDay - paidUnproductive;
+            const billablePerYear = billablePerDay * state.settings.workingDaysPerYear;
+            const efficiency = (billablePerDay / paidHoursPerDay) * 100;
+            
+            return `
+                <div class="text-sm text-emerald-700 font-medium mb-2">Productivity Summary</div>
+                <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                    <div><span class="text-slate-600">Paid Hours/Day:</span> ${paidHoursPerDay}</div>
+                    <div><span class="text-slate-600">Paid Unproductive:</span> ${paidUnproductive} hrs</div>
+                    <div><span class="text-slate-600">Unpaid Time:</span> ${unpaidTime} hrs</div>
+                    <div><span class="font-semibold">Billable Hours/Day:</span> ${billablePerDay.toFixed(1)}</div>
+                    <div><span class="text-slate-600">Billable Hours/Year:</span> ${fmt.number(Math.round(billablePerYear))}</div>
+                    <div><span class="font-semibold">Efficiency:</span> ${efficiency.toFixed(2)}%</div>
+                </div>
+            `;
+        }
+        
+        function renderVehicleCostDisplay(vehicleId, paidHoursPerDay) {
+            if (!vehicleId) return '<span class="text-slate-400">No vehicle assigned</span>';
+            
+            const vehicle = state.vehicles.find(v => v.id === vehicleId);
+            if (!vehicle) return '<span class="text-slate-400">Vehicle not found</span>';
+            
+            const monthlyCost = vehicle.monthlyPayment + vehicle.insurance + vehicle.fuel + vehicle.maintenance;
+            const paidUnproductive = tempUnproductiveTime.filter(t => t.paid).reduce((s, t) => s + t.hours, 0);
+            const billablePerDay = paidHoursPerDay - paidUnproductive;
+            const billablePerMonth = billablePerDay * (state.settings.workingDaysPerYear / 12);
+            const costPerHour = billablePerMonth > 0 ? monthlyCost / billablePerMonth : 0;
+            
+            return `
+                <div class="text-violet-600">
+                    <div class="text-xs text-slate-500">Vehicle Cost</div>
+                    <div class="font-semibold">${fmt.currencyFull(monthlyCost)}/mo</div>
+                    <div class="text-xs">${fmt.currencyFull(costPerHour)}/billable hr</div>
+                </div>
+            `;
+        }
+        
+        function updateTechModalSummaries() {
+            const paidHours = parseFloat(document.querySelector('[name="paidHoursPerDay"]').value) || 8;
+            document.getElementById('productivity-summary').innerHTML = renderProductivitySummary(paidHours);
+            
+            const vehicleId = parseInt(document.querySelector('[name="assignedVehicleId"]').value) || null;
+            document.getElementById('vehicle-cost-display').innerHTML = renderVehicleCostDisplay(vehicleId, paidHours);
+        }
+        
+        function updateUnproductiveTime(idx, field, value) {
+            tempUnproductiveTime[idx][field] = value;
+            updateTechModalSummaries();
+        }
+        
+        function addUnproductiveTime() {
+            const newId = Math.max(...tempUnproductiveTime.map(t => t.id), 0) + 1;
+            tempUnproductiveTime.push({ id: newId, name: "", hours: 0.5, paid: true });
+            document.getElementById('unproductive-time-list').innerHTML = renderUnproductiveTimeInputs();
+            lucide.createIcons();
+            updateTechModalSummaries();
+        }
+        
+        function removeUnproductiveTime(idx) {
+            tempUnproductiveTime.splice(idx, 1);
+            document.getElementById('unproductive-time-list').innerHTML = renderUnproductiveTimeInputs();
+            lucide.createIcons();
+            updateTechModalSummaries();
+        }
+        
+        function saveTech(e, id) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                role: form.role.value,
+                status: 'active',
+                payType: 'hourly',
+                basePayRate: parseFloat(form.basePayRate.value),
+                paidHoursPerDay: parseFloat(form.paidHoursPerDay.value),
+                payrollTaxRate: parseFloat(form.payrollTaxRate.value),
+                futaRate: parseFloat(form.futaRate.value),
+                sutaRate: parseFloat(form.sutaRate.value),
+                workersCompRate: parseFloat(form.workersCompRate.value),
+                healthInsurance: parseFloat(form.healthInsurance.value),
+                dentalVision: parseFloat(form.dentalVision.value),
+                retirement401k: parseFloat(form.retirement401k.value),
+                otherBenefits: parseFloat(form.otherBenefits.value),
+                assignedVehicleId: form.assignedVehicleId.value ? parseInt(form.assignedVehicleId.value) : null,
+                unproductiveTime: tempUnproductiveTime.filter(ut => ut.name.trim() !== '')
+            };
+            
+            if (id) {
+                const idx = state.technicians.findIndex(t => t.id === id);
+                state.technicians[idx] = { ...state.technicians[idx], ...data };
+            } else {
+                data.id = Math.max(...state.technicians.map(t => t.id), 0) + 1;
+                state.technicians.push(data);
+            }
+            
+            closeModal();
+            renderCurrentTab();
+        }
+        
+        function deleteTech(id) {
+            if (confirm('Delete this technician?')) {
+                state.technicians = state.technicians.filter(t => t.id !== id);
+                renderCurrentTab();
+            }
+        }
+        
+        function openStaffModal(id = null) {
+            const staff = id ? state.officeStaff.find(s => s.id === id) : null;
+            const isEdit = !!staff;
+            
+            openModal(`
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4">${isEdit ? 'Edit' : 'Add'} Office Staff</h2>
+                    <form onsubmit="saveStaff(event, ${id})" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                                <input type="text" name="name" value="${staff?.name || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                                <input type="text" name="role" value="${staff?.role || 'Office Staff'}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Pay Type</label>
+                                <select name="payType" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                                    <option value="hourly" ${staff?.payType === 'hourly' ? 'selected' : ''}>Hourly</option>
+                                    <option value="salary" ${staff?.payType === 'salary' ? 'selected' : ''}>Salary</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Hourly Rate / Annual Salary</label>
+                                <input type="number" step="0.01" name="pay" value="${staff?.payType === 'salary' ? staff?.annualSalary : staff?.basePayRate || 20}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Hours/Week</label>
+                                <input type="number" name="hoursPerWeek" value="${staff?.hoursPerWeek || 40}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Health Insurance $/mo</label>
+                                <input type="number" name="healthInsurance" value="${staff?.healthInsurance || 400}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+        
+        function saveStaff(e, id) {
+            e.preventDefault();
+            const form = e.target;
+            const payType = form.payType.value;
+            const data = {
+                name: form.name.value,
+                role: form.role.value,
+                status: 'active',
+                payType: payType,
+                basePayRate: payType === 'hourly' ? parseFloat(form.pay.value) : null,
+                annualSalary: payType === 'salary' ? parseFloat(form.pay.value) : null,
+                hoursPerWeek: parseFloat(form.hoursPerWeek.value),
+                payrollTaxRate: 7.65,
+                futaRate: 0.6,
+                sutaRate: 2.7,
+                workersCompRate: 0.5,
+                healthInsurance: parseFloat(form.healthInsurance.value),
+                dentalVision: 50,
+                retirement401k: 3,
+                otherBenefits: 25
+            };
+            
+            if (id) {
+                const idx = state.officeStaff.findIndex(s => s.id === id);
+                state.officeStaff[idx] = { ...state.officeStaff[idx], ...data };
+            } else {
+                data.id = Math.max(...state.officeStaff.map(s => s.id), 0) + 1;
+                state.officeStaff.push(data);
+            }
+            
+            closeModal();
+            renderCurrentTab();
+        }
+        
+        function deleteStaff(id) {
+            if (confirm('Delete this staff member?')) {
+                state.officeStaff = state.officeStaff.filter(s => s.id !== id);
+                renderCurrentTab();
+            }
+        }
+        
+        function openVehicleModal(id = null) {
+            const vehicle = id ? state.vehicles.find(v => v.id === id) : null;
+            const isEdit = !!vehicle;
+            
+            openModal(`
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4">${isEdit ? 'Edit' : 'Add'} Vehicle</h2>
+                    <form onsubmit="saveVehicle(event, ${id})" class="space-y-4">
+                        <div class="grid grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Year</label>
+                                <input type="number" name="year" value="${vehicle?.year || new Date().getFullYear()}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Make</label>
+                                <input type="text" name="make" value="${vehicle?.make || 'Ford'}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Model</label>
+                                <input type="text" name="model" value="${vehicle?.model || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">VIN</label>
+                                <input type="text" name="vin" value="${vehicle?.vin || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                                <select name="status" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                                    <option value="active" ${vehicle?.status === 'active' ? 'selected' : ''}>Active</option>
+                                    <option value="reserve" ${vehicle?.status === 'reserve' ? 'selected' : ''}>Reserve</option>
+                                    <option value="maintenance" ${vehicle?.status === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+                                    <option value="sold" ${vehicle?.status === 'sold' ? 'selected' : ''}>Sold</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Assigned Driver</label>
+                                <select name="assignedDriverId" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                                    <option value="">Unassigned</option>
+                                    ${state.technicians.map(t => `<option value="${t.id}" ${vehicle?.assignedDriverId === t.id ? 'selected' : ''}>${t.name}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-slate-700 pt-2">Financial</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Loan Balance</label>
+                                <input type="number" step="0.01" name="loanBalance" value="${vehicle?.loanBalance || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Monthly Payment</label>
+                                <input type="number" step="0.01" name="monthlyPayment" value="${vehicle?.monthlyPayment || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Market Value</label>
+                                <input type="number" step="0.01" name="marketValue" value="${vehicle?.marketValue || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-slate-700 pt-2">Monthly Costs</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Insurance</label>
+                                <input type="number" name="insurance" value="${vehicle?.insurance || 200}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Fuel</label>
+                                <input type="number" name="fuel" value="${vehicle?.fuel || 500}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Maintenance</label>
+                                <input type="number" name="maintenance" value="${vehicle?.maintenance || 75}" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+        
+        function saveVehicle(e, id) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                year: parseInt(form.year.value),
+                make: form.make.value,
+                model: form.model.value,
+                vin: form.vin.value,
+                status: form.status.value,
+                assignedDriverId: form.assignedDriverId.value ? parseInt(form.assignedDriverId.value) : null,
+                loanBalance: parseFloat(form.loanBalance.value),
+                monthlyPayment: parseFloat(form.monthlyPayment.value),
+                marketValue: parseFloat(form.marketValue.value),
+                insurance: parseFloat(form.insurance.value),
+                fuel: parseFloat(form.fuel.value),
+                maintenance: parseFloat(form.maintenance.value)
+            };
+            
+            // Update tech vehicle assignment
+            if (data.assignedDriverId) {
+                const tech = state.technicians.find(t => t.id === data.assignedDriverId);
+                if (tech) tech.assignedVehicleId = id || (Math.max(...state.vehicles.map(v => v.id), 0) + 1);
+            }
+            
+            if (id) {
+                const idx = state.vehicles.findIndex(v => v.id === id);
+                state.vehicles[idx] = { ...state.vehicles[idx], ...data };
+            } else {
+                data.id = Math.max(...state.vehicles.map(v => v.id), 0) + 1;
+                state.vehicles.push(data);
+            }
+            
+            closeModal();
+            renderCurrentTab();
+        }
+        
+        function deleteVehicle(id) {
+            if (confirm('Delete this vehicle?')) {
+                state.vehicles = state.vehicles.filter(v => v.id !== id);
+                // Clear assignment from techs
+                state.technicians.forEach(t => {
+                    if (t.assignedVehicleId === id) t.assignedVehicleId = null;
+                });
+                renderCurrentTab();
+            }
+        }
+        
+        function openExpenseModal(catId, itemId = null) {
+            const cat = state.expenseCategories.find(c => c.id === catId);
+            const item = itemId ? cat.items.find(i => i.id === itemId) : null;
+            const isEdit = !!item;
+            
+            openModal(`
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4">${isEdit ? 'Edit' : 'Add'} Expense - ${cat.name}</h2>
+                    <form onsubmit="saveExpense(event, '${catId}', ${itemId})" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                            <input type="text" name="name" value="${item?.name || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Amount</label>
+                                <input type="number" step="0.01" name="amount" value="${item?.amount || 0}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Frequency</label>
+                                <select name="frequency" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                                    <option value="monthly" ${item?.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
+                                    <option value="annual" ${item?.frequency === 'annual' ? 'selected' : ''}>Annual</option>
+                                    <option value="quarterly" ${item?.frequency === 'quarterly' ? 'selected' : ''}>Quarterly</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+                            <button type="submit" class="btn-primary text-white px-4 py-2 rounded-lg">Save</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+        
+        function saveExpense(e, catId, itemId) {
+            e.preventDefault();
+            const form = e.target;
+            const cat = state.expenseCategories.find(c => c.id === catId);
+            const data = {
+                name: form.name.value,
+                amount: parseFloat(form.amount.value),
+                frequency: form.frequency.value
+            };
+            
+            if (itemId) {
+                const idx = cat.items.findIndex(i => i.id === itemId);
+                cat.items[idx] = { ...cat.items[idx], ...data };
+            } else {
+                data.id = Math.max(...cat.items.map(i => i.id), 0) + 1;
+                cat.items.push(data);
+            }
+            
+            closeModal();
+            renderCurrentTab();
+        }
+        
+        function deleteExpense(catId, itemId) {
+            if (confirm('Delete this expense?')) {
+                const cat = state.expenseCategories.find(c => c.id === catId);
+                cat.items = cat.items.filter(i => i.id !== itemId);
+                renderCurrentTab();
+            }
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(state, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pricing-system-data.json';
+            a.click();
+        }
+
+        // ============================================================================
+        // INIT
+        // ============================================================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCurrentTab();
+        });
+    </script>
+</body>
+</html>

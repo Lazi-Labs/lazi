@@ -7,6 +7,7 @@ import { MaterialsPanel } from '@/components/pricebook/materials-panel';
 import { CategoriesPanel } from '@/components/pricebook/categories-panel';
 import { EquipmentPanel } from '@/components/pricebook/equipment-panel';
 import { KitsPage } from '@/components/pricebook/kits';
+import { PricingBuilderPanel } from '@/components/pricebook/pricing-builder-panel';
 
 type PricebookSection = 'services' | 'materials' | 'equipment' | 'other' | 'discounts' | 'categories' | 'price-setup' | 'history' | 'pricing-builder' | 'templates' | 'import-export' | 'vendors' | 'kits';
 
@@ -59,6 +60,9 @@ export default function PricebookPage() {
         );
       case 'kits':
         return <KitsPage />;
+      case 'pricing-builder':
+      case 'price-setup':
+        return <PricingBuilderPanel />;
       default:
         return (
           <div className="flex items-center justify-center h-full text-muted-foreground">

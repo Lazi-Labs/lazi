@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Download, List, ChevronRight } from 'lucide-react';
+import { Plus, Search, Download, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiUrl } from '@/lib/api';
-import { EquipmentEditor } from './equipment-editor';
+import { QuickFilters, EQUIPMENT_FILTERS } from './organization/QuickFilters';
+import { ReviewedBadge } from './organization/ReviewedToggle';
+import { PendingSyncBadge } from './organization/PendingSyncBadge';
+import { PendingSyncPanel } from './organization/PendingSyncPanel';
+import { useQuickFilters, usePendingSyncCounts, FilterType } from '@/hooks/usePricebookOrganization';
 
 interface Equipment {
   id: string;
@@ -32,23 +36,27 @@ interface EquipmentPanelProps {
 
 export function EquipmentPanel({ selectedCategory, onCategorySelect }: EquipmentPanelProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const currentSection = searchParams.get('section');
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEquipment, setSelectedEquipment] = useState<any | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
 
-  // Close editor when navigating to a different section
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
+  const [syncPanelOpen, setSyncPanelOpen] = useState(false);
+
+  // Quick filters hooks
+  const { activeFilters, toggleFilter, clearFilters } = useQuickFilters();
+  const { data: syncCounts } = usePendingSyncCounts();
+
+  // Reset selection when navigating to a different section
   useEffect(() => {
     if (currentSection && currentSection !== 'equipment') {
-      setShowEditor(false);
-      setSelectedEquipment(null);
+      setSelectedEquipmentId(null);
     }
   }, [currentSection]);
 
   const { data: equipment, isLoading } = useQuery({
-    queryKey: ['pricebook-equipment', selectedCategory, searchQuery],
-    queryFn: () => fetchEquipment(selectedCategory, searchQuery),
+    queryKey: ['pricebook-equipment', selectedCategory, searchQuery, activeFilters],
+    queryFn: () => fetchEquipment(selectedCategory, searchQuery, activeFilters),
   });
 
   const formatCurrency = (amount: number) => {
@@ -61,10 +69,10 @@ export function EquipmentPanel({ selectedCategory, onCategorySelect }: Equipment
   return (
     <div className="flex h-full">
       {/* Equipment List */}
-      <div className={cn("flex-1 flex flex-col", showEditor && "border-r")}>
+      <div className="flex-1 flex flex-col">
         {/* Action Bar */}
         <div className="p-3 border-b flex items-center gap-2">
-          <Button size="sm" onClick={() => { setSelectedEquipment(null); setShowEditor(true); }}>
+          <Button size="sm" onClick={() => { router.push('/pricebook/equipment/new'); }}>
             <Plus className="h-4 w-4 mr-1" />
             NEW
           </Button>
@@ -77,14 +85,24 @@ export function EquipmentPanel({ selectedCategory, onCategorySelect }: Equipment
               className="pl-8 h-8"
             />
           </div>
+          <PendingSyncBadge onClick={() => setSyncPanelOpen(true)} />
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-1" />
             IMPORT
           </Button>
-          <Button variant="outline" size="sm">
-            <List className="h-4 w-4 mr-1" />
-            ALL
-          </Button>
+        </div>
+
+        {/* Quick Filters */}
+        <div className="px-3 py-2 border-b bg-background">
+          <QuickFilters
+            activeFilters={activeFilters}
+            onFilterToggle={toggleFilter}
+            onClearAll={clearFilters}
+            filterTypes={EQUIPMENT_FILTERS}
+            counts={{
+              pending_sync: syncCounts?.totalPending,
+            }}
+          />
         </div>
 
         {/* Equipment List */}
@@ -100,21 +118,25 @@ export function EquipmentPanel({ selectedCategory, onCategorySelect }: Equipment
                   key={item.id}
                   className={cn(
                     "flex items-center justify-between p-3 hover:bg-muted/50 cursor-pointer transition-colors",
-                    selectedEquipment?.id === item.id && "bg-primary/5"
+                    selectedEquipmentId === item.id && "bg-primary/5"
                   )}
-                  onClick={() => { setSelectedEquipment(item); setShowEditor(true); }}
+                  onClick={() => { router.push(`/pricebook/equipment/${(item as any).stId || item.id}`); }}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {item.defaultImageUrl && (
-                      <img 
-                        src={item.defaultImageUrl} 
-                        alt="" 
+                      <img
+                        src={item.defaultImageUrl}
+                        alt=""
                         className="w-8 h-8 rounded object-cover"
                       />
                     )}
                     <div className="min-w-0">
-                      <div className="font-medium truncate">
+                      <div className="font-medium truncate flex items-center gap-2">
                         {item.displayName || item.name}
+                        <ReviewedBadge isReviewed={(item as any).is_reviewed} />
+                        {(item as any).has_local_changes && (
+                          <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" title="Pending sync" />
+                        )}
                       </div>
                       {item.manufacturer && (
                         <div className="text-xs text-muted-foreground">
@@ -141,25 +163,33 @@ export function EquipmentPanel({ selectedCategory, onCategorySelect }: Equipment
         </div>
       </div>
 
-      {/* Editor Panel */}
-      {showEditor && (
-        <div className="w-[400px] flex-shrink-0">
-          <EquipmentEditor
-            equipment={selectedEquipment}
-            onClose={() => { setShowEditor(false); setSelectedEquipment(null); }}
-            onSave={() => { setShowEditor(false); setSelectedEquipment(null); }}
-          />
-        </div>
-      )}
+      {/* Pending Sync Panel - Equipment uses material type for now */}
+      <PendingSyncPanel
+        open={syncPanelOpen}
+        onClose={() => setSyncPanelOpen(false)}
+        entityType="material"
+      />
     </div>
   );
 }
 
-async function fetchEquipment(categoryId: string | null, search: string): Promise<Equipment[]> {
+async function fetchEquipment(
+  categoryId: string | null,
+  search: string,
+  quickFilters: FilterType[] = []
+): Promise<Equipment[]> {
   const params = new URLSearchParams();
   if (categoryId) params.set('category', categoryId);
   if (search) params.set('search', search);
-  
+
+  // Apply quick filters
+  if (quickFilters.includes('no_image')) params.set('hasImages', 'false');
+  if (quickFilters.includes('uncategorized')) params.set('uncategorized', 'true');
+  if (quickFilters.includes('no_vendor')) params.set('noVendor', 'true');
+  if (quickFilters.includes('reviewed')) params.set('reviewed', 'true');
+  if (quickFilters.includes('unreviewed') || quickFilters.includes('needs_review')) params.set('reviewed', 'false');
+  if (quickFilters.includes('pending_sync')) params.set('pendingSync', 'true');
+
   const res = await fetch(apiUrl(`/api/pricebook/equipment?${params}`));
   if (!res.ok) return [];
   const response = await res.json();
