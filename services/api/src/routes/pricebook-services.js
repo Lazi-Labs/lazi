@@ -744,18 +744,22 @@ router.post(
         const categoryIds = categories.map(c => parseInt(c.id || c.st_id || c, 10)).filter(id => !isNaN(id));
 
         // Get service materials in ST format: { skuId, quantity }
+        // Priority: materialId before id because kit materials have id like 'kit-61917089-...'
         const serviceMaterials = parseJsonField(service.service_materials);
         const formattedMaterials = serviceMaterials.map(m => ({
-          skuId: parseInt(m.skuId || m.sku_id || m.id || m.materialId, 10),
+          skuId: parseInt(m.skuId || m.sku_id || m.stId || m.st_id || m.materialId || m.id, 10),
           quantity: m.quantity || 1,
-        })).filter(m => !isNaN(m.skuId));
+        })).filter(m => m.skuId && !isNaN(m.skuId));
+        console.log(`[SERVICES] New service materials: ${formattedMaterials.length} items, skuIds: ${formattedMaterials.map(m => m.skuId).join(', ')}`);
 
         // Get service equipment in ST format: { skuId, quantity }
+        // Priority: equipmentId before id for same reason
         const serviceEquipment = parseJsonField(service.service_equipment);
         const formattedEquipment = serviceEquipment.map(e => ({
-          skuId: parseInt(e.skuId || e.sku_id || e.id || e.equipmentId, 10),
+          skuId: parseInt(e.skuId || e.sku_id || e.stId || e.st_id || e.equipmentId || e.id, 10),
           quantity: e.quantity || 1,
-        })).filter(e => !isNaN(e.skuId));
+        })).filter(e => e.skuId && !isNaN(e.skuId));
+        console.log(`[SERVICES] New service equipment: ${formattedEquipment.length} items, skuIds: ${formattedEquipment.map(e => e.skuId).join(', ')}`);
 
         // Build payload for ST - NOTE: No 'id' field for POST (ST generates it)
         const stPayload = {
