@@ -1068,7 +1068,7 @@ export function PricingBuilderPanel() {
   const { data: pricingData, isLoading: pricingLoading } = useQuery({
     queryKey: ['pricing-calculations'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/pricebook/pricing/api'));
+      const res = await fetch(apiUrl('/pricebook/pricing/api/calculate'));
       if (!res.ok) throw new Error('Failed to fetch pricing data');
       const json = await res.json();
       return json.data as PricingData;
