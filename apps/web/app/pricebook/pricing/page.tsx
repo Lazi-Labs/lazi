@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart3,
   Users,
@@ -15,10 +15,20 @@ import {
 } from 'lucide-react';
 import { apiUrl } from '@/lib/api';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { calcFullSummary } from './lib/calculations';
-import type { PricingDataResponse, CalculationResults } from './lib/types';
+import type {
+  PricingDataResponse,
+  CalculationResults,
+  TechnicianFormData,
+  OfficeStaffFormData,
+  VehicleFormData,
+  ExpenseItemFormData,
+  JobTypeFormData,
+  MarkupTierFormData,
+} from './lib/types';
 
-// Tab components (to be implemented)
+// Tab components
 import OverviewTab from './components/OverviewTab';
 import WorkforceTab from './components/WorkforceTab';
 import FleetTab from './components/FleetTab';
@@ -39,6 +49,8 @@ type TabId = typeof tabs[number]['id'];
 
 export default function PricingPage() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Fetch all pricing data
   const {
@@ -60,6 +72,437 @@ export default function PricingPage() {
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
+
+  // ===================
+  // Technician Mutations
+  // ===================
+  const createTechnicianMutation = useMutation({
+    mutationFn: async (formData: TechnicianFormData) => {
+      const res = await fetch(apiUrl('/pricebook/pricing/api/technicians'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to create technician' }));
+        throw new Error(err.error || 'Failed to create technician');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Technician created successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateTechnicianMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: TechnicianFormData }) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/technicians/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update technician' }));
+        throw new Error(err.error || 'Failed to update technician');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Technician updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const deleteTechnicianMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/technicians/${id}`), {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete technician' }));
+        throw new Error(err.error || 'Failed to delete technician');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Technician deleted successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // ===================
+  // Office Staff Mutations
+  // ===================
+  const createOfficeStaffMutation = useMutation({
+    mutationFn: async (formData: OfficeStaffFormData) => {
+      const res = await fetch(apiUrl('/pricebook/pricing/api/office-staff'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to create office staff' }));
+        throw new Error(err.error || 'Failed to create office staff');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Office staff created successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateOfficeStaffMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: OfficeStaffFormData }) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/office-staff/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update office staff' }));
+        throw new Error(err.error || 'Failed to update office staff');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Office staff updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const deleteOfficeStaffMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/office-staff/${id}`), {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete office staff' }));
+        throw new Error(err.error || 'Failed to delete office staff');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Office staff deleted successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // ===================
+  // Vehicle Mutations
+  // ===================
+  const createVehicleMutation = useMutation({
+    mutationFn: async (formData: VehicleFormData) => {
+      const res = await fetch(apiUrl('/pricebook/pricing/api/vehicles'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to create vehicle' }));
+        throw new Error(err.error || 'Failed to create vehicle');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Vehicle created successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateVehicleMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: VehicleFormData }) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/vehicles/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update vehicle' }));
+        throw new Error(err.error || 'Failed to update vehicle');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Vehicle updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const deleteVehicleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/vehicles/${id}`), {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete vehicle' }));
+        throw new Error(err.error || 'Failed to delete vehicle');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Vehicle deleted successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // ===================
+  // Expense Mutations
+  // ===================
+  const createExpenseMutation = useMutation({
+    mutationFn: async (formData: ExpenseItemFormData) => {
+      const res = await fetch(apiUrl('/pricebook/pricing/api/expenses'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to create expense' }));
+        throw new Error(err.error || 'Failed to create expense');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Expense created successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateExpenseMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: ExpenseItemFormData }) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/expenses/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update expense' }));
+        throw new Error(err.error || 'Failed to update expense');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Expense updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/expenses/${id}`), {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete expense' }));
+        throw new Error(err.error || 'Failed to delete expense');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Expense deleted successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // ===================
+  // Job Type Mutations
+  // ===================
+  const createJobTypeMutation = useMutation({
+    mutationFn: async (formData: JobTypeFormData) => {
+      const res = await fetch(apiUrl('/pricebook/pricing/api/job-types'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to create job type' }));
+        throw new Error(err.error || 'Failed to create job type');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Job type created successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateJobTypeMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: JobTypeFormData }) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/job-types/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update job type' }));
+        throw new Error(err.error || 'Failed to update job type');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Job type updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const deleteJobTypeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/job-types/${id}`), {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete job type' }));
+        throw new Error(err.error || 'Failed to delete job type');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Job type deleted successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // ===================
+  // Markup Tier Mutations
+  // ===================
+  const createMarkupTierMutation = useMutation({
+    mutationFn: async (formData: MarkupTierFormData) => {
+      const res = await fetch(apiUrl('/pricebook/pricing/api/markup-tiers'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to create markup tier' }));
+        throw new Error(err.error || 'Failed to create markup tier');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Markup tier created successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateMarkupTierMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: MarkupTierFormData }) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/markup-tiers/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update markup tier' }));
+        throw new Error(err.error || 'Failed to update markup tier');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Markup tier updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const deleteMarkupTierMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/markup-tiers/${id}`), {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete markup tier' }));
+        throw new Error(err.error || 'Failed to delete markup tier');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-data'] });
+      toast({ title: 'Markup tier deleted successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  // ===================
+  // Loading States
+  // ===================
+  const isWorkforceLoading =
+    createTechnicianMutation.isPending ||
+    updateTechnicianMutation.isPending ||
+    deleteTechnicianMutation.isPending ||
+    createOfficeStaffMutation.isPending ||
+    updateOfficeStaffMutation.isPending ||
+    deleteOfficeStaffMutation.isPending;
+
+  const isFleetLoading =
+    createVehicleMutation.isPending ||
+    updateVehicleMutation.isPending ||
+    deleteVehicleMutation.isPending;
+
+  const isExpensesLoading =
+    createExpenseMutation.isPending ||
+    updateExpenseMutation.isPending ||
+    deleteExpenseMutation.isPending;
+
+  const isRatesLoading =
+    createJobTypeMutation.isPending ||
+    updateJobTypeMutation.isPending ||
+    deleteJobTypeMutation.isPending ||
+    createMarkupTierMutation.isPending ||
+    updateMarkupTierMutation.isPending ||
+    deleteMarkupTierMutation.isPending;
 
   // Calculate metrics from raw data
   const calculations: CalculationResults | null = useMemo(() => {
@@ -180,16 +623,50 @@ export default function PricingPage() {
           <OverviewTab data={data} calculations={calculations} />
         )}
         {activeTab === 'workforce' && (
-          <WorkforceTab data={data} calculations={calculations} />
+          <WorkforceTab
+            data={data}
+            calculations={calculations}
+            onCreateTechnician={(formData) => createTechnicianMutation.mutate(formData)}
+            onUpdateTechnician={(id, formData) => updateTechnicianMutation.mutate({ id, data: formData })}
+            onDeleteTechnician={(id) => deleteTechnicianMutation.mutate(id)}
+            onCreateOfficeStaff={(formData) => createOfficeStaffMutation.mutate(formData)}
+            onUpdateOfficeStaff={(id, formData) => updateOfficeStaffMutation.mutate({ id, data: formData })}
+            onDeleteOfficeStaff={(id) => deleteOfficeStaffMutation.mutate(id)}
+            isLoading={isWorkforceLoading}
+          />
         )}
         {activeTab === 'fleet' && (
-          <FleetTab data={data} calculations={calculations} />
+          <FleetTab
+            data={data}
+            calculations={calculations}
+            onCreateVehicle={(formData) => createVehicleMutation.mutate(formData)}
+            onUpdateVehicle={(id, formData) => updateVehicleMutation.mutate({ id, data: formData })}
+            onDeleteVehicle={(id) => deleteVehicleMutation.mutate(id)}
+            isLoading={isFleetLoading}
+          />
         )}
         {activeTab === 'expenses' && (
-          <ExpensesTab data={data} calculations={calculations} />
+          <ExpensesTab
+            data={data}
+            calculations={calculations}
+            onCreateExpense={(formData) => createExpenseMutation.mutate(formData)}
+            onUpdateExpense={(id, formData) => updateExpenseMutation.mutate({ id, data: formData })}
+            onDeleteExpense={(id) => deleteExpenseMutation.mutate(id)}
+            isLoading={isExpensesLoading}
+          />
         )}
         {activeTab === 'rates' && (
-          <RatesTab data={data} calculations={calculations} />
+          <RatesTab
+            data={data}
+            calculations={calculations}
+            onCreateJobType={(formData) => createJobTypeMutation.mutate(formData)}
+            onUpdateJobType={(id, formData) => updateJobTypeMutation.mutate({ id, data: formData })}
+            onDeleteJobType={(id) => deleteJobTypeMutation.mutate(id)}
+            onCreateMarkupTier={(formData) => createMarkupTierMutation.mutate(formData)}
+            onUpdateMarkupTier={(id, formData) => updateMarkupTierMutation.mutate({ id, data: formData })}
+            onDeleteMarkupTier={(id) => deleteMarkupTierMutation.mutate(id)}
+            isLoading={isRatesLoading}
+          />
         )}
         {activeTab === 'pl' && (
           <PLTab data={data} calculations={calculations} />

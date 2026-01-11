@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Edit2, Calculator, DollarSign } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calculator, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -176,14 +176,24 @@ export default function RatesTab({
                   <div className={`bg-gradient-to-r ${gradient} p-4 text-white`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="font-semibold">{jobType.name}</div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
-                        onClick={() => handleEditJobType(jobType)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
+                          onClick={() => handleEditJobType(jobType)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-white/80 hover:text-white hover:bg-red-500/30"
+                          onClick={() => onDeleteJobType?.(jobType.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="text-3xl font-bold">
                       {formatCurrency(hourlyRate, 2)}
@@ -292,9 +302,19 @@ export default function RatesTab({
                           ×{multiplier.toFixed(2)}
                         </td>
                         <td className="py-3 px-3 text-right">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditMarkupTier(tier)}>
-                            <Edit2 className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditMarkupTier(tier)}>
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => onDeleteMarkupTier?.(tier.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
