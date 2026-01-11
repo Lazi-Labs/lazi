@@ -1,77 +1,141 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from "../../../lib/supabase";
+import { successResponse, errorResponse, getOrgId, parseBody, isValidUUID } from "../../../lib/api-helpers";
 
-const PRICING_API_URL = process.env.PRICING_API_URL || 'https://pricing.lazilabs.com';
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
 // GET /pricebook/pricing/api/office-staff/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const response = await fetch(`${PRICING_API_URL}/api/office-staff/${params.id}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+    const { id } = await params;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch office staff' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid staff ID", 400);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+      .from("pricing_office_staff")
+      .select("*")
+      .eq("id", id)
+      .eq("organization_id", orgId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return errorResponse("Staff member not found", 404);
+      }
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Office Staff API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Office staff GET error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }
 
-// PATCH /pricebook/pricing/api/office-staff/[id]
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// PUT /pricebook/pricing/api/office-staff/[id]
+export async function PUT(request: Request, { params }: RouteParams) {
   try {
-    const body = await request.json();
+    const { id } = await params;
 
-    const response = await fetch(`${PRICING_API_URL}/api/office-staff/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to update office staff' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid staff ID", 400);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const body = await parseBody<Record<string, unknown>>(request);
+    if (!body) {
+      return errorResponse("Invalid request body", 400);
+    }
+
+    const supabase = createServerClient();
+
+    const updateData: Record<string, unknown> = {};
+    const allowedFields = [
+      "first_name", "last_name", "role", "status", "email", "phone",
+      "employee_number", "hire_date", "termination_date", "department",
+      "pay_type", "base_pay_rate", "annual_salary", "hours_per_week",
+      "payroll_tax_rate", "futa_rate", "suta_rate", "workers_comp_rate",
+      "health_insurance_monthly", "dental_insurance_monthly", "vision_insurance_monthly",
+      "life_insurance_monthly", "retirement_401k_match_percent", "hsa_contribution_monthly",
+      "other_benefits_monthly", "notes"
+    ];
+
+    for (const field of allowedFields) {
+      if (field in body) {
+        updateData[field] = body[field];
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("pricing_office_staff")
+      .update(updateData)
+      .eq("id", id)
+      .eq("organization_id", orgId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return errorResponse("Staff member not found", 404);
+      }
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Office Staff API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Office staff PUT error:", error);
+    return errorResponse("Internal server error", 500);
   }
+}
+
+// PATCH /pricebook/pricing/api/office-staff/[id] - Update staff (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
 }
 
 // DELETE /pricebook/pricing/api/office-staff/[id]
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: RouteParams) {
   try {
-    const response = await fetch(`${PRICING_API_URL}/api/office-staff/${params.id}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const { id } = await params;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to delete office staff' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid staff ID", 400);
     }
 
-    return NextResponse.json({ success: true });
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const supabase = createServerClient();
+
+    const { error } = await supabase
+      .from("pricing_office_staff")
+      .delete()
+      .eq("id", id)
+      .eq("organization_id", orgId);
+
+    if (error) {
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse({ deleted: true });
   } catch (error) {
-    console.error('Office Staff API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Office staff DELETE error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }

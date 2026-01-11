@@ -1,3 +1,9 @@
+---
+description: Generate tests for a file or feature
+argument-hint: [file-path]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /generate-tests
 
 Generate tests for a file or feature.

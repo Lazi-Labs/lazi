@@ -1068,7 +1068,7 @@ export function PricingBuilderPanel() {
   const { data: pricingData, isLoading: pricingLoading } = useQuery({
     queryKey: ['pricing-calculations'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/api/pricebook/pricing'));
+      const res = await fetch(apiUrl('/pricebook/pricing/api'));
       if (!res.ok) throw new Error('Failed to fetch pricing data');
       const json = await res.json();
       return json.data as PricingData;
@@ -1079,7 +1079,7 @@ export function PricingBuilderPanel() {
   const { data: technicians = [] } = useQuery({
     queryKey: ['pricing-technicians'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/api/pricebook/pricing/technicians'));
+      const res = await fetch(apiUrl('/pricebook/pricing/api/technicians'));
       const json = await res.json();
       return (json.data || []) as Technician[];
     },
@@ -1088,7 +1088,7 @@ export function PricingBuilderPanel() {
   const { data: officeStaff = [] } = useQuery({
     queryKey: ['pricing-office-staff'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/api/pricebook/pricing/office-staff'));
+      const res = await fetch(apiUrl('/pricebook/pricing/api/office-staff'));
       const json = await res.json();
       return (json.data || []) as OfficeStaff[];
     },
@@ -1097,7 +1097,7 @@ export function PricingBuilderPanel() {
   const { data: vehicles = [] } = useQuery({
     queryKey: ['pricing-vehicles'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/api/pricebook/pricing/vehicles'));
+      const res = await fetch(apiUrl('/pricebook/pricing/api/vehicles'));
       const json = await res.json();
       return (json.data || []) as Vehicle[];
     },
@@ -1106,7 +1106,7 @@ export function PricingBuilderPanel() {
   const { data: expenses = [] } = useQuery({
     queryKey: ['pricing-expenses'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('/api/pricebook/pricing/expenses'));
+      const res = await fetch(apiUrl('/pricebook/pricing/api/expenses'));
       const json = await res.json();
       return (json.data || []) as ExpenseCategory[];
     },
@@ -1116,8 +1116,8 @@ export function PricingBuilderPanel() {
   const saveTechMutation = useMutation({
     mutationFn: async (data: Partial<Technician>) => {
       const url = editingTech
-        ? apiUrl(`/api/pricebook/pricing/technicians/${editingTech.id}`)
-        : apiUrl('/api/pricebook/pricing/technicians');
+        ? apiUrl(`/pricebook/pricing/api/technicians/${editingTech.id}`)
+        : apiUrl('/pricebook/pricing/api/technicians');
       const method = editingTech ? 'PATCH' : 'POST';
       const res = await fetch(url, {
         method,
@@ -1149,8 +1149,8 @@ export function PricingBuilderPanel() {
   const saveVehicleMutation = useMutation({
     mutationFn: async (data: Partial<Vehicle>) => {
       const url = editingVehicle
-        ? apiUrl(`/api/pricebook/pricing/vehicles/${editingVehicle.id}`)
-        : apiUrl('/api/pricebook/pricing/vehicles');
+        ? apiUrl(`/pricebook/pricing/api/vehicles/${editingVehicle.id}`)
+        : apiUrl('/pricebook/pricing/api/vehicles');
       const method = editingVehicle ? 'PATCH' : 'POST';
       const res = await fetch(url, {
         method,
@@ -1182,8 +1182,8 @@ export function PricingBuilderPanel() {
   const saveExpenseMutation = useMutation({
     mutationFn: async (data: Partial<ExpenseItem> & { category_id: string }) => {
       const url = editingExpense
-        ? apiUrl(`/api/pricebook/pricing/expenses/${editingExpense.id}?type=item`)
-        : apiUrl('/api/pricebook/pricing/expenses?type=item');
+        ? apiUrl(`/pricebook/pricing/api/expenses/${editingExpense.id}?type=item`)
+        : apiUrl('/pricebook/pricing/api/expenses?type=item');
       const method = editingExpense ? 'PATCH' : 'POST';
       const res = await fetch(url, {
         method,
@@ -1215,8 +1215,8 @@ export function PricingBuilderPanel() {
   const saveOfficeStaffMutation = useMutation({
     mutationFn: async (data: Partial<OfficeStaff>) => {
       const url = editingOfficeStaff
-        ? apiUrl(`/api/pricebook/pricing/office-staff/${editingOfficeStaff.id}`)
-        : apiUrl('/api/pricebook/pricing/office-staff');
+        ? apiUrl(`/pricebook/pricing/api/office-staff/${editingOfficeStaff.id}`)
+        : apiUrl('/pricebook/pricing/api/office-staff');
       const method = editingOfficeStaff ? 'PATCH' : 'POST';
       const res = await fetch(url, {
         method,
@@ -1248,7 +1248,7 @@ export function PricingBuilderPanel() {
   const deleteMutation = useMutation({
     mutationFn: async ({ type, id }: { type: string; id: string }) => {
       const endpoint = type === 'technician' ? 'technicians' : type === 'vehicle' ? 'vehicles' : type === 'office-staff' ? 'office-staff' : 'expenses';
-      const res = await fetch(apiUrl(`/api/pricebook/pricing/${endpoint}/${id}`), {
+      const res = await fetch(apiUrl(`/pricebook/pricing/api/${endpoint}/${id}`), {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error(`Failed to delete ${type}`);

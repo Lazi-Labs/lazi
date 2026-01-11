@@ -1,3 +1,9 @@
+---
+description: Debug performance issues in pages or endpoints
+argument-hint: [area]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /debug-performance
 
 Debug slow pages or endpoints.

@@ -1,77 +1,214 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from "../../../lib/supabase";
+import { successResponse, errorResponse, getOrgId, parseBody, isValidUUID } from "../../../lib/api-helpers";
 
-const PRICING_API_URL = process.env.PRICING_API_URL || 'https://pricing.lazilabs.com';
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
-// GET /pricebook/pricing/api/expenses/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// GET /pricebook/pricing/api/expenses/[id] - Get category or item
+export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const response = await fetch(`${PRICING_API_URL}/api/expenses/${params.id}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+    const { id } = await params;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch expense' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid expense ID", 400);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type") || "category";
+
+    const supabase = createServerClient();
+
+    if (type === "item") {
+      const { data, error } = await supabase
+        .from("pricing_expense_items")
+        .select("*")
+        .eq("id", id)
+        .eq("organization_id", orgId)
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          return errorResponse("Expense item not found", 404);
+        }
+        return errorResponse(error.message, 500);
+      }
+
+      return successResponse(data);
+    }
+
+    // Default: get category with items
+    const { data, error } = await supabase
+      .from("pricing_expense_categories")
+      .select(`
+        *,
+        items:expense_items(*)
+      `)
+      .eq("id", id)
+      .eq("organization_id", orgId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return errorResponse("Expense category not found", 404);
+      }
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Expense API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Expense GET error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }
 
-// PATCH /pricebook/pricing/api/expenses/[id]
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// PUT /pricebook/pricing/api/expenses/[id] - Update category or item
+export async function PUT(request: Request, { params }: RouteParams) {
   try {
-    const body = await request.json();
+    const { id } = await params;
 
-    const response = await fetch(`${PRICING_API_URL}/api/expenses/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to update expense' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid expense ID", 400);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const body = await parseBody<Record<string, unknown>>(request);
+    if (!body) {
+      return errorResponse("Invalid request body", 400);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type") || "category";
+
+    const supabase = createServerClient();
+
+    if (type === "item") {
+      const updateData: Record<string, unknown> = {};
+      const allowedFields = [
+        "name", "description", "vendor", "amount", "frequency",
+        "account_number", "is_tax_deductible", "tax_category",
+        "sort_order", "is_active", "effective_date", "end_date"
+      ];
+
+      for (const field of allowedFields) {
+        if (field in body) {
+          updateData[field] = body[field];
+        }
+      }
+
+      const { data, error } = await supabase
+        .from("pricing_expense_items")
+        .update(updateData)
+        .eq("id", id)
+        .eq("organization_id", orgId)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          return errorResponse("Expense item not found", 404);
+        }
+        return errorResponse(error.message, 500);
+      }
+
+      return successResponse(data);
+    }
+
+    // Update category
+    const updateData: Record<string, unknown> = {};
+    const allowedFields = [
+      "name", "description", "icon", "color", "sort_order", "is_collapsed", "is_active"
+    ];
+
+    for (const field of allowedFields) {
+      if (field in body) {
+        updateData[field] = body[field];
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("pricing_expense_categories")
+      .update(updateData)
+      .eq("id", id)
+      .eq("organization_id", orgId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return errorResponse("Expense category not found", 404);
+      }
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Expense API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Expense PUT error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }
 
-// DELETE /pricebook/pricing/api/expenses/[id]
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const response = await fetch(`${PRICING_API_URL}/api/expenses/${params.id}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+// PATCH /pricebook/pricing/api/expenses/[id] - Update category or item (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
+}
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to delete expense' }));
-      return NextResponse.json(error, { status: response.status });
+// DELETE /pricebook/pricing/api/expenses/[id] - Delete category or item
+export async function DELETE(request: Request, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid expense ID", 400);
     }
 
-    return NextResponse.json({ success: true });
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type") || "category";
+
+    const supabase = createServerClient();
+
+    if (type === "item") {
+      const { error } = await supabase
+        .from("pricing_expense_items")
+        .delete()
+        .eq("id", id)
+        .eq("organization_id", orgId);
+
+      if (error) {
+        return errorResponse(error.message, 500);
+      }
+
+      return successResponse({ deleted: true });
+    }
+
+    // Delete category (will cascade delete items)
+    const { error } = await supabase
+      .from("pricing_expense_categories")
+      .delete()
+      .eq("id", id)
+      .eq("organization_id", orgId);
+
+    if (error) {
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse({ deleted: true });
   } catch (error) {
-    console.error('Expense API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Expense DELETE error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }

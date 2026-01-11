@@ -1,3 +1,9 @@
+---
+description: Generate or update API documentation
+argument-hint: [endpoint]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /document-api
 
 Generate or update API documentation.

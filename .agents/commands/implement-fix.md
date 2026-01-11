@@ -8,24 +8,11 @@ allowed-tools: Read, Write, Edit, Bash(pnpm:*), Bash(git:*)
 
 ## RCA: `.agents/docs/rca/$ARGUMENTS.md`
 
-## Process
+Read the RCA, implement the fix exactly as specified, add tests, run validations.
 
-1. Read RCA, understand root cause and proposed fix
-2. Implement fix exactly as specified
-3. Add tests from Testing Requirements
-4. Validate: `pnpm typecheck && pnpm lint && pnpm test`
-5. Verify: Follow reproduction steps, confirm fixed
-
-## Output
-
-- Issue and root cause summary
-- Changes made (file, change)
+Report back:
+- Changes made
 - Tests added
-- Ready for `/commit`
+- Validations passed
 
-Suggested message:
-```
-fix([scope]): [description]
-
-Fixes #$ARGUMENTS
-```
+**Next**: `/commit`

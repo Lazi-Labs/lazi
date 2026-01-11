@@ -1,3 +1,9 @@
+---
+description: Create a new React component following LAZI patterns
+argument-hint: [component-name]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /add-component
 
 Create a new React component following LAZI patterns.

@@ -1,3 +1,9 @@
+---
+description: Refactor code while maintaining functionality
+argument-hint: [target]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /refactor
 
 Refactor code while maintaining functionality.

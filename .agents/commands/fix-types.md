@@ -1,3 +1,9 @@
+---
+description: Fix TypeScript type errors
+argument-hint: [file-path]?
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /fix-types
 
 Fix TypeScript type errors.

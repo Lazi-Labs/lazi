@@ -1,5 +1,5 @@
 ---
-description: Analyze and document root cause for a bug
+description: Root cause analysis for bugs/issues
 argument-hint: [issue-description]
 ---
 
@@ -8,10 +8,10 @@ argument-hint: [issue-description]
 ## Investigation
 
 1. **Understand**: Error messages, reproduction steps, expected vs actual
-2. **Search**: `grep -r "[keyword]" apps/web/src/`
-3. **History**: `git log --oneline -20 -- [paths]`
-4. **Analyze**: What, why, logic error/edge case/missing validation?
-5. **Design fix**: Files to change, tests needed
+2. **Search**: Find relevant code with grep/search
+3. **History**: Check recent changes with `git log`
+4. **Analyze**: Determine root cause
+5. **Design**: Plan the fix
 
 ## Output: Save to `.agents/docs/rca/[issue-name].md`
 
@@ -19,20 +19,20 @@ argument-hint: [issue-description]
 # RCA: [Issue Name]
 
 ## Summary
-- Description, Severity (Critical/High/Medium/Low)
+- Description, Severity
 
 ## Problem
-- Expected vs Actual behavior
+- Expected vs Actual
 - Reproduction steps
 
 ## Root Cause
 - Affected files
-- Analysis explanation
+- Analysis
 
 ## Proposed Fix
-- Files to modify with changes
+- Files to modify
 - Testing requirements
-- Validation: pnpm typecheck, lint, test
+- Validation commands
 ```
 
 **Next**: `/implement-fix [issue-name]`

@@ -80,7 +80,11 @@ services:
       - PLAID_WEBHOOK_URL=https://lazilabs.com/dashboard/api/plaid/webhook
       - PLAID_REDIRECT_URI=https://lazilabs.com/dashboard/api/plaid/oauth-redirect
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - PRICING_API_URL=https://pricing.lazilabs.com
+      # Supabase Configuration (for Pricing System)
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - NEXT_PUBLIC_ORG_SLUG=${NEXT_PUBLIC_ORG_SLUG}
     networks:
       - lazi-internal
       - traefik-net

@@ -17,7 +17,7 @@ allowed-tools: Bash(git:*)
 feat, fix, refactor, docs, test, chore, perf
 
 ### LAZI Scopes
-pricebook, equipment, sync, api, ui, db, auth, admin, docker
+pricebook, equipment, sync, api, ui, db, auth, pricing, workforce, fleet
 
 ### Create Commit
 
@@ -31,7 +31,3 @@ Co-authored-by: Claude <noreply@anthropic.com>"
 ```
 
 !`git log -1 --oneline`
-
-## Output
-- Commit hash and message
-- Next: `git push` or continue

@@ -1,3 +1,8 @@
+---
+description: Check system health and diagnose issues
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /health-check
 
 Check system health and diagnose issues.

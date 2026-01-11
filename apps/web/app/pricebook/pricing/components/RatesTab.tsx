@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Edit2, Trash2, Calculator, DollarSign } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Plus, Edit2, Trash2, Calculator, DollarSign, Truck, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import SectionCard from './shared/SectionCard';
 import MetricCard from './shared/MetricCard';
 import { JobTypeModal, MarkupTierModal } from './modals';
 import {
@@ -14,9 +12,15 @@ import {
   calcHourlyRate,
   calcMarkupFromMargin,
   calcMultiplierFromMargin,
-  calcMaterialSellPrice,
 } from '../lib/calculations';
-import type { PricingDataResponse, CalculationResults, JobType, MarkupTier, JobTypeFormData, MarkupTierFormData } from '../lib/types';
+import type {
+  PricingDataResponse,
+  CalculationResults,
+  JobType,
+  MarkupTier,
+  JobTypeFormData,
+  MarkupTierFormData,
+} from '../lib/types';
 
 interface RatesTabProps {
   data: PricingDataResponse;
@@ -31,9 +35,9 @@ interface RatesTabProps {
 }
 
 const gradients = [
-  'from-sky-500 to-cyan-500',
-  'from-violet-500 to-purple-500',
-  'from-emerald-500 to-teal-500',
+  'from-sky-400 to-cyan-500',
+  'from-violet-500 to-purple-600',
+  'from-emerald-500 to-teal-600',
   'from-amber-500 to-orange-500',
   'from-rose-500 to-pink-500',
   'from-blue-500 to-indigo-500',
@@ -50,15 +54,75 @@ export default function RatesTab({
   onDeleteMarkupTier,
   isLoading = false,
 }: RatesTabProps) {
-  const [materialCost, setMaterialCost] = useState<string>('');
+  const [materialCost, setMaterialCost] = useState<string>('25');
   const [jobTypeModalOpen, setJobTypeModalOpen] = useState(false);
   const [markupTierModalOpen, setMarkupTierModalOpen] = useState(false);
   const [selectedJobType, setSelectedJobType] = useState<JobType | null>(null);
   const [selectedMarkupTier, setSelectedMarkupTier] = useState<MarkupTier | null>(null);
 
+  // Local state for real-time editing
+  const [localJobTypeValues, setLocalJobTypeValues] = useState<
+    Record<string, Partial<JobType>>
+  >({});
+  const [localMarkupValues, setLocalMarkupValues] = useState<
+    Record<string, number>
+  >({});
+
   const jobTypes = data.jobTypes || [];
   const markupTiers = data.markupTiers || [];
   const loadedCost = calculations?.avgLoadedCostPerHour || 0;
+  const trueCost = calculations?.avgTrueCostPerHour || 0;
+  const fleetCost = calculations?.fleetCostPerHour || 0;
+  const overheadCost = calculations?.overheadPerHour || 0;
+
+  // Get effective value (local override or original)
+  const getJobTypeValue = useCallback(
+    (jobType: JobType, field: keyof JobType) => {
+      const localValue = localJobTypeValues[jobType.id]?.[field];
+      return localValue !== undefined ? localValue : jobType[field];
+    },
+    [localJobTypeValues]
+  );
+
+  // Handle job type field change
+  const handleJobTypeFieldChange = useCallback(
+    (jobTypeId: string, field: keyof JobType, value: number) => {
+      setLocalJobTypeValues((prev) => ({
+        ...prev,
+        [jobTypeId]: {
+          ...prev[jobTypeId],
+          [field]: value,
+        },
+      }));
+    },
+    []
+  );
+
+  // Handle markup tier change
+  const handleMarkupChange = useCallback((tierId: string, value: number) => {
+    setLocalMarkupValues((prev) => ({
+      ...prev,
+      [tierId]: value,
+    }));
+  }, []);
+
+  // Get effective markup value
+  const getMarkupValue = useCallback(
+    (tier: MarkupTier) => {
+      return localMarkupValues[tier.id] ?? tier.gross_margin_percent;
+    },
+    [localMarkupValues]
+  );
+
+  // Calculate material sell price
+  const materialCostNum = parseFloat(materialCost) || 0;
+  const applicableTier = markupTiers.find(
+    (t) => materialCostNum >= t.min_cost && materialCostNum < t.max_cost
+  );
+  const tierMargin = applicableTier ? getMarkupValue(applicableTier) : 0;
+  const multiplier = tierMargin < 100 ? 1 / (1 - tierMargin / 100) : 1;
+  const sellPrice = materialCostNum * multiplier;
+  const profit = sellPrice - materialCostNum;
 
   // Job Type modal handlers
   const handleAddJobType = () => {
@@ -87,11 +151,6 @@ export default function RatesTab({
     setMarkupTierModalOpen(true);
   };
 
-  const handleEditMarkupTier = (tier: MarkupTier) => {
-    setSelectedMarkupTier(tier);
-    setMarkupTierModalOpen(true);
-  };
-
   const handleSaveMarkupTier = (formData: MarkupTierFormData) => {
     if (selectedMarkupTier) {
       onUpdateMarkupTier?.(selectedMarkupTier.id, formData);
@@ -102,271 +161,336 @@ export default function RatesTab({
     setSelectedMarkupTier(null);
   };
 
-  // Calculate material sell price
-  const materialCostNum = parseFloat(materialCost) || 0;
-  const materialResult = materialCostNum > 0
-    ? calcMaterialSellPrice(materialCostNum, markupTiers)
-    : null;
-
   return (
     <div className="space-y-6">
-      {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Job Types"
-          value={jobTypes.length}
-          subtitle="Rate cards configured"
-          icon={Calculator}
-        />
-        <MetricCard
-          label="Markup Tiers"
-          value={markupTiers.length}
-          subtitle="Material markup levels"
-          icon={DollarSign}
-        />
+      {/* Summary Metrics */}
+      <div className="grid grid-cols-4 gap-4">
         <MetricCard
           label="Loaded Cost/Hr"
           value={formatCurrency(loadedCost, 2)}
           subtitle="Base for rate calculation"
+          icon={Calculator}
+        />
+        <MetricCard
+          label="Avg. True Cost/Hr"
+          value={formatCurrency(trueCost, 2)}
+          subtitle="Labor cost only"
           icon={DollarSign}
         />
         <MetricCard
-          label="Avg Hourly Rate"
-          value={formatCurrency(
-            jobTypes.length > 0
-              ? jobTypes.reduce((sum, jt) => sum + calcHourlyRate(loadedCost, jt.target_gross_margin), 0) / jobTypes.length
-              : 0,
-            2
-          )}
-          subtitle="Across all job types"
-          icon={DollarSign}
-          valueClassName="text-emerald-600"
+          label="Fleet/Hr"
+          value={formatCurrency(fleetCost, 2)}
+          subtitle="Vehicle allocation"
+          icon={Truck}
+        />
+        <MetricCard
+          label="Overhead/Hr"
+          value={formatCurrency(overheadCost, 2)}
+          subtitle="Fixed cost allocation"
+          icon={Receipt}
         />
       </div>
 
-      {/* Job Type Rate Cards */}
-      <SectionCard
-        title="Job Type Rate Cards"
-        subtitle="Hourly rates by job type based on target margins"
-        headerActions={
-          <Button size="sm" className="gap-1" onClick={handleAddJobType}>
-            <Plus className="h-4 w-4" />
-            Add Job Type
-          </Button>
-        }
-      >
-        {jobTypes.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            No job types configured. Add your first job type to see calculated rates.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {jobTypes.map((jobType, index) => {
-              const hourlyRate = calcHourlyRate(loadedCost, jobType.target_gross_margin);
-              const memberRate = hourlyRate * (1 - jobType.member_discount_percent / 100);
-              const minInvoice = hourlyRate * jobType.min_hours + (jobType.flat_surcharge || 0);
+      {/* Job Type Rate Cards - Full Width Stacked */}
+      <div className="bg-white rounded-xl border border-slate-200">
+        <div className="p-4 border-b border-slate-200">
+          <h3 className="font-semibold text-slate-800">Job Type Rate Cards</h3>
+          <p className="text-sm text-slate-500">Edit margins and see calculated rates in real-time</p>
+        </div>
+        <div className="p-4 space-y-6">
+          {jobTypes.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              No job types configured. Click "Add Job Type" to get started.
+            </div>
+          ) : (
+            jobTypes.map((jobType, index) => {
+              const targetMargin = getJobTypeValue(jobType, 'target_gross_margin') as number;
+              const memberDiscount = getJobTypeValue(jobType, 'member_discount_percent') as number;
+              const materialMargin = getJobTypeValue(jobType, 'material_gross_margin') as number;
+              const surcharge = (getJobTypeValue(jobType, 'flat_surcharge') as number) || 0;
+              const minHours = jobType.min_hours || 1;
+              const maxHours = jobType.max_hours || minHours + 2;
+
+              const hourlyRate = calcHourlyRate(loadedCost, targetMargin);
+              const memberRate = hourlyRate * (1 - memberDiscount / 100);
+              const minInvoice = hourlyRate * minHours + surcharge;
               const gradient = gradients[index % gradients.length];
 
               return (
                 <div
                   key={jobType.id}
-                  className="border border-slate-200 rounded-xl overflow-hidden"
+                  className="rounded-xl overflow-hidden border border-slate-200 shadow-sm"
                 >
                   {/* Gradient Header */}
-                  <div className={`bg-gradient-to-r ${gradient} p-4 text-white`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-semibold">{jobType.name}</div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
-                          onClick={() => handleEditJobType(jobType)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-white/80 hover:text-white hover:bg-red-500/30"
-                          onClick={() => onDeleteJobType?.(jobType.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                  <div className={`bg-gradient-to-r ${gradient} text-white p-4`}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-lg">{jobType.name}</h4>
+                        <p className="text-white/80 text-sm">
+                          {minHours}-{maxHours} Hours
+                        </p>
                       </div>
-                    </div>
-                    <div className="text-3xl font-bold">
-                      {formatCurrency(hourlyRate, 2)}
-                      <span className="text-lg font-normal opacity-80">/hr</span>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold">{formatCurrency(hourlyRate, 2)}</div>
+                        <div className="text-white/80 text-sm">per hour</div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Details */}
-                  <div className="p-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
+                  {/* Editable Fields */}
+                  <div className="p-4 bg-slate-50">
+                    <div className="grid grid-cols-4 gap-4 mb-4">
+                      {/* Target Margin */}
                       <div>
-                        <div className="text-xs text-slate-500 mb-1">Target Margin</div>
-                        <div className="font-semibold text-emerald-600">
-                          {formatPercent(jobType.target_gross_margin)}
+                        <label className="block text-sm text-slate-600 mb-1">Target Margin</label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            step="1"
+                            min="0"
+                            max="99"
+                            value={targetMargin}
+                            onChange={(e) =>
+                              handleJobTypeFieldChange(
+                                jobType.id,
+                                'target_gross_margin',
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            className="pr-8 text-lg font-medium"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            %
+                          </span>
                         </div>
                       </div>
+
+                      {/* Member Discount */}
                       <div>
-                        <div className="text-xs text-slate-500 mb-1">Member Discount</div>
-                        <div className="font-semibold">
-                          {formatPercent(jobType.member_discount_percent)}
+                        <label className="block text-sm text-slate-600 mb-1">Member Discount</label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            step="1"
+                            min="0"
+                            max="50"
+                            value={memberDiscount}
+                            onChange={(e) =>
+                              handleJobTypeFieldChange(
+                                jobType.id,
+                                'member_discount_percent',
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            className="pr-8 text-lg font-medium"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            %
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Material Margin */}
+                      <div>
+                        <label className="block text-sm text-slate-600 mb-1">Material Margin</label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            step="1"
+                            min="0"
+                            max="90"
+                            value={materialMargin}
+                            onChange={(e) =>
+                              handleJobTypeFieldChange(
+                                jobType.id,
+                                'material_gross_margin',
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            className="pr-8 text-lg font-medium"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            %
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Surcharge */}
+                      <div>
+                        <label className="block text-sm text-slate-600 mb-1">Surcharge</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            $
+                          </span>
+                          <Input
+                            type="number"
+                            step="5"
+                            min="0"
+                            value={surcharge}
+                            onChange={(e) =>
+                              handleJobTypeFieldChange(
+                                jobType.id,
+                                'flat_surcharge',
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            className="pl-8 text-lg font-medium"
+                          />
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-xs text-slate-500 mb-1">Member Rate</div>
-                        <div className="font-semibold text-blue-600">
-                          {formatCurrency(memberRate, 2)}/hr
+                    {/* Calculated Values */}
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-sm text-slate-500">Member Rate</div>
+                        <div className="text-xl font-bold text-emerald-600">
+                          {formatCurrency(memberRate, 2)}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-xs text-slate-500 mb-1">Min Invoice</div>
-                        <div className="font-semibold">
-                          {formatCurrency(minInvoice)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Material Margin</span>
-                        <span className="font-medium">{formatPercent(jobType.material_gross_margin)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Surcharge</span>
-                        <span className="font-medium">{formatCurrency(jobType.flat_surcharge || 0)}</span>
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-sm text-slate-500">Min Invoice</div>
+                        <div className="text-xl font-bold">{formatCurrency(minInvoice, 2)}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               );
-            })}
-          </div>
-        )}
-      </SectionCard>
+            })
+          )}
+        </div>
+      </div>
 
       {/* Material Markup Tiers */}
-      <SectionCard
-        title="Material Markup Tiers"
-        subtitle="Tiered markup based on material cost"
-        headerActions={
-          <Button size="sm" variant="outline" className="gap-1" onClick={handleAddMarkupTier}>
+      <div className="bg-white rounded-xl border border-slate-200">
+        <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+          <div>
+            <h3 className="font-semibold text-slate-800">Material Markup Tiers</h3>
+            <p className="text-sm text-slate-500">Tiered markup structure for materials/parts</p>
+          </div>
+          <Button size="sm" className="gap-1" onClick={handleAddMarkupTier}>
             <Plus className="h-4 w-4" />
             Add Tier
           </Button>
-        }
-      >
-        {markupTiers.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            No markup tiers configured. Add tiers to calculate material sell prices.
-          </div>
-        ) : (
-          <>
-            {/* Tiers Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left py-2 px-3 font-medium text-slate-600">Cost Range</th>
-                    <th className="text-center py-2 px-3 font-medium text-slate-600">Gross Margin</th>
-                    <th className="text-center py-2 px-3 font-medium text-slate-600">Markup %</th>
-                    <th className="text-center py-2 px-3 font-medium text-slate-600">Multiplier</th>
-                    <th className="text-right py-2 px-3 font-medium text-slate-600">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {markupTiers.map((tier) => {
-                    const markupPercent = calcMarkupFromMargin(tier.gross_margin_percent);
-                    const multiplier = calcMultiplierFromMargin(tier.gross_margin_percent);
-
-                    return (
-                      <tr key={tier.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-3 px-3">
-                          {formatCurrency(tier.min_cost)} - {formatCurrency(tier.max_cost)}
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                            {formatPercent(tier.gross_margin_percent)}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-3 text-center font-medium">
-                          {formatPercent(markupPercent)}
-                        </td>
-                        <td className="py-3 px-3 text-center font-medium text-violet-600">
-                          ×{multiplier.toFixed(2)}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditMarkupTier(tier)}>
-                              <Edit2 className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
-                              onClick={() => onDeleteMarkupTier?.(tier.id)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+        </div>
+        <div className="p-4">
+          {markupTiers.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              No markup tiers configured. Add tiers to calculate material sell prices.
             </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="text-xs text-slate-500 uppercase bg-slate-50">
+                <tr>
+                  <th className="px-4 py-3 text-left">Cost Range</th>
+                  <th className="px-4 py-3 text-right">Gross Margin</th>
+                  <th className="px-4 py-3 text-right">Markup %</th>
+                  <th className="px-4 py-3 text-right">Multiplier</th>
+                  <th className="px-4 py-3 text-right">$10 → Sell</th>
+                  <th className="px-4 py-3 text-right">$100 → Sell</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {markupTiers.map((tier) => {
+                  const margin = getMarkupValue(tier);
+                  const markup = calcMarkupFromMargin(margin);
+                  const mult = calcMultiplierFromMargin(margin);
 
-            {/* Material Price Calculator */}
-            <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-              <div className="text-sm font-medium text-slate-700 mb-3">Material Price Calculator</div>
-              <div className="flex items-center gap-4">
-                <div className="flex-1 max-w-xs">
-                  <label className="text-xs text-slate-500 mb-1 block">Enter Material Cost</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                    <Input
-                      type="number"
-                      value={materialCost}
-                      onChange={(e) => setMaterialCost(e.target.value)}
-                      placeholder="0.00"
-                      className="pl-7"
-                    />
-                  </div>
-                </div>
-                {materialResult && (
-                  <>
-                    <div className="text-2xl text-slate-300">→</div>
-                    <div className="flex-1">
-                      <div className="text-xs text-slate-500 mb-1">Sell Price</div>
-                      <div className="text-2xl font-bold text-emerald-600">
-                        {formatCurrency(materialResult.sellPrice, 2)}
-                      </div>
-                      {materialResult.tier && (
-                        <div className="text-xs text-slate-500 mt-1">
-                          Using {formatPercent(materialResult.tier.gross_margin_percent)} margin tier
-                          (Gross Profit: {formatCurrency(materialResult.grossMargin, 2)})
+                  return (
+                    <tr key={tier.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3">
+                        {formatCurrency(tier.min_cost)} -{' '}
+                        {tier.max_cost >= 999999 ? '∞' : formatCurrency(tier.max_cost)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="inline-flex items-center">
+                          <Input
+                            type="number"
+                            value={margin}
+                            min={1}
+                            max={99}
+                            step={1}
+                            onChange={(e) =>
+                              handleMarkupChange(tier.id, parseFloat(e.target.value) || 0)
+                            }
+                            className="w-16 px-2 py-1 text-right h-8"
+                          />
+                          <span className="ml-1">%</span>
                         </div>
-                      )}
-                    </div>
-                  </>
-                )}
+                      </td>
+                      <td className="px-4 py-3 text-right text-emerald-600 font-medium">
+                        {formatPercent(markup, 0)}
+                      </td>
+                      <td className="px-4 py-3 text-right">{mult.toFixed(2)}×</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(10 * mult, 2)}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(100 * mult, 2)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500 hover:bg-red-100"
+                          onClick={() => onDeleteMarkupTier?.(tier.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Material Price Calculator */}
+        <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <h4 className="font-medium text-slate-700 mb-3">Material Price Calculator</h4>
+          <div className="flex items-center gap-4">
+            <div>
+              <label className="text-sm text-slate-600">Cost</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                <Input
+                  type="number"
+                  value={materialCost}
+                  step="0.01"
+                  min="0"
+                  onChange={(e) => setMaterialCost(e.target.value)}
+                  className="w-32 pl-8"
+                />
               </div>
             </div>
-          </>
-        )}
-      </SectionCard>
+            <div className="text-2xl text-slate-400">→</div>
+            <div>
+              <label className="text-sm text-slate-600">Sell Price</label>
+              <div className="text-2xl font-bold text-emerald-600">
+                {formatCurrency(sellPrice, 2)}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Margin</label>
+              <div className="text-lg font-medium text-slate-700">
+                {applicableTier ? `${tierMargin}%` : 'N/A'}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Profit</label>
+              <div className="text-lg font-medium text-emerald-600">
+                {formatCurrency(profit, 2)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Modals */}
       <JobTypeModal
         isOpen={jobTypeModalOpen}
-        onClose={() => { setJobTypeModalOpen(false); setSelectedJobType(null); }}
+        onClose={() => {
+          setJobTypeModalOpen(false);
+          setSelectedJobType(null);
+        }}
         onSave={handleSaveJobType}
         jobType={selectedJobType}
         loadedCost={loadedCost}
@@ -375,7 +499,10 @@ export default function RatesTab({
 
       <MarkupTierModal
         isOpen={markupTierModalOpen}
-        onClose={() => { setMarkupTierModalOpen(false); setSelectedMarkupTier(null); }}
+        onClose={() => {
+          setMarkupTierModalOpen(false);
+          setSelectedMarkupTier(null);
+        }}
         onSave={handleSaveMarkupTier}
         tier={selectedMarkupTier}
         isLoading={isLoading}

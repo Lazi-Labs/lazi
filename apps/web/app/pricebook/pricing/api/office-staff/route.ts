@@ -1,48 +1,105 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-const PRICING_API_URL = process.env.PRICING_API_URL || 'https://pricing.lazilabs.com';
+import { createServerClient } from "../../lib/supabase";
+import { successResponse, errorResponse, getOrgId, parseBody } from "../../lib/api-helpers";
 
 // GET /pricebook/pricing/api/office-staff - List all office staff
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const response = await fetch(`${PRICING_API_URL}/api/office-staff`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch office staff' }));
-      return NextResponse.json(error, { status: response.status });
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const includeInactive = searchParams.get("includeInactive") === "true";
+
+    const supabase = createServerClient();
+    let query = supabase
+      .from("pricing_office_staff")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("display_name");
+
+    if (status) {
+      query = query.eq("status", status);
+    } else if (!includeInactive) {
+      query = query.eq("status", "active");
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching office staff:", error);
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Office Staff API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Office staff GET error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }
 
-// POST /pricebook/pricing/api/office-staff - Create office staff
-export async function POST(request: NextRequest) {
+// POST /pricebook/pricing/api/office-staff - Create new office staff member
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-
-    const response = await fetch(`${PRICING_API_URL}/api/office-staff`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to create office staff' }));
-      return NextResponse.json(error, { status: response.status });
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const body = await parseBody<Record<string, unknown>>(request);
+    if (!body) {
+      return errorResponse("Invalid request body", 400);
+    }
+
+    if (!body.first_name || !body.last_name) {
+      return errorResponse("first_name and last_name are required", 400);
+    }
+
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+      .from("pricing_office_staff")
+      .insert({
+        organization_id: orgId,
+        first_name: body.first_name,
+        last_name: body.last_name,
+        role: body.role || "Office Staff",
+        status: body.status || "active",
+        email: body.email,
+        phone: body.phone,
+        employee_number: body.employee_number,
+        hire_date: body.hire_date,
+        department: body.department,
+        pay_type: body.pay_type || "hourly",
+        base_pay_rate: body.base_pay_rate,
+        annual_salary: body.annual_salary,
+        hours_per_week: body.hours_per_week || 40,
+        payroll_tax_rate: body.payroll_tax_rate,
+        futa_rate: body.futa_rate,
+        suta_rate: body.suta_rate,
+        workers_comp_rate: body.workers_comp_rate,
+        health_insurance_monthly: body.health_insurance_monthly || 0,
+        dental_insurance_monthly: body.dental_insurance_monthly || 0,
+        vision_insurance_monthly: body.vision_insurance_monthly || 0,
+        life_insurance_monthly: body.life_insurance_monthly || 0,
+        retirement_401k_match_percent: body.retirement_401k_match_percent || 0,
+        hsa_contribution_monthly: body.hsa_contribution_monthly || 0,
+        other_benefits_monthly: body.other_benefits_monthly || 0,
+        notes: body.notes,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating office staff:", error);
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data, 201);
   } catch (error) {
-    console.error('Office Staff API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Office staff POST error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }

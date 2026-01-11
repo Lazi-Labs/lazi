@@ -1,35 +1,74 @@
-# Command: /create-prd
+---
+description: Create Product Requirements Document for a major feature
+argument-hint: [feature-description]
+---
 
-Generate a PRD for a new feature.
-
-## Usage
-```
-/create-prd <feature-name>
-```
+# Create PRD: $ARGUMENTS
 
 ## Process
-1. Gather context (problem, users, success criteria)
-2. Research codebase (related features, tables, endpoints)
-3. Generate PRD using `docs/features/TEMPLATE.md`
-4. Save to `docs/features/<feature-name>.md`
 
-## Questions to Ask
-- What problem does this solve?
+### 1. Research Phase
+- What problem are we solving?
 - Who are the users?
-- What does success look like?
-- What are the constraints?
+- What are the technical options?
 
-## LAZI Considerations
-- Does this need ServiceTitan data?
-- Which schema? (raw/master/crm)
-- Mobile/offline requirements?
-- Real-time updates needed?
-- Affects existing sync flows?
+### 2. Technology Decisions
+- Framework/library choices
+- Architecture approach
+- Integration points
 
-## Output Location
+### 3. Scope Definition
+- What's in scope (MVP)
+- What's out of scope (future)
+- Success criteria
+
+## Output: Save to `.agents/docs/prd/[feature-name]-prd.md`
+
+```markdown
+# Product Requirements Document: [Feature Name]
+
+## Executive Summary
+[One paragraph describing the feature and its value]
+
+## Mission
+[Core goal and principles]
+
+## Target Users
+[Who will use this and their needs]
+
+## MVP Scope
+
+### In Scope
+- ✅ [Feature 1]
+- ✅ [Feature 2]
+
+### Out of Scope
+- ❌ [Future feature 1]
+- ❌ [Future feature 2]
+
+## User Stories
+1. As a [user], I want to [action] so that [benefit]
+
+## Technical Approach
+- Architecture decisions
+- Key patterns
+- Integration points
+
+## Success Criteria
+- [ ] [Measurable criterion 1]
+- [ ] [Measurable criterion 2]
+
+## Implementation Phases
+### Phase 1: [Name]
+- Deliverables
+- Validation
+
+### Phase 2: [Name]
+- Deliverables
+- Validation
+
+## Risks & Mitigations
+- Risk: [description] → Mitigation: [approach]
 ```
-docs/features/<feature-name>.md
-```
 
-## Template Reference
-See `docs/features/TEMPLATE.md` for full structure.
+**Next**: Create implementation plan with `/planning`

@@ -1,43 +1,65 @@
-# Implementation Plan: [Feature Name]
+# Feature: [Feature Name]
 
-## Overview
-- **Feature**: [description]
-- **Priority**: High/Medium/Low
-- **Effort**: Small/Medium/Large
+## Feature Description
 
-## Requirements
-- [ ] [Requirement 1]
+[Detailed description]
 
-## Success Criteria
-- [ ] [Criterion 1]
+## User Story
 
-## Files to Create
-| File Path | Purpose |
-|-----------|---------|
-| `apps/web/src/...` | [Description] |
+As a [user type]
+I want to [action]
+So that [benefit]
 
-## Files to Modify
-| File Path | Changes |
-|-----------|---------|
-| `apps/web/src/...` | [Description] |
+## Feature Metadata
 
-## Step by Step Tasks
+**Type**: [New Capability/Enhancement/Bug Fix]
+**Complexity**: [Low/Medium/High]
+**Systems**: [List]
 
-### Task 1: [Name]
-**File**: `[path]` (create/modify)
-**Action**: [What to do]
-**Details**: [specifics]
+---
 
-## Testing Strategy
-| Test File | Tests |
-|-----------|-------|
-| `__tests__/...` | [Description] |
+## CONTEXT REFERENCES
 
-## Validation Commands
-```bash
-pnpm typecheck
-pnpm lint  
-pnpm test
+### Files to Read First
+
+- `path/file.ts` (lines X-Y) - Pattern reference
+- `path/file.ts` - Structure reference
+
+### Files to Create
+
+- `path/new-file.ts` - [Purpose]
+
+### Patterns to Follow
+
+```typescript
+// Pattern from codebase
 ```
 
-Ready for: `/execute plans/[feature-name].md`
+---
+
+## STEP-BY-STEP TASKS
+
+### Task 1: CREATE `path/file.ts`
+
+- **IMPLEMENT**: [Details]
+- **PATTERN**: [Reference]
+- **VALIDATE**: `pnpm typecheck`
+
+---
+
+## VALIDATION COMMANDS
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+---
+
+## ACCEPTANCE CRITERIA
+
+- [ ] All tasks complete
+- [ ] All validations pass
+- [ ] Feature works

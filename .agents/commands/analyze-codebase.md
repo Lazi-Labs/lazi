@@ -1,3 +1,9 @@
+---
+description: Analyze codebase structure and patterns
+argument-hint: [area]?
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /analyze-codebase
 
 Analyze codebase structure and patterns.

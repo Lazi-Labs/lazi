@@ -1,3 +1,9 @@
+---
+description: Trigger or debug ServiceTitan sync operations
+argument-hint: [entity]?
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /sync-servicetitan
 
 Trigger or debug ServiceTitan sync operations.

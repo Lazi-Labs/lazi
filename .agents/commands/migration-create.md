@@ -1,3 +1,9 @@
+---
+description: Create a new database migration
+argument-hint: [migration-name]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /migration-create
 
 Create a new database migration.

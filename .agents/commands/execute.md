@@ -6,36 +6,33 @@ allowed-tools: Read, Write, Edit, Bash(pnpm:*), Bash(npm:*), Bash(git:*)
 
 # Execute: Implement from Plan
 
-## Plan to Execute
+Read the plan file and fully understand it.
 
-Read: `$ARGUMENTS`
+Plan file: $ARGUMENTS
 
-## Instructions
+Read all the reference files and documentation to validate the plan is sound.
 
-### 1. Read entire plan, understand tasks and dependencies
+Think hard about the plan and then create detailed todos before you start implementing.
 
-### 2. Execute tasks in order
-- Follow specifications exactly
-- Maintain LAZI patterns
-- Verify syntax after each change
+Make sure you run all validations including running the server and e2e testing with curl.
 
-### 3. Implement tests from Testing Strategy
+You must implement the entire plan in one go, do not stop until its complete and all validations pass.
 
-### 4. Run validation
-```bash
-pnpm typecheck
-pnpm lint
-pnpm test
-```
+When you are done, report back:
+- [List of files added and modified]
+- [Number of lines changed]
+- [All validations passed] (don't lie about this)
 
-### 5. Final check
-- ✅ All tasks completed
-- ✅ Tests passing
-- ✅ Validation passes
+---
 
-## Output
+## POST-IMPLEMENTATION: Run /verify
 
-- Completed tasks list
-- Files created/modified
-- Validation results
-- Ready for `/commit`
+After completing all tasks, you MUST:
+
+1. Run verification steps (or full `/verify [feature]`)
+2. Create test data
+3. Show database proof  
+4. Complete CRUD cycle
+5. Audit UI bindings
+
+**Include verification evidence in completion report.**

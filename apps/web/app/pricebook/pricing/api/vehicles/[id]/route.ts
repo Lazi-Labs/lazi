@@ -1,77 +1,140 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from "../../../lib/supabase";
+import { successResponse, errorResponse, getOrgId, parseBody, isValidUUID } from "../../../lib/api-helpers";
 
-const PRICING_API_URL = process.env.PRICING_API_URL || 'https://pricing.lazilabs.com';
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
 // GET /pricebook/pricing/api/vehicles/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const response = await fetch(`${PRICING_API_URL}/api/vehicles/${params.id}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+    const { id } = await params;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch vehicle' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid vehicle ID", 400);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const supabase = createServerClient();
+
+    const { data, error } = await supabase
+      .from("pricing_vehicles")
+      .select("*")
+      .eq("id", id)
+      .eq("organization_id", orgId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return errorResponse("Vehicle not found", 404);
+      }
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Vehicle API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Vehicle GET error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }
 
-// PATCH /pricebook/pricing/api/vehicles/[id]
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// PUT /pricebook/pricing/api/vehicles/[id]
+export async function PUT(request: Request, { params }: RouteParams) {
   try {
-    const body = await request.json();
+    const { id } = await params;
 
-    const response = await fetch(`${PRICING_API_URL}/api/vehicles/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to update vehicle' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid vehicle ID", 400);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const body = await parseBody<Record<string, unknown>>(request);
+    if (!body) {
+      return errorResponse("Invalid request body", 400);
+    }
+
+    const supabase = createServerClient();
+
+    const updateData: Record<string, unknown> = {};
+    const allowedFields = [
+      "year", "make", "model", "trim", "color", "vin", "license_plate",
+      "status", "assigned_driver_id", "purchase_date", "purchase_price",
+      "loan_balance", "monthly_payment", "loan_interest_rate", "loan_term_months",
+      "market_value", "insurance_monthly", "fuel_monthly", "maintenance_monthly",
+      "registration_annual", "odometer_current", "odometer_at_purchase",
+      "fuel_type", "mpg_average", "servicetitan_equipment_id", "notes"
+    ];
+
+    for (const field of allowedFields) {
+      if (field in body) {
+        updateData[field] = body[field];
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("pricing_vehicles")
+      .update(updateData)
+      .eq("id", id)
+      .eq("organization_id", orgId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return errorResponse("Vehicle not found", 404);
+      }
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse(data);
   } catch (error) {
-    console.error('Vehicle API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Vehicle PUT error:", error);
+    return errorResponse("Internal server error", 500);
   }
+}
+
+// PATCH /pricebook/pricing/api/vehicles/[id] - Update vehicle (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
 }
 
 // DELETE /pricebook/pricing/api/vehicles/[id]
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: RouteParams) {
   try {
-    const response = await fetch(`${PRICING_API_URL}/api/vehicles/${params.id}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const { id } = await params;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to delete vehicle' }));
-      return NextResponse.json(error, { status: response.status });
+    if (!isValidUUID(id)) {
+      return errorResponse("Invalid vehicle ID", 400);
     }
 
-    return NextResponse.json({ success: true });
+    const orgId = await getOrgId();
+    if (!orgId) {
+      return errorResponse("Organization not found", 404);
+    }
+
+    const supabase = createServerClient();
+
+    const { error } = await supabase
+      .from("pricing_vehicles")
+      .delete()
+      .eq("id", id)
+      .eq("organization_id", orgId);
+
+    if (error) {
+      return errorResponse(error.message, 500);
+    }
+
+    return successResponse({ deleted: true });
   } catch (error) {
-    console.error('Vehicle API error:', error);
-    return NextResponse.json({ error: 'Failed to connect to pricing service' }, { status: 503 });
+    console.error("Vehicle DELETE error:", error);
+    return errorResponse("Internal server error", 500);
   }
 }

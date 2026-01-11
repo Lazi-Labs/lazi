@@ -1,3 +1,9 @@
+---
+description: Quick bug fix without formal RCA
+argument-hint: [issue-description]
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /bug-fix
 
 Systematic bug fixing workflow.

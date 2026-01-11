@@ -1,3 +1,9 @@
+---
+description: Review a pull request or set of changes
+argument-hint: [pr-number]?
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /review-pr
 
 Review a pull request or set of changes.

@@ -1,3 +1,8 @@
+---
+description: Run pre-deployment verification checklist
+allowed-tools: Bash(*), Read, Write, Edit
+---
+
 # Command: /pre-deploy-check
 
 Run pre-deployment verification checklist.
