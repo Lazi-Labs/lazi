@@ -1,53 +1,37 @@
-# Command: /commit
+---
+description: Create git commit with conventional message format
+argument-hint: [file1] [file2] ... (optional)
+allowed-tools: Bash(git:*)
+---
 
-Generate and execute a conventional commit.
+# Commit: Create Git Commit
 
-## Usage
-```
-/commit                    # Auto-analyze staged changes
-/commit [hint]             # With description hint
-```
+## Files: $ARGUMENTS (or all if empty)
 
 ## Process
-1. Run `git status` 
-2. Run `git diff --staged` (or `git diff`)
-3. Generate message following conventional format
 
-## Format
-```
-<type>(<scope>): <description>
+!`git status`
+!`git diff --stat HEAD`
+
+### Commit Types
+feat, fix, refactor, docs, test, chore, perf
+
+### LAZI Scopes
+pricebook, equipment, sync, api, ui, db, auth, admin, docker
+
+### Create Commit
+
+```bash
+git add ${ARGUMENTS:-.}
+git commit -m "type(scope): description
 
 [body]
 
-[footer]
+Co-authored-by: Claude <noreply@anthropic.com>"
 ```
 
-## Types
-| Type | Use |
-|------|-----|
-| feat | New feature |
-| fix | Bug fix |
-| refactor | Refactoring |
-| perf | Performance |
-| docs | Documentation |
-| test | Tests |
-| chore | Maintenance |
+!`git log -1 --oneline`
 
-## LAZI Scopes
-`pricebook`, `api`, `db`, `ui`, `st`, `temporal`, `docker`, `auth`, `crm`, `sync`, `images`
-
-## Example
-```
-feat(pricebook): add material kit bulk operations
-
-- Implement batch create/update for kits
-- Add validation for circular dependencies
-
-Closes #234
-```
-
-## Execution
-```bash
-git add -A  # if needed
-git commit -m "<generated message>"
-```
+## Output
+- Commit hash and message
+- Next: `git push` or continue
