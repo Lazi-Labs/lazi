@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { apiUrl } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 import {
   Users,
   Truck,
@@ -73,6 +74,12 @@ interface OfficeStaff {
   suta_rate: number | null;
   workers_comp_rate: number | null;
   health_insurance_monthly: number;
+  dental_insurance_monthly?: number;
+  vision_insurance_monthly?: number;
+  life_insurance_monthly?: number;
+  retirement_401k_match_percent?: number;
+  hsa_contribution_monthly?: number;
+  other_benefits_monthly?: number;
 }
 
 interface Vehicle {
@@ -264,6 +271,29 @@ function TechnicianFormDialog({
       retirement_401k_match_percent: 0,
     }
   );
+
+  // Sync form state when dialog opens or technician changes
+  useEffect(() => {
+    if (open) {
+      setFormData(
+        technician || {
+          first_name: '',
+          last_name: '',
+          role: 'Technician',
+          status: 'active',
+          pay_type: 'hourly',
+          base_pay_rate: 0,
+          paid_hours_per_day: 8,
+          payroll_tax_rate: 7.65,
+          futa_rate: 0.6,
+          suta_rate: 2.7,
+          workers_comp_rate: 8.5,
+          health_insurance_monthly: 0,
+          retirement_401k_match_percent: 0,
+        }
+      );
+    }
+  }, [technician, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -490,6 +520,27 @@ function VehicleFormDialog({
     }
   );
 
+  // Sync form state when dialog opens or vehicle changes
+  useEffect(() => {
+    if (open) {
+      setFormData(
+        vehicle || {
+          year: new Date().getFullYear(),
+          make: 'Ford',
+          model: 'Transit 250',
+          vin: '',
+          status: 'reserve',
+          loan_balance: 0,
+          monthly_payment: 0,
+          market_value: 0,
+          insurance_monthly: 0,
+          fuel_monthly: 0,
+          maintenance_monthly: 0,
+        }
+      );
+    }
+  }, [vehicle, open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
@@ -693,6 +744,19 @@ function ExpenseItemFormDialog({
     }
   );
 
+  // Sync form state when dialog opens or item changes
+  useEffect(() => {
+    if (open) {
+      setFormData(
+        item || {
+          name: '',
+          amount: 0,
+          frequency: 'monthly',
+        }
+      );
+    }
+  }, [item, open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ ...formData, category_id: categoryId });
@@ -757,10 +821,218 @@ function ExpenseItemFormDialog({
   );
 }
 
+// Office Staff Form Dialog
+function OfficeStaffFormDialog({
+  open,
+  onOpenChange,
+  staff,
+  onSave,
+  isLoading,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  staff: OfficeStaff | null;
+  onSave: (data: Partial<OfficeStaff>) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState<Partial<OfficeStaff>>(
+    staff || {
+      first_name: '',
+      last_name: '',
+      role: 'Office Staff',
+      status: 'active',
+      pay_type: 'hourly',
+      base_pay_rate: 0,
+      hours_per_week: 40,
+      payroll_tax_rate: 7.65,
+      futa_rate: 0.6,
+      suta_rate: 2.7,
+      workers_comp_rate: 0.5,
+      health_insurance_monthly: 0,
+      retirement_401k_match_percent: 0,
+    }
+  );
+
+  useEffect(() => {
+    if (open) {
+      setFormData(
+        staff || {
+          first_name: '',
+          last_name: '',
+          role: 'Office Staff',
+          status: 'active',
+          pay_type: 'hourly',
+          base_pay_rate: 0,
+          hours_per_week: 40,
+          payroll_tax_rate: 7.65,
+          futa_rate: 0.6,
+          suta_rate: 2.7,
+          workers_comp_rate: 0.5,
+          health_insurance_monthly: 0,
+          retirement_401k_match_percent: 0,
+        }
+      );
+    }
+  }, [staff, open]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{staff ? 'Edit Office Staff' : 'Add Office Staff'}</DialogTitle>
+          <DialogDescription>
+            {staff ? 'Update staff details and benefits.' : 'Add a new office staff member.'}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="first_name">First Name</Label>
+              <Input
+                id="first_name"
+                value={formData.first_name || ''}
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input
+                id="last_name"
+                value={formData.last_name || ''}
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Input
+                id="role"
+                value={formData.role || ''}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pay_type">Pay Type</Label>
+              <Select
+                value={formData.pay_type || 'hourly'}
+                onValueChange={(v) => setFormData({ ...formData, pay_type: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="salary">Salary</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="base_pay_rate">
+                {formData.pay_type === 'salary' ? 'Annual Salary ($)' : 'Hourly Rate ($)'}
+              </Label>
+              <Input
+                id="base_pay_rate"
+                type="number"
+                step="0.01"
+                value={formData.pay_type === 'salary' ? (formData.annual_salary || 0) : (formData.base_pay_rate || 0)}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  if (formData.pay_type === 'salary') {
+                    setFormData({ ...formData, annual_salary: val });
+                  } else {
+                    setFormData({ ...formData, base_pay_rate: val });
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hours_per_week">Hours/Week</Label>
+              <Input
+                id="hours_per_week"
+                type="number"
+                step="1"
+                value={formData.hours_per_week || 40}
+                onChange={(e) => setFormData({ ...formData, hours_per_week: parseInt(e.target.value) })}
+              />
+            </div>
+          </div>
+
+          <div className="border-t pt-4 mt-4">
+            <h4 className="font-medium mb-3">Burden Rates</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="payroll_tax_rate">FICA (%)</Label>
+                <Input
+                  id="payroll_tax_rate"
+                  type="number"
+                  step="0.01"
+                  value={formData.payroll_tax_rate || 7.65}
+                  onChange={(e) => setFormData({ ...formData, payroll_tax_rate: parseFloat(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="workers_comp_rate">Workers Comp (%)</Label>
+                <Input
+                  id="workers_comp_rate"
+                  type="number"
+                  step="0.01"
+                  value={formData.workers_comp_rate || 0.5}
+                  onChange={(e) => setFormData({ ...formData, workers_comp_rate: parseFloat(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="health_insurance_monthly">Health Insurance ($/mo)</Label>
+                <Input
+                  id="health_insurance_monthly"
+                  type="number"
+                  step="0.01"
+                  value={formData.health_insurance_monthly || 0}
+                  onChange={(e) => setFormData({ ...formData, health_insurance_monthly: parseFloat(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="retirement_401k_match_percent">401k Match (%)</Label>
+                <Input
+                  id="retirement_401k_match_percent"
+                  type="number"
+                  step="0.01"
+                  value={formData.retirement_401k_match_percent || 0}
+                  onChange={(e) => setFormData({ ...formData, retirement_401k_match_percent: parseFloat(e.target.value) })}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Main Component
 export function PricingBuilderPanel() {
   const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Dialog states
   const [techDialogOpen, setTechDialogOpen] = useState(false);
@@ -770,9 +1042,27 @@ export function PricingBuilderPanel() {
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
   const [expenseCategoryId, setExpenseCategoryId] = useState<string>('');
+  const [officeStaffDialogOpen, setOfficeStaffDialogOpen] = useState(false);
+  const [editingOfficeStaff, setEditingOfficeStaff] = useState<OfficeStaff | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ type: string; id: string; name: string } | null>(null);
+  const [expandedTechs, setExpandedTechs] = useState<Set<string>>(new Set());
+
+  // Helper functions
+  function getInitials(name: string): string {
+    return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  function toggleTechExpand(id: string) {
+    const newExpanded = new Set(expandedTechs);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedTechs(newExpanded);
+  }
 
   // Queries
   const { data: pricingData, isLoading: pricingLoading } = useQuery({
@@ -834,13 +1124,25 @@ export function PricingBuilderPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!res.ok) throw new Error('Failed to save technician');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-technicians'] });
       queryClient.invalidateQueries({ queryKey: ['pricing-calculations'] });
       setTechDialogOpen(false);
+      toast({
+        title: editingTech ? 'Technician Updated' : 'Technician Created',
+        description: 'Changes saved successfully.',
+      });
       setEditingTech(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save technician.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -855,52 +1157,122 @@ export function PricingBuilderPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!res.ok) throw new Error('Failed to save vehicle');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['pricing-calculations'] });
       setVehicleDialogOpen(false);
+      toast({
+        title: editingVehicle ? 'Vehicle Updated' : 'Vehicle Created',
+        description: 'Changes saved successfully.',
+      });
       setEditingVehicle(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save vehicle.',
+        variant: 'destructive',
+      });
     },
   });
 
   const saveExpenseMutation = useMutation({
     mutationFn: async (data: Partial<ExpenseItem> & { category_id: string }) => {
       const url = editingExpense
-        ? apiUrl(`/api/pricebook/pricing/expenses/${editingExpense.id}`)
-        : apiUrl('/api/pricebook/pricing/expenses');
+        ? apiUrl(`/api/pricebook/pricing/expenses/${editingExpense.id}?type=item`)
+        : apiUrl('/api/pricebook/pricing/expenses?type=item');
       const method = editingExpense ? 'PATCH' : 'POST';
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!res.ok) throw new Error('Failed to save expense');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-expenses'] });
       queryClient.invalidateQueries({ queryKey: ['pricing-calculations'] });
       setExpenseDialogOpen(false);
+      toast({
+        title: editingExpense ? 'Expense Updated' : 'Expense Created',
+        description: 'Changes saved successfully.',
+      });
       setEditingExpense(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save expense.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const saveOfficeStaffMutation = useMutation({
+    mutationFn: async (data: Partial<OfficeStaff>) => {
+      const url = editingOfficeStaff
+        ? apiUrl(`/api/pricebook/pricing/office-staff/${editingOfficeStaff.id}`)
+        : apiUrl('/api/pricebook/pricing/office-staff');
+      const method = editingOfficeStaff ? 'PATCH' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to save office staff');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-office-staff'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing-calculations'] });
+      setOfficeStaffDialogOpen(false);
+      toast({
+        title: editingOfficeStaff ? 'Office Staff Updated' : 'Office Staff Created',
+        description: 'Changes saved successfully.',
+      });
+      setEditingOfficeStaff(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save office staff.',
+        variant: 'destructive',
+      });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async ({ type, id }: { type: string; id: string }) => {
-      const endpoint = type === 'technician' ? 'technicians' : type === 'vehicle' ? 'vehicles' : 'expenses';
+      const endpoint = type === 'technician' ? 'technicians' : type === 'vehicle' ? 'vehicles' : type === 'office-staff' ? 'office-staff' : 'expenses';
       const res = await fetch(apiUrl(`/api/pricebook/pricing/${endpoint}/${id}`), {
         method: 'DELETE',
       });
+      if (!res.ok) throw new Error(`Failed to delete ${type}`);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['pricing-technicians'] });
       queryClient.invalidateQueries({ queryKey: ['pricing-vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['pricing-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing-office-staff'] });
       queryClient.invalidateQueries({ queryKey: ['pricing-calculations'] });
       setDeleteConfirmOpen(false);
+      toast({
+        title: 'Deleted',
+        description: `${variables.type.charAt(0).toUpperCase() + variables.type.slice(1)} deleted successfully.`,
+      });
       setDeleteTarget(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete item.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -1049,74 +1421,268 @@ export function PricingBuilderPanel() {
                 <CardTitle>Technicians</CardTitle>
                 <CardDescription>Field technicians and their cost metrics</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {technicians.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No technicians configured. Click "Add Technician" to get started.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-2 px-2">Name</th>
-                          <th className="text-left py-2 px-2">Role</th>
-                          <th className="text-right py-2 px-2">Rate</th>
-                          <th className="text-right py-2 px-2">Health Ins.</th>
-                          <th className="text-right py-2 px-2">True Cost/Hr</th>
-                          <th className="text-right py-2 px-2">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {technicians.map((tech) => {
-                          const metrics = (data.technicianMetrics || []).find((m) => m.id === tech.id);
-                          return (
-                            <tr key={tech.id} className="border-b last:border-0">
-                              <td className="py-2 px-2 font-medium">{tech.display_name}</td>
-                              <td className="py-2 px-2">{tech.role}</td>
-                              <td className="text-right py-2 px-2">${tech.base_pay_rate}/hr</td>
-                              <td className="text-right py-2 px-2">${tech.health_insurance_monthly}/mo</td>
-                              <td className="text-right py-2 px-2 font-semibold">
-                                {formatCurrency(metrics?.trueCostPerHour || 0)}
-                              </td>
-                              <td className="text-right py-2 px-2">
+                  <div className="divide-y">
+                    {technicians.map((tech) => {
+                      const metrics = (data.technicianMetrics || []).find((m) => m.id === tech.id);
+                      const isExpanded = expandedTechs.has(tech.id);
+                      const displayName = tech.display_name || `${tech.first_name} ${tech.last_name}`;
+                      const assignedVehicle = vehicles.find((v) => v.id === tech.assigned_vehicle_id);
+
+                      // Calculate burden components
+                      const annualBasePay = metrics?.annualBasePay || (tech.base_pay_rate || 0) * tech.paid_hours_per_day * 260;
+                      const payrollTax = annualBasePay * ((tech.payroll_tax_rate || 7.65) / 100);
+                      const futa = annualBasePay * ((tech.futa_rate || 0.6) / 100);
+                      const suta = annualBasePay * ((tech.suta_rate || 2.7) / 100);
+                      const workersComp = annualBasePay * ((tech.workers_comp_rate || 8.5) / 100);
+                      const healthIns = tech.health_insurance_monthly * 12;
+                      const retirement = annualBasePay * (tech.retirement_401k_match_percent / 100);
+                      const totalBurden = payrollTax + futa + suta + workersComp + healthIns + retirement;
+                      const totalAnnualCost = annualBasePay + totalBurden;
+
+                      // Vehicle costs
+                      const vehicleMonthly = assignedVehicle?.calculated_total_monthly_cost || 0;
+                      const vehicleCostPerHour = metrics?.billableHoursPerYear
+                        ? (vehicleMonthly * 12) / metrics.billableHoursPerYear
+                        : 0;
+                      const loadedCostPerHour = (metrics?.trueCostPerHour || 0) + vehicleCostPerHour;
+
+                      return (
+                        <div key={tech.id} className="tech-row">
+                          {/* Collapsed Row */}
+                          <div
+                            className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50"
+                            onClick={() => toggleTechExpand(tech.id)}
+                          >
+                            <div className="flex items-center gap-4">
+                              {/* Gradient Avatar with Initials */}
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white font-semibold">
+                                {getInitials(displayName)}
+                              </div>
+                              <div>
+                                <div className="font-medium text-slate-800 flex items-center gap-2">
+                                  {displayName}
+                                  {/* Status Badge */}
+                                  <span className={cn(
+                                    'px-2 py-0.5 rounded-full text-xs',
+                                    tech.status === 'active'
+                                      ? 'bg-emerald-100 text-emerald-700'
+                                      : 'bg-slate-100 text-slate-600'
+                                  )}>
+                                    {tech.status}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-slate-500">
+                                  {tech.role} • ${tech.base_pay_rate}/hr
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 4-Column Metrics */}
+                            <div className="flex items-center gap-8">
+                              <div className="text-center">
+                                <div className="text-xs text-slate-500">Burden</div>
+                                <div className="font-semibold text-amber-600">
+                                  {formatPercent(metrics?.burdenPercent || 0)}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xs text-slate-500">Efficiency</div>
+                                <div className="font-semibold text-emerald-600">
+                                  {formatPercent(metrics?.efficiencyPercent || 0)}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xs text-slate-500">True Cost</div>
+                                <div className="font-semibold">
+                                  {formatCurrency(metrics?.trueCostPerHour || 0)}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xs text-slate-500">Loaded</div>
+                                <div className="font-semibold text-indigo-600">
+                                  {formatCurrency(loadedCostPerHour)}
+                                </div>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronDown className="w-5 h-5 text-slate-400" />
+                              ) : (
+                                <ChevronRight className="w-5 h-5 text-slate-400" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Expanded Content */}
+                          {isExpanded && (
+                            <div className="bg-slate-50">
+                              <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* AMBER: Burden Breakdown */}
+                                <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                  <h4 className="font-semibold text-amber-800 mb-3">Annual Burden Breakdown</h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Base Pay</span>
+                                      <span>{formatCurrency(annualBasePay)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Payroll Taxes (FICA)</span>
+                                      <span>{formatCurrency(payrollTax)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">FUTA</span>
+                                      <span>{formatCurrency(futa)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">SUTA</span>
+                                      <span>{formatCurrency(suta)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Workers Comp</span>
+                                      <span>{formatCurrency(workersComp)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Health Insurance</span>
+                                      <span>{formatCurrency(healthIns)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">401k Match</span>
+                                      <span>{formatCurrency(retirement)}</span>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t border-amber-300">
+                                      <span className="font-medium">Total Burden</span>
+                                      <span className="font-medium">{formatCurrency(totalBurden)}</span>
+                                    </div>
+                                    <div className="flex justify-between font-semibold text-amber-700">
+                                      <span>Total Annual Cost</span>
+                                      <span>{formatCurrency(totalAnnualCost)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* EMERALD: Productivity Summary */}
+                                <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+                                  <h4 className="font-semibold text-emerald-800 mb-3">Productivity Summary</h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Paid Hours/Day</span>
+                                      <span>{tech.paid_hours_per_day}hr</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Billable Hours/Day</span>
+                                      <span>{metrics?.billableHoursPerDay?.toFixed(1) || '0'}hr</span>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t border-emerald-300">
+                                      <span className="text-slate-600">Billable Hours/Year</span>
+                                      <span>{metrics?.billableHoursPerYear?.toLocaleString() || '0'}hr</span>
+                                    </div>
+                                    <div className="flex justify-between font-semibold text-emerald-700">
+                                      <span>Efficiency</span>
+                                      <span>{formatPercent(metrics?.efficiencyPercent || 0)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* VIOLET: Vehicle Assignment */}
+                                <div className="bg-violet-50 rounded-lg p-4 border border-violet-200">
+                                  <h4 className="font-semibold text-violet-800 mb-3">Vehicle Assignment</h4>
+                                  <div className="space-y-2 text-sm">
+                                    {assignedVehicle ? (
+                                      <>
+                                        <div className="flex justify-between">
+                                          <span className="text-slate-600">Vehicle</span>
+                                          <span>{assignedVehicle.year} {assignedVehicle.make} {assignedVehicle.model}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-slate-600">VIN</span>
+                                          <span className="text-xs">{assignedVehicle.vin || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-slate-600">Monthly Cost</span>
+                                          <span>{formatCurrency(vehicleMonthly)}</span>
+                                        </div>
+                                        <div className="flex justify-between font-medium">
+                                          <span className="text-slate-600">Cost/Billable Hr</span>
+                                          <span>{formatCurrency(vehicleCostPerHour)}</span>
+                                        </div>
+                                        <div className="pt-2 border-t border-violet-300 space-y-1">
+                                          <div className="text-xs text-violet-600 font-medium">Total Cost Summary</div>
+                                          <div className="flex justify-between">
+                                            <span className="text-slate-600">True Cost/Hr</span>
+                                            <span>{formatCurrency(metrics?.trueCostPerHour || 0)}</span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-slate-600">+ Vehicle Cost/Hr</span>
+                                            <span>{formatCurrency(vehicleCostPerHour)}</span>
+                                          </div>
+                                          <div className="flex justify-between font-semibold text-violet-700">
+                                            <span>Loaded Cost/Hr</span>
+                                            <span>{formatCurrency(loadedCostPerHour)}</span>
+                                          </div>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="text-slate-500 italic">No vehicle assigned</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Action Buttons Footer */}
+                              <div className="px-4 pb-4 flex justify-end gap-2">
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  onClick={() => { setEditingTech(tech); setTechDialogOpen(true); }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingTech(tech);
+                                    setTechDialogOpen(true);
+                                  }}
                                 >
-                                  <Pencil className="h-4 w-4" />
+                                  <Pencil className="w-4 h-4 mr-1" /> Edit
                                 </Button>
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  onClick={() => {
-                                    setDeleteTarget({ type: 'technician', id: tech.id, name: tech.display_name });
+                                  className="text-red-600 border-red-300 hover:bg-red-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeleteTarget({ type: 'technician', id: tech.id, name: displayName });
                                     setDeleteConfirmOpen(true);
                                   }}
                                 >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                  <Trash2 className="w-4 h-4 mr-1" /> Delete
                                 </Button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Office Staff</CardTitle>
-                <CardDescription>Non-billable administrative employees</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Office Staff</CardTitle>
+                  <CardDescription>Non-billable administrative employees</CardDescription>
+                </div>
+                <Button onClick={() => { setEditingOfficeStaff(null); setOfficeStaffDialogOpen(true); }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Staff
+                </Button>
               </CardHeader>
               <CardContent>
                 {officeStaff.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    No office staff configured.
+                    No office staff configured. Click "Add Staff" to get started.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -1127,6 +1693,7 @@ export function PricingBuilderPanel() {
                           <th className="text-left py-2 px-2">Role</th>
                           <th className="text-right py-2 px-2">Pay</th>
                           <th className="text-right py-2 px-2">Hours/Wk</th>
+                          <th className="text-right py-2 px-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1140,6 +1707,25 @@ export function PricingBuilderPanel() {
                                 : `$${staff.base_pay_rate}/hr`}
                             </td>
                             <td className="text-right py-2 px-2">{staff.hours_per_week}</td>
+                            <td className="text-right py-2 px-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => { setEditingOfficeStaff(staff); setOfficeStaffDialogOpen(true); }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setDeleteTarget({ type: 'office-staff', id: staff.id, name: staff.display_name });
+                                  setDeleteConfirmOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1390,39 +1976,88 @@ export function PricingBuilderPanel() {
                 <CardTitle>Job Type Rate Cards</CardTitle>
                 <CardDescription>Calculated rates based on cost structure and target margins</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {(data.jobTypeRates || []).map((jt) => (
-                    <Card key={jt.jobTypeId} className="border-2">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">{jt.name}</CardTitle>
-                          {jt.code && <Badge variant="outline">{jt.code}</Badge>}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Standard Rate</span>
-                          <span className="text-xl font-bold">{formatCurrency(jt.hourlyRate)}/hr</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Member Rate</span>
-                          <span className="font-semibold text-green-600">{formatCurrency(jt.memberRate)}/hr</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Min Invoice</span>
-                          <span className="font-medium">{formatCurrency(jt.minInvoice)}</span>
-                        </div>
-                        <div className="pt-2 border-t">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground">Target Margin</span>
-                            <Badge>{formatPercent(jt.targetMargin)}</Badge>
+              <CardContent className="space-y-6">
+                {(() => {
+                  const gradients = [
+                    'from-sky-500 to-cyan-500',
+                    'from-violet-500 to-purple-500',
+                    'from-emerald-500 to-teal-500',
+                    'from-amber-500 to-orange-500',
+                    'from-rose-500 to-pink-500',
+                    'from-blue-500 to-indigo-500',
+                  ];
+                  return (data.jobTypeRates || []).map((jt, index) => {
+                    const gradient = gradients[index % gradients.length];
+                    // Calculate member discount from hourly and member rates
+                    const memberDiscount = jt.hourlyRate > 0
+                      ? Math.round((1 - jt.memberRate / jt.hourlyRate) * 100)
+                      : 0;
+                    return (
+                      <div key={jt.jobTypeId} className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                        {/* Gradient Header */}
+                        <div className={`bg-gradient-to-r ${gradient} text-white p-4`}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-lg">{jt.name}</h4>
+                              {jt.code && <p className="text-white/80 text-sm">{jt.code}</p>}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-3xl font-bold">{formatCurrency(jt.hourlyRate)}</div>
+                              <div className="text-white/80 text-sm">per hour</div>
+                            </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+
+                        {/* Card Body */}
+                        <div className="p-4 bg-slate-50">
+                          {/* Metrics Grid */}
+                          <div className="grid grid-cols-4 gap-4 mb-4">
+                            <div>
+                              <label className="block text-sm text-slate-600 mb-1">Target Margin</label>
+                              <div className="bg-white rounded-lg p-2 border border-slate-200">
+                                <span className="text-lg font-medium">{formatPercent(jt.targetMargin)}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm text-slate-600 mb-1">Member Discount</label>
+                              <div className="bg-white rounded-lg p-2 border border-slate-200">
+                                <span className="text-lg font-medium">{memberDiscount}%</span>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm text-slate-600 mb-1">Material Margin</label>
+                              <div className="bg-white rounded-lg p-2 border border-slate-200">
+                                <span className="text-lg font-medium text-slate-400">—</span>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm text-slate-600 mb-1">Surcharge</label>
+                              <div className="bg-white rounded-lg p-2 border border-slate-200">
+                                <span className="text-lg font-medium text-slate-400">—</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Calculated Values */}
+                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                            <div className="bg-white rounded-lg p-3 text-center border border-slate-200">
+                              <div className="text-sm text-slate-500">Member Rate</div>
+                              <div className="text-xl font-bold text-emerald-600">
+                                {formatCurrency(jt.memberRate)}/hr
+                              </div>
+                            </div>
+                            <div className="bg-white rounded-lg p-3 text-center border border-slate-200">
+                              <div className="text-sm text-slate-500">Min Invoice</div>
+                              <div className="text-xl font-bold">
+                                {formatCurrency(jt.minInvoice)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1509,6 +2144,14 @@ export function PricingBuilderPanel() {
         categoryId={expenseCategoryId}
         onSave={(data) => saveExpenseMutation.mutate(data)}
         isLoading={saveExpenseMutation.isPending}
+      />
+
+      <OfficeStaffFormDialog
+        open={officeStaffDialogOpen}
+        onOpenChange={setOfficeStaffDialogOpen}
+        staff={editingOfficeStaff}
+        onSave={(data) => saveOfficeStaffMutation.mutate(data)}
+        isLoading={saveOfficeStaffMutation.isPending}
       />
 
       {/* Delete Confirmation Dialog */}

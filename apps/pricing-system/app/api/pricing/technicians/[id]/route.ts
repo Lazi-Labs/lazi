@@ -104,6 +104,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
+// PATCH /api/pricing/technicians/[id] - Update technician (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
+}
+
 // DELETE /api/pricing/technicians/[id] - Delete technician
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {

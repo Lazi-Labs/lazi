@@ -157,6 +157,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
+// PATCH /api/pricing/expenses/[id] - Update category or item (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
+}
+
 // DELETE /api/pricing/expenses/[id] - Delete category or item
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {

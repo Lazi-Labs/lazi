@@ -101,6 +101,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
+// PATCH /api/pricing/vehicles/[id] - Update vehicle (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
+}
+
 // DELETE /api/pricing/vehicles/[id]
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {

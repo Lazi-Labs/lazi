@@ -108,6 +108,8 @@ SELECT * FROM pricing.users;
 
 -- TECHNICIANS
 CREATE OR REPLACE FUNCTION public.pricing_technicians_insert() RETURNS TRIGGER AS $$
+DECLARE
+    new_id uuid;
 BEGIN
     INSERT INTO pricing.technicians (
         organization_id, employee_number, first_name, last_name, role, status,
@@ -127,7 +129,10 @@ BEGIN
         COALESCE(NEW.health_insurance_monthly, 0), COALESCE(NEW.dental_insurance_monthly, 0), COALESCE(NEW.vision_insurance_monthly, 0), COALESCE(NEW.life_insurance_monthly, 0),
         COALESCE(NEW.retirement_401k_match_percent, 0), COALESCE(NEW.hsa_contribution_monthly, 0), COALESCE(NEW.other_benefits_monthly, 0),
         NEW.assigned_vehicle_id, NEW.servicetitan_employee_id, NEW.notes, NEW.created_by, NEW.updated_by
-    ) RETURNING * INTO NEW;
+    ) RETURNING id INTO new_id;
+
+    -- Select back from view to get proper structure with computed columns
+    SELECT * INTO NEW FROM public.pricing_technicians WHERE id = new_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -192,6 +197,8 @@ CREATE TRIGGER pricing_technicians_delete_trigger
 
 -- VEHICLES
 CREATE OR REPLACE FUNCTION public.pricing_vehicles_insert() RETURNS TRIGGER AS $$
+DECLARE
+    new_id uuid;
 BEGIN
     INSERT INTO pricing.vehicles (
         organization_id, year, make, model, trim, color, vin, license_plate,
@@ -207,7 +214,9 @@ BEGIN
         COALESCE(NEW.insurance_monthly, 0), COALESCE(NEW.fuel_monthly, 0), COALESCE(NEW.maintenance_monthly, 0), COALESCE(NEW.registration_annual, 0),
         NEW.odometer_current, NEW.odometer_at_purchase, COALESCE(NEW.fuel_type, 'gasoline'), NEW.mpg_average,
         NEW.servicetitan_equipment_id, NEW.notes, NEW.created_by, NEW.updated_by
-    ) RETURNING * INTO NEW;
+    ) RETURNING id INTO new_id;
+
+    SELECT * INTO NEW FROM public.pricing_vehicles WHERE id = new_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -270,6 +279,8 @@ CREATE TRIGGER pricing_vehicles_delete_trigger
 
 -- OFFICE_STAFF
 CREATE OR REPLACE FUNCTION public.pricing_office_staff_insert() RETURNS TRIGGER AS $$
+DECLARE
+    new_id uuid;
 BEGIN
     INSERT INTO pricing.office_staff (
         organization_id, employee_number, first_name, last_name, role, status,
@@ -287,7 +298,9 @@ BEGIN
         COALESCE(NEW.health_insurance_monthly, 0), COALESCE(NEW.dental_insurance_monthly, 0), COALESCE(NEW.vision_insurance_monthly, 0), COALESCE(NEW.life_insurance_monthly, 0),
         COALESCE(NEW.retirement_401k_match_percent, 0), COALESCE(NEW.hsa_contribution_monthly, 0), COALESCE(NEW.other_benefits_monthly, 0),
         NEW.notes, NEW.created_by, NEW.updated_by
-    ) RETURNING * INTO NEW;
+    ) RETURNING id INTO new_id;
+
+    SELECT * INTO NEW FROM public.pricing_office_staff WHERE id = new_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -351,6 +364,8 @@ CREATE TRIGGER pricing_office_staff_delete_trigger
 
 -- EXPENSE_CATEGORIES
 CREATE OR REPLACE FUNCTION public.pricing_expense_categories_insert() RETURNS TRIGGER AS $$
+DECLARE
+    new_id uuid;
 BEGIN
     INSERT INTO pricing.expense_categories (
         organization_id, name, description, icon, color, is_payroll, is_fleet, is_system, sort_order, is_collapsed, is_active
@@ -358,7 +373,9 @@ BEGIN
         NEW.organization_id, NEW.name, NEW.description, COALESCE(NEW.icon, 'Receipt'), COALESCE(NEW.color, 'slate'),
         COALESCE(NEW.is_payroll, false), COALESCE(NEW.is_fleet, false), COALESCE(NEW.is_system, false),
         COALESCE(NEW.sort_order, 0), COALESCE(NEW.is_collapsed, true), COALESCE(NEW.is_active, true)
-    ) RETURNING * INTO NEW;
+    ) RETURNING id INTO new_id;
+
+    SELECT * INTO NEW FROM public.pricing_expense_categories WHERE id = new_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -404,6 +421,8 @@ CREATE TRIGGER pricing_expense_categories_delete_trigger
 
 -- EXPENSE_ITEMS
 CREATE OR REPLACE FUNCTION public.pricing_expense_items_insert() RETURNS TRIGGER AS $$
+DECLARE
+    new_id uuid;
 BEGIN
     INSERT INTO pricing.expense_items (
         organization_id, category_id, name, description, vendor, amount, frequency,
@@ -413,7 +432,9 @@ BEGIN
         COALESCE(NEW.amount, 0), COALESCE(NEW.frequency, 'monthly'),
         NEW.account_number, COALESCE(NEW.is_tax_deductible, true), NEW.tax_category,
         COALESCE(NEW.sort_order, 0), COALESCE(NEW.is_active, true), NEW.effective_date, NEW.end_date, NEW.created_by
-    ) RETURNING * INTO NEW;
+    ) RETURNING id INTO new_id;
+
+    SELECT * INTO NEW FROM public.pricing_expense_items WHERE id = new_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -463,13 +484,17 @@ CREATE TRIGGER pricing_expense_items_delete_trigger
 
 -- TECHNICIAN_UNPRODUCTIVE_TIME
 CREATE OR REPLACE FUNCTION public.pricing_technician_unproductive_time_insert() RETURNS TRIGGER AS $$
+DECLARE
+    new_id uuid;
 BEGIN
     INSERT INTO pricing.technician_unproductive_time (
         technician_id, category_id, name, hours_per_day, is_paid, notes, sort_order
     ) VALUES (
         NEW.technician_id, NEW.category_id, COALESCE(NEW.activity_name, NEW.description),
         COALESCE(NEW.hours_per_day, 0), COALESCE(NEW.is_paid, true), NEW.notes, COALESCE(NEW.sort_order, 0)
-    ) RETURNING id, technician_id, category_id, name as activity_name, hours_per_day, is_paid, notes, sort_order, created_at, updated_at, name as description INTO NEW;
+    ) RETURNING id INTO new_id;
+
+    SELECT * INTO NEW FROM public.pricing_technician_unproductive_time WHERE id = new_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

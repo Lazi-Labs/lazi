@@ -102,6 +102,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
+// PATCH /api/pricing/office-staff/[id] - Update staff (alias for PUT)
+export async function PATCH(request: Request, { params }: RouteParams) {
+  return PUT(request, { params });
+}
+
 // DELETE /api/pricing/office-staff/[id]
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
